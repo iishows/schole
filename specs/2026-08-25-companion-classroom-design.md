@@ -72,6 +72,29 @@
 - 进度报告（按 Common Core 标准）
 - 标准化测试准备度（MAP / SAT 自适应练习）
 
+**推送渠道**（多渠道，家长可选）：
+- **Email digest**（默认）：每日 / 每周 / 每月可设
+- **WhatsApp Business API**：南美 / 欧洲 / 东南亚家长偏好；美国家长使用率上升（青少年 + 跨境家庭）
+- **SMS 短信**：美国家长 fallback（WhatsApp 不普及区）
+- 家长在 dashboard 切换渠道 + 频率
+
+**WhatsApp 集成设计**（新增）：
+- 接入 WhatsApp Business Platform（Cloud API）
+- 家长 onboarding：填手机号 → 收 WhatsApp 模板消息 → 确认订阅
+- 推送模板：education 类目预审通过（WhatsApp Business 限制，需选预审模板）
+- 限制：每个用户 24h 内同模板 1 条（防骚扰）
+- 模板示例：
+  ```
+  📊 {child_name} 今日学习报告
+  ⏱️ {duration_min} 分钟  ✅ {correct_count} 题  ❌ {wrong_count} 题
+  ⚠️ {weak_topic} 仍是弱项（{weak_pct}%）
+  💬 {teacher_note}
+  💡 {parent_guide}
+                  [View full report →]
+  ```
+- 费用：WhatsApp Business conversation-based pricing（教育类约 $0.0125/条），月 30 条/家 ≈ $0.375/家/月
+- 对比 Email（$0）+ SMS（$0.01）成本可控，对 WhatsApp 普及区 ROI 高
+
 **角色命名**（避免"老师"，避免宗教暗示）：
 - **导师**（mentor），不是 teacher
 - **同学**（study buddy），不是 student peer
@@ -561,6 +584,7 @@ interface StudentKnowledge {
 | 番茄钟（20min，Charlotte Mason 风格） | 2 天 | 短课而非 25min |
 | Email digest（每日 / 每周 / 每月可设） | 3 天 | 替代微信推送 |
 | 家长 Web dashboard | 5 天 | 替代家长小程序 |
+| **WhatsApp Business API 集成** | **4 天** | **WhatsApp Cloud API + 模板预审 + 双向上线** |
 | 教室布局改造（C3 同 + mentor 定位调整） | 3 天 | "导师" 而非 "班主任" |
 | Stripe 支付集成 | 3 天 | 微信支付 → Stripe |
 | 3 个 mockup（home school 学生首页 / mentor classroom / parent web dashboard） | 2 天 | — |
