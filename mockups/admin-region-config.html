@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC · Admin · Region Config</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f7;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #e2dff0;
+    --primary: #722ed1;
+    --primary-soft: #efe6fb;
+    --primary-dark: #5b21b6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --sidebar-w: 240px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+  /* Sidebar (existing admin — abbreviated for context) */
+  .sidebar {
+    background: #1a1825;
+    color: #d4d0e0;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand {
+    padding: 0 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--primary) 0%, #ec4899 100%);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: #fff;
+  }
+  .brand .name { color: #fff; font-weight: 700; font-size: 14px; }
+  .brand .sub { font-size: 10px; color: #8b889d; }
+  .nav-section { padding: 12px 20px 4px; font-size: 10px; color: #6b6884; text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: #fff; }
+  .nav-item.active { background: rgba(114,46,209,0.15); color: #fff; border-left-color: var(--primary); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* Main */
+  .main { padding: 24px 32px; overflow-y: auto; }
+
+  /* Header */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title h1 { font-size: 22px; font-weight: 700; }
+  .page-title .crumb { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* Region switcher */
+  .region-tabs {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    flex-wrap: wrap;
+    max-width: 720px;
+  }
+  .region-tab {
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .region-tab:hover { color: var(--fg); }
+  .region-tab.active { background: var(--primary); color: #fff; }
+  .region-tab .flag { font-size: 14px; }
+  .region-tab .ver { font-size: 9px; opacity: 0.7; }
+
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+  }
+
+  /* Editor card */
+  .editor {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    border: 1px solid var(--line);
+  }
+  .editor h2 {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .editor h2 .badge {
+    background: var(--success);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .editor h2 .badge.draft {
+    background: var(--warning);
+  }
+
+  /* Section */
+  .section {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .section-head {
+    background: #f9f8fc;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-head .label {
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-head .count {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .section-body {
+    padding: 14px;
+    background: #fff;
+  }
+
+  /* Persona card */
+  .persona-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .persona-card {
+    background: #f9f8fc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .persona-card .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .persona-card .info { flex: 1; min-width: 0; }
+  .persona-card .name { font-weight: 700; font-size: 12px; }
+  .persona-card .role { font-size: 10px; color: var(--muted); }
+  .persona-card .loc {
+    font-size: 9px;
+    color: var(--info);
+    background: #dbeafe;
+    padding: 1px 4px;
+    border-radius: 4px;
+    margin-top: 2px;
+    display: inline-block;
+  }
+  .persona-card .actions {
+    display: flex;
+    gap: 4px;
+  }
+  .persona-card .actions button {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* Channel list */
+  .channel-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #f9f8fc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .channel-row .icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .channel-row .info { flex: 1; line-height: 1.3; }
+  .channel-row .label { font-weight: 600; font-size: 12px; }
+  .channel-row .detail { font-size: 10px; color: var(--muted); }
+  .channel-row .toggle {
+    width: 36px; height: 20px;
+    border-radius: 999px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .channel-row .toggle.on { background: var(--success); }
+  .channel-row .toggle::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: 0.2s;
+  }
+  .channel-row .toggle.on::after { left: 19px; }
+
+  /* Compliance */
+  .compliance-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .compliance-pill {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .compliance-pill.muted { background: #f3f4f6; color: var(--muted); }
+
+  /* Version panel (right side) */
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--line);
+  }
+  .panel h3 {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .version-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .version-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #f9f8fc;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .version-item.current {
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+  }
+  .version-item .ver { font-weight: 700; }
+  .version-item .who { color: var(--muted); flex: 1; }
+  .version-item .when { color: var(--muted); }
+  .version-item .badge {
+    background: var(--success);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .preview-btn {
+    width: 100%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .publish-btn {
+    width: 100%;
+    background: var(--success);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .publish-btn:disabled {
+    background: var(--line);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  /* Diff preview */
+  .diff {
+    background: #f9f8fc;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .diff .add { color: var(--success); }
+  .diff .rem { color: var(--danger); text-decoration: line-through; opacity: 0.6; }
+
+  /* Annotation */
+  .annot {
+    position: absolute;
+    background: #fff;
+    border: 2px dashed var(--primary);
+    color: var(--primary-dark);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    max-width: 180px;
+    box-shadow: 0 4px 12px rgba(114, 46, 209, 0.15);
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <div class="name">OpenMAIC</div>
+        <div class="sub">Admin Console</div>
+      </div>
+    </div>
+
+    <div class="nav-section">概览</div>
+    <div class="nav-item"><span class="icon">📊</span> 仪表盘</div>
+
+    <div class="nav-section">Region</div>
+    <div class="nav-item active"><span class="icon">🌐</span> Region Config</div>
+    <div class="nav-item"><span class="icon">📚</span> Textbooks</div>
+    <div class="nav-item"><span class="icon">🎭</span> Persona Templates</div>
+    <div class="nav-item"><span class="icon">💬</span> i18n Bundles</div>
+
+    <div class="nav-section">People</div>
+    <div class="nav-item"><span class="icon">👨‍👩‍👧‍👦</span> Students</div>
+    <div class="nav-item"><span class="icon">📈</span> Analytics</div>
+
+    <div class="nav-section">Compliance</div>
+    <div class="nav-item"><span class="icon">🔒</span> Audit Logs</div>
+    <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main" style="position: relative;">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="page-title">
+        <div class="crumb">Region / Config</div>
+        <h1>🌐 Region Configuration</h1>
+      </div>
+      <div class="region-tabs">
+        <button class="region-tab active"><span class="flag">🇨🇳</span> CN <span class="ver">v3</span></button>
+        <button class="region-tab"><span class="flag">🇺🇸</span> US-TX <span class="ver">v2</span></button>
+        <button class="region-tab"><span class="flag">🇦🇺</span> AU <span class="ver">v1</span></button>
+        <button class="region-tab"><span class="flag">🇸🇬</span> SG <span class="ver">v1</span></button>
+        <button class="region-tab"><span class="flag">🇩🇪</span> EU-DE <span class="ver">v1</span></button>
+        <button class="region-tab" style="border-left: 1px solid var(--line);">+ Add region</button>
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="layout">
+
+      <!-- Left: editor -->
+      <div class="editor">
+        <h2>
+          🇨🇳 China (中国大陆)
+          <span class="badge">v3 published</span>
+          <span style="margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 500;">Edited 2h ago by op-001 (Wang)</span>
+        </h2>
+
+        <!-- Personas section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              🎭 Persona Templates
+              <span class="count">9</span>
+            </div>
+            <button style="background: var(--primary-soft); color: var(--primary); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">+ Add template</button>
+          </div>
+          <div class="section-body">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 8px;">
+              <strong>Mentors (5)</strong> — students pick one. Each defines persona + voice + avatar.
+            </div>
+            <div class="persona-list">
+              <div class="persona-card">
+                <div class="avatar" style="background: #722ed1;">姐</div>
+                <div class="info">
+                  <div class="name">小诺姐姐</div>
+                  <div class="role">温柔的小学老师</div>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+              <div class="persona-card">
+                <div class="avatar" style="background: #dc2626;">严</div>
+                <div class="info">
+                  <div class="name">严老师</div>
+                  <div class="role">严格数学老师</div>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+              <div class="persona-card">
+                <div class="avatar" style="background: #f59e0b;">天</div>
+                <div class="info">
+                  <div class="name">天天叔叔</div>
+                  <div class="role">搞笑段子手</div>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+              <div class="persona-card">
+                <div class="avatar" style="background: #0e7490;">书</div>
+                <div class="info">
+                  <div class="name">书先生</div>
+                  <div class="role">文学老师</div>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+            </div>
+
+            <div style="font-size: 11px; color: var(--muted); margin: 12px 0 8px;">
+              <strong>Buddies (3)</strong> — students pick 2. Regional feel via city.
+            </div>
+            <div class="persona-list">
+              <div class="persona-card">
+                <div class="avatar" style="background: #ec4899;">红</div>
+                <div class="info">
+                  <div class="name">小红</div>
+                  <div class="role">爱提问</div>
+                  <span class="loc">📍 北京</span>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+              <div class="persona-card">
+                <div class="avatar" style="background: #10b981;">亮</div>
+                <div class="info">
+                  <div class="name">小亮</div>
+                  <div class="role">粗心</div>
+                  <span class="loc">📍 上海</span>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+              <div class="persona-card">
+                <div class="avatar" style="background: #f59e0b;">泽</div>
+                <div class="info">
+                  <div class="name">阿泽</div>
+                  <div class="role">细心</div>
+                  <span class="loc">📍 广州</span>
+                </div>
+                <div class="actions"><button>Edit</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channels section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              📡 Push Channels
+              <span class="count">2 enabled</span>
+            </div>
+            <button style="background: var(--primary-soft); color: var(--primary); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">+ Enable channel</button>
+          </div>
+          <div class="section-body">
+            <div class="channel-row">
+              <div class="icon">📱</div>
+              <div class="info">
+                <div class="label">WeChat Mini-Program</div>
+                <div class="detail">wx_openmaic_companion · 3 templates (daily/weekly/struggle)</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="channel-row">
+              <div class="icon">📢</div>
+              <div class="info">
+                <div class="label">WeChat Service Account</div>
+                <div class="detail">wx_openmaic · 1 template</div>
+              </div>
+              <div class="toggle on"></div>
+            </div>
+            <div class="channel-row" style="opacity: 0.5;">
+              <div class="icon">📧</div>
+              <div class="info">
+                <div class="label">Email (SendGrid)</div>
+                <div class="detail">Not configured for this region</div>
+              </div>
+              <div class="toggle"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compliance section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">🔒 Compliance</div>
+            <button style="background: transparent; border: none; color: var(--primary); font-size: 11px; cursor: pointer;">Edit clauses</button>
+          </div>
+          <div class="section-body">
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">
+              Primary law: <strong style="color: var(--fg);">PIPL (中华人民共和国个人信息保护法)</strong>
+            </div>
+            <div class="compliance-pills">
+              <span class="compliance-pill">🔒 Data residency: cn ✓</span>
+              <span class="compliance-pill">👶 Minor consent: required ✓</span>
+              <span class="compliance-pill muted">🎙 Recording: optional</span>
+              <span class="compliance-pill muted">📊 Analytics: opt-in</span>
+              <span class="compliance-pill muted">🤖 AI training: explicit opt-out</span>
+            </div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 10px;">
+              📜 2 clauses active · <a style="color: var(--primary); cursor: pointer;">view full text</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onboarding -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              🚀 Onboarding Steps
+              <span class="count">7</span>
+            </div>
+            <button style="background: var(--primary-soft); color: var(--primary); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">+ Add step</button>
+          </div>
+          <div class="section-body">
+            <div style="font-size: 11px; color: var(--muted);">7 steps · 6 required · 1 optional (recording consent)</div>
+          </div>
+        </div>
+
+        <!-- Annotations -->
+        <div class="annot" style="top: 60px; right: 410px;">
+          <strong>Single source of truth</strong>: edits write to <code style="background:#f3f1f9;padding:1px 4px;">apps/companion/regions/cn/config.json</code> + DB cache
+        </div>
+      </div>
+
+      <!-- Right: side panels -->
+      <div class="side">
+        <div class="panel">
+          <h3>📋 Version history</h3>
+          <div class="version-list">
+            <div class="version-item current">
+              <span class="badge">CURRENT</span>
+              <span class="ver">v3</span>
+              <span class="who">Wang (op-001)</span>
+              <span class="when">2h ago</span>
+            </div>
+            <div class="version-item">
+              <span class="ver">v2</span>
+              <span class="who">Wang</span>
+              <span class="when">3d ago</span>
+            </div>
+            <div class="version-item">
+              <span class="ver">v1</span>
+              <span class="who">Li (op-002)</span>
+              <span class="when">2w ago</span>
+            </div>
+          </div>
+          <button style="width: 100%; margin-top: 10px; background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 6px; font-size: 11px; cursor: pointer; color: var(--muted);">View all (3) →</button>
+        </div>
+
+        <div class="panel">
+          <h3>👁 Preview changes</h3>
+          <div class="diff">
+<span class="rem">- "defaultFrequency": "weekly"</span>
+<span class="add">+ "defaultFrequency": "biweekly"</span>
+            (WeChat mini-program)
+          </div>
+          <button class="preview-btn">Test in staging region</button>
+          <button class="publish-btn">Publish v4</button>
+          <div style="font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px;">
+            Last published: 2h ago · Affects 0 active users
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>📊 Region health</h3>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>👥 Active users</span>
+              <strong>1,247</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>📈 7-day retention</span>
+              <strong>42%</strong>
+              <span style="color: var(--success);">↑ 2%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>💰 MRR</span>
+              <strong>¥ 124,500</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>⚠️ Open issues</span>
+              <strong style="color: var(--warning);">3</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🔒 Audit events</span>
+              <strong>147</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

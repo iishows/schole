@@ -1,0 +1,138 @@
+{
+  "region": "eu-de",
+  "displayName": "Deutschland (GDPR-K)",
+  "defaultLocale": "de-DE",
+  "supportedLocales": ["de-DE", "en-DE"],
+  "personas": {
+    "mentors": [
+      {
+        "id": "eu-de-mentor-eule",
+        "role": "mentor",
+        "name": "Frau Eule",
+        "persona": "Strenge aber herzliche Grundschullehrerin. Klare Schritte. Montessori-inspiriert.",
+        "voiceConfig": {
+          "provider": "elevenlabs",
+          "voiceId": "female-warm-de",
+          "emotion": "warm",
+          "pace": "medium",
+          "language": "de-DE"
+        },
+        "avatarPath": "/avatars/eu-de/eule.png",
+        "color": "#0e7490",
+        "isTemplate": true
+      }
+    ],
+    "buddies": [
+      {
+        "id": "eu-de-buddy-lina",
+        "role": "buddy",
+        "name": "Lina",
+        "persona": "Aufgewecktes Mädchen, fragt viel.",
+        "voiceConfig": { "provider": "elevenlabs", "voiceId": "girl-curious-de" },
+        "avatarPath": "/avatars/eu-de/lina.png",
+        "color": "#ec4899",
+        "region": { "city": "Berlin", "country": "DE" },
+        "isTemplate": true
+      },
+      {
+        "id": "eu-de-buddy-finn",
+        "role": "buddy",
+        "name": "Finn",
+        "persona": "Sorgfältiger Junge, mag Tiere.",
+        "voiceConfig": { "provider": "elevenlabs", "voiceId": "boy-careful-de" },
+        "avatarPath": "/avatars/eu-de/finn.png",
+        "color": "#10b981",
+        "region": { "city": "München", "country": "DE" },
+        "isTemplate": true
+      }
+    ],
+    "parentAssistants": [
+      {
+        "id": "eu-de-pa-01",
+        "role": "parent_assistant",
+        "name": "Ihr Assistent",
+        "voiceConfig": null,
+        "avatarPath": "/avatars/eu-de/pa.png",
+        "color": "#475569",
+        "isTemplate": true
+      }
+    ]
+  },
+  "textbooks": [
+    {
+      "id": "de-math-g4",
+      "name": "Deutsches Mathematikbuch Klasse 4",
+      "version": "2024",
+      "subject": "math",
+      "grade": 4,
+      "chapterSchema": "chapter_code",
+      "chapters": [
+        { "code": "K4-Brüche", "title": "Brüche", "concepts": ["Bruch-Einführung", "Bruch-Vergleich"] }
+      ],
+      "source": "/uploads/de-math-g4-2024.pdf",
+      "uploadedBy": "op-005",
+      "uploadedAt": 1724000000000
+    }
+  ],
+  "channels": [
+    {
+      "channel": "email",
+      "enabled": true,
+      "config": { "provider": "resend", "fromAddress": "digest@openmaic.app" },
+      "defaultFrequency": "weekly",
+      "defaultTime": "18:00"
+    }
+  ],
+  "compliance": {
+    "region": "eu",
+    "primaryLaw": "GDPR-K",
+    "consentRequired": { "recording": true, "sharing": true, "analytics": false, "aiTraining": false },
+    "dataResidency": {
+      "required": true,
+      "region": "eu"
+    },
+    "minorProtection": { "ageOfMajority": 16, "parentalConsent": true },
+    "clauses": [
+      {
+        "id": "eu-gdpr-2016",
+        "title": "General Data Protection Regulation",
+        "required": true,
+        "version": "2016-04-27",
+        "url": "https://gdpr-info.eu/"
+      }
+    ]
+  },
+  "onboarding": [
+    { "id": "register", "title": "Eltern-Registrierung + Plan", "required": true, "type": "form" },
+    { "id": "add-child", "title": "Kind hinzufügen", "required": true, "type": "form" },
+    { "id": "pick-mentor", "title": "Mentor wählen", "required": true, "type": "select" },
+    { "id": "pick-buddies", "title": "2 Lernfreunde wählen", "required": true, "type": "select" },
+    { "id": "gdpr-consent", "title": "DSGVO-Einwilligung", "required": true, "type": "consent" },
+    { "id": "bind-channels", "title": "Push-Kanäle", "required": false, "type": "channel_bind" },
+    { "id": "first-session", "title": "Erste Mentor-Sitzung", "required": true, "type": "assessment" }
+  ],
+  "pricing": {
+    "currency": "EUR",
+    "freeTrialDays": 30,
+    "plans": [
+      { "id": "solo", "name": "Solo", "pricePerMonth": 1899, "currency": "EUR", "features": ["1-child"], "familyLimit": 1 },
+      { "id": "family", "name": "Family", "pricePerMonth": 3299, "currency": "EUR", "features": ["3-children"], "familyLimit": 3 }
+    ],
+    "paymentMethods": ["stripe", "paypal"]
+  },
+  "palette": {
+    "primary": "#0e7490",
+    "background": "#f0f9ff",
+    "surface": "#fdfdff"
+  },
+  "features": {
+    "classroomRecording": false,
+    "momentsShare": false,
+    "speechEvaluation": false,
+    "mapTestPrep": false
+  },
+  "i18n": {
+    "de-DE": "i18n/de-DE.json",
+    "en-DE": "i18n/en-DE.json"
+  }
+}

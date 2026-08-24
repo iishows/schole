@@ -1,0 +1,141 @@
+{
+  "region": "au-nsw",
+  "displayName": "Australia (New South Wales)",
+  "defaultLocale": "en-AU",
+  "supportedLocales": ["en-AU"],
+  "personas": {
+    "mentors": [
+      {
+        "id": "au-mentor-wattle",
+        "role": "mentor",
+        "name": "Ms. Wattle",
+        "persona": "Friendly Aussie guide. Loves nature walks and Australian history. Charlotte Mason-inspired.",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "female-warm-en-au",
+          "emotion": "warm",
+          "pace": "medium",
+          "language": "en-AU"
+        },
+        "avatarPath": "/avatars/au/wattle.png",
+        "color": "#c2410c",
+        "isTemplate": true
+      }
+    ],
+    "buddies": [
+      {
+        "id": "au-buddy-olivia",
+        "role": "buddy",
+        "name": "Olivia",
+        "persona": "Outback girl, loves animals.",
+        "voiceConfig": { "provider": "minimax", "voiceId": "girl-curious-en" },
+        "avatarPath": "/avatars/au/olivia.png",
+        "color": "#0e7490",
+        "region": { "city": "Melbourne", "country": "AU" },
+        "isTemplate": true
+      },
+      {
+        "id": "au-buddy-jack",
+        "role": "buddy",
+        "name": "Jack",
+        "persona": "Sporty boy, cares about fairness.",
+        "voiceConfig": { "provider": "minimax", "voiceId": "boy-honest-en" },
+        "avatarPath": "/avatars/au/jack.png",
+        "color": "#10b981",
+        "region": { "city": "Sydney", "country": "AU" },
+        "isTemplate": true
+      }
+    ],
+    "parentAssistants": [
+      {
+        "id": "au-pa-01",
+        "role": "parent_assistant",
+        "name": "Your Assistant",
+        "voiceConfig": null,
+        "avatarPath": "/avatars/au/pa.png",
+        "color": "#475569",
+        "isTemplate": true
+      }
+    ]
+  },
+  "textbooks": [
+    {
+      "id": "au-ac-math-g4",
+      "name": "Australian Curriculum Grade 4 Math",
+      "version": "ACv9-2024",
+      "subject": "math",
+      "grade": 4,
+      "chapterSchema": "standard_code",
+      "standards": [
+        { "code": "ACMNA077", "title": "Investigate equivalent fractions", "concepts": ["fraction-equivalence"] },
+        { "code": "ACMNA078", "title": "Compare and order fractions", "concepts": ["comparing-fractions"] }
+      ],
+      "source": "/uploads/au-ac-math-g4-2024.pdf",
+      "uploadedBy": "op-003",
+      "uploadedAt": 1724000000000
+    }
+  ],
+  "channels": [
+    {
+      "channel": "email",
+      "enabled": true,
+      "config": { "provider": "resend", "fromAddress": "digest@openmaic.app" },
+      "defaultFrequency": "weekly",
+      "defaultTime": "19:00"
+    },
+    {
+      "channel": "whatsapp",
+      "enabled": true,
+      "config": { "businessAccountId": "wa_openmaic_au", "templateName": "learning_daily_v3", "languageCode": "en" },
+      "defaultFrequency": "daily",
+      "defaultTime": "20:00"
+    }
+  ],
+  "compliance": {
+    "region": "au",
+    "primaryLaw": "Privacy Act 1988",
+    "consentRequired": { "recording": true, "sharing": true, "analytics": false, "aiTraining": false },
+    "dataResidency": { "required": false, "region": "au" },
+    "minorProtection": { "ageOfMajority": 15, "parentalConsent": true },
+    "clauses": [
+      {
+        "id": "au-privacy-1988",
+        "title": "Privacy Act 1988 (Cth)",
+        "required": true,
+        "version": "1988-01-01",
+        "url": "https://www.legislation.gov.au/Series/C2004A04497"
+      }
+    ]
+  },
+  "onboarding": [
+    { "id": "register", "title": "Parent signup + plan", "required": true, "type": "form" },
+    { "id": "add-child", "title": "Add child", "required": true, "type": "form" },
+    { "id": "pick-mentor", "title": "Pick mentor", "required": true, "type": "select" },
+    { "id": "pick-buddies", "title": "Pick 2 study buddies", "required": true, "type": "select" },
+    { "id": "bind-channels", "title": "Pick push channels", "required": false, "type": "channel_bind" },
+    { "id": "first-session", "title": "First mentor session", "required": true, "type": "assessment" }
+  ],
+  "pricing": {
+    "currency": "AUD",
+    "freeTrialDays": 30,
+    "plans": [
+      { "id": "solo", "name": "Solo", "pricePerMonth": 2999, "currency": "AUD", "features": ["1-child"], "familyLimit": 1 },
+      { "id": "family", "name": "Family", "pricePerMonth": 5499, "currency": "AUD", "features": ["3-children"], "familyLimit": 3 }
+    ],
+    "paymentMethods": ["stripe"]
+  },
+  "palette": {
+    "primary": "#c2410c",
+    "background": "#fef7e8",
+    "surface": "#fffbf6"
+  },
+  "features": {
+    "classroomRecording": false,
+    "momentsShare": false,
+    "speechEvaluation": false,
+    "mapTestPrep": false
+  },
+  "i18n": {
+    "en-AU": "i18n/en-AU.json"
+  }
+}

@@ -1,0 +1,268 @@
+{
+  "region": "cn",
+  "displayName": "中国大陆",
+  "defaultLocale": "zh-CN",
+  "supportedLocales": ["zh-CN"],
+  "personas": {
+    "mentors": [
+      {
+        "id": "cn-mentor-nunu",
+        "role": "mentor",
+        "name": "小诺姐姐",
+        "persona": "温柔的小学老师。先问你怎么想，再引导思路。喜欢用生活比喻（盒子里装鸡蛋 / 切披萨）。",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "female-warm",
+          "emotion": "warm",
+          "pace": "medium",
+          "language": "zh-CN"
+        },
+        "avatarPath": "/avatars/cn/nunu.png",
+        "color": "#722ed1",
+        "isTemplate": true
+      },
+      {
+        "id": "cn-mentor-yan",
+        "role": "mentor",
+        "name": "严老师",
+        "persona": "严格的数学老师。喜欢追问'为什么'，要求步骤清楚。",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "female-strict",
+          "emotion": "serious",
+          "pace": "medium",
+          "language": "zh-CN"
+        },
+        "avatarPath": "/avatars/cn/yan.png",
+        "color": "#dc2626",
+        "isTemplate": true
+      },
+      {
+        "id": "cn-mentor-tiantian",
+        "role": "mentor",
+        "name": "天天叔叔",
+        "persona": "搞笑的男老师，用段子讲知识。适合活泼的孩子。",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "male-funny",
+          "emotion": "energetic",
+          "pace": "medium",
+          "language": "zh-CN"
+        },
+        "avatarPath": "/avatars/cn/tiantian.png",
+        "color": "#f59e0b",
+        "isTemplate": true
+      },
+      {
+        "id": "cn-mentor-shu",
+        "role": "mentor",
+        "name": "书先生",
+        "persona": "文学老师，喜欢讲历史故事。语文好。",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "male-deep",
+          "emotion": "calm",
+          "pace": "slow",
+          "language": "zh-CN"
+        },
+        "avatarPath": "/avatars/cn/shu.png",
+        "color": "#0e7490",
+        "isTemplate": true
+      },
+      {
+        "id": "cn-mentor-keke",
+        "role": "mentor",
+        "name": "可可姐姐",
+        "persona": "英语老师，发音标准，活泼。",
+        "voiceConfig": {
+          "provider": "minimax",
+          "voiceId": "female-young",
+          "emotion": "energetic",
+          "pace": "fast",
+          "language": "zh-CN"
+        },
+        "avatarPath": "/avatars/cn/keke.png",
+        "color": "#ec4899",
+        "isTemplate": true
+      }
+    ],
+    "buddies": [
+      {
+        "id": "cn-buddy-hongbj",
+        "role": "buddy",
+        "name": "小红",
+        "persona": "爱提问的女生，喜欢说'为什么'。",
+        "voiceConfig": { "provider": "minimax", "voiceId": "girl-curious" },
+        "avatarPath": "/avatars/cn/hong.png",
+        "color": "#ec4899",
+        "region": { "city": "北京", "country": "中国" },
+        "isTemplate": true
+      },
+      {
+        "id": "cn-buddy-liangsh",
+        "role": "buddy",
+        "name": "小亮",
+        "persona": "粗心男生，老把分母直接相加。",
+        "voiceConfig": { "provider": "minimax", "voiceId": "boy-careless" },
+        "avatarPath": "/avatars/cn/liang.png",
+        "color": "#10b981",
+        "region": { "city": "上海", "country": "中国" },
+        "isTemplate": true
+      },
+      {
+        "id": "cn-buddy-azegz",
+        "role": "buddy",
+        "name": "阿泽",
+        "persona": "细心男生，爱用图示解释。",
+        "voiceConfig": { "provider": "minimax", "voiceId": "boy-careful" },
+        "avatarPath": "/avatars/cn/aze.png",
+        "color": "#f59e0b",
+        "region": { "city": "广州", "country": "中国" },
+        "isTemplate": true
+      },
+      {
+        "id": "cn-buddy-meicd",
+        "role": "buddy",
+        "name": "小美",
+        "persona": "安静女生，喜欢读书。",
+        "voiceConfig": { "provider": "minimax", "voiceId": "girl-quiet" },
+        "avatarPath": "/avatars/cn/mei.png",
+        "color": "#6d28d9",
+        "region": { "city": "成都", "country": "中国" },
+        "isTemplate": true
+      }
+    ],
+    "parentAssistants": [
+      {
+        "id": "cn-pa-01",
+        "role": "parent_assistant",
+        "name": "小助理",
+        "persona": "给家长讲错题怎么辅导 + 心理侧建议。",
+        "voiceConfig": null,
+        "avatarPath": "/avatars/cn/pa.png",
+        "color": "#475569",
+        "isTemplate": true
+      }
+    ]
+  },
+  "textbooks": [
+    {
+      "id": "renjiaoban-math-g4",
+      "name": "人教版 4 年级数学",
+      "version": "2024-edition",
+      "subject": "math",
+      "grade": 4,
+      "chapterSchema": "chapter_code",
+      "chapters": [
+        { "code": "4-NF-A-1", "title": "分数的意义", "parentCode": null, "concepts": ["分数定义", "分数单位", "分数与除法"] },
+        { "code": "4-NF-A-2", "title": "分数大小的比较", "parentCode": "4-NF-A-1", "concepts": ["通分", "公分母", "分数比较"] },
+        { "code": "4-NF-B-3", "title": "分数加减法（异分母）", "parentCode": "4-NF-A-2", "concepts": ["公分母", "分数通分", "分数加减"] }
+      ],
+      "source": "/uploads/renjiaoban-math-g4-2024.pdf",
+      "uploadedBy": "op-001",
+      "uploadedAt": 1724000000000
+    },
+    {
+      "id": "sujiaoban-ela-g4",
+      "name": "苏教版 4 年级语文",
+      "version": "2024-edition",
+      "subject": "chinese",
+      "grade": 4,
+      "chapterSchema": "chapter_code",
+      "chapters": [
+        { "code": "4-YW-1", "title": "古诗两首", "parentCode": null, "concepts": ["古诗背诵", "诗意理解"] }
+      ],
+      "source": "/uploads/sujiaoban-ela-g4-2024.pdf",
+      "uploadedBy": "op-001",
+      "uploadedAt": 1724100000000
+    }
+  ],
+  "channels": [
+    {
+      "channel": "wechat_miniapp",
+      "enabled": true,
+      "config": {
+        "miniProgramId": "wx_openmaic_companion",
+        "templateIds": ["daily_v3", "weekly_v1", "struggle_alert_v1"]
+      },
+      "defaultFrequency": "biweekly",
+      "defaultTime": "21:00"
+    },
+    {
+      "channel": "wechat_official",
+      "enabled": true,
+      "config": {
+        "appId": "wx_openmaic",
+        "templateIds": ["service_daily_v1"]
+      },
+      "defaultFrequency": "weekly",
+      "defaultTime": "21:00"
+    }
+  ],
+  "compliance": {
+    "region": "cn",
+    "primaryLaw": "PIPL",
+    "consentRequired": {
+      "recording": false,
+      "sharing": true,
+      "analytics": true,
+      "aiTraining": true
+    },
+    "dataResidency": {
+      "required": true,
+      "region": "cn"
+    },
+    "minorProtection": {
+      "ageOfMajority": 18,
+      "parentalConsent": true
+    },
+    "clauses": [
+      {
+        "id": "pipl-2021",
+        "title": "中华人民共和国个人信息保护法",
+        "required": true,
+        "version": "2021-11-01",
+        "url": "http://www.gov.cn/xinwen/2021-08/20/content_5632486.htm"
+      },
+      {
+        "id": "minor-protection-2021",
+        "title": "未成年人保护法",
+        "required": true,
+        "version": "2021-06-01",
+        "url": "http://www.npc.gov.cn/npc/c30834/202110/8e16b9d3c4d4418a8b2d22ab3c2c4df8.shtml"
+      }
+    ]
+  },
+  "onboarding": [
+    { "id": "register", "title": "家长注册 + 选套餐", "required": true, "type": "form", "config": { "fields": ["name", "phone", "plan"] } },
+    { "id": "add-child", "title": "绑定孩子", "required": true, "type": "form", "config": { "fields": ["name", "nickname", "grade", "textbook_id"] } },
+    { "id": "pick-mentor", "title": "选择班主任模板", "required": true, "type": "select", "config": { "from": "personas.mentors" } },
+    { "id": "pick-buddies", "title": "选择 2 个同学", "required": true, "type": "select", "config": { "from": "personas.buddies", "min": 2, "max": 2 } },
+    { "id": "bind-wechat", "title": "绑定微信小程序", "required": true, "type": "channel_bind", "config": { "channel": "wechat_miniapp" } },
+    { "id": "recording-consent", "title": "课堂录制授权（可选）", "required": false, "type": "consent", "config": { "feature": "classroomRecording" } },
+    { "id": "first-session", "title": "首次进教室", "required": true, "type": "assessment", "config": { "questions": 10 } }
+  ],
+  "pricing": {
+    "currency": "CNY",
+    "freeTrialDays": 30,
+    "plans": [
+      { "id": "solo", "name": "单孩", "pricePerMonth": 9900, "currency": "CNY", "features": ["1-child", "wechat-push"], "familyLimit": 1 },
+      { "id": "family", "name": "家庭", "pricePerMonth": 19900, "currency": "CNY", "features": ["3-children", "wechat-push"], "familyLimit": 3 }
+    ],
+    "paymentMethods": ["wechat_pay", "alipay"]
+  },
+  "palette": {
+    "primary": "#722ed1",
+    "background": "#faf9fe",
+    "surface": "#ffffff"
+  },
+  "features": {
+    "classroomRecording": true,
+    "momentsShare": true,
+    "speechEvaluation": false,
+    "mapTestPrep": false
+  },
+  "i18n": {
+    "zh-CN": "i18n/zh-CN.json"
+  }
+}
