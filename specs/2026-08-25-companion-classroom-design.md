@@ -28,15 +28,69 @@
 
 ### 1.4 市场决策
 
-**先国内 + 后期出海**。
+**双轨并行**：中国 MVP + Home School MVP 同步探索。
 
-- **国内**：核心战场，痛点强 + 集成专（微信）+ 付费意愿高
-- **东南亚**：第一出海目标（华人文化相近 + 微信可用 + 教材可复用）
-- **欧美**：最后做（COPPA / GDPR / FERPA 合规 + 教材分散 + push 集成）
+| 路线 | 市场 | 痛点 | 付费 | 集成 | 监管 | 工作量 |
+|---|---|---|---|---|---|---|
+| **中国 MVP** | 双职工家庭 | 强（不会教 + 没空） | $14-42/月 | 微信必选 | 模糊（双减） | 3-4 周 |
+| **Home School MVP** ★ | 美/澳在家上学 | **更强**（家长不会 + 缺同伴 + 评估难，三痛并发） | **$20-80/月** | Email + Web push | **友好**（home school 合法） | 4 周 |
+| 东南亚 | 华人圈 | 中 | 中 | 微信可用 | 中 | 后做 |
+| 欧美本土 | 普通家庭 | 弱 | 高 | push + email | 严（COPPA/GDPR） | 最后 |
 
-架构设计按国内实现，预留出海钩子（抽象推送层 / 多教材版本 / 多语言）。
+**为什么优先 Home School**：
+1. **痛点更精准**：三痛并发 vs 中国一痛半
+2. **监管最友好**：不需要"教学资质"，AI 辅导无监管风险
+3. **付费强**：年 curriculum $500-3000 是常态
+4. **集成简单**：少微信集成，少 1-2 周
+5. **multi-agent 价值最大**：home school 缺同伴 = AI 同学直接解最大痛点
+6. **可同步**：跟中国 MVP 共用 OpenMAIC multi-agent 基础，只换 UI/集成层
 
-### 1.5 6 个设计 mockup
+架构设计双轨：底层共用（multi-agent / director / agent registry / tts），上层分叉（中国 UI + 微信集成 vs Home School UI + 邮件集成）。
+
+### 1.5 Home School 子市场（新增）
+
+**目标用户**：美国 / 加拿大 / 澳大利亚 home school 家庭，孩子 K-5（5-10 岁）为主。
+
+**3 种 home school 哲学**（按需支持）：
+- **Charlotte Mason**（最大群体）：短课（20min）+ 自然学习 + 阅读为主
+- **Classical / Traditional**：分年级 + 系统性 + 拉丁/古典
+- **Eclectic / Unschooling**：家长自由组合
+
+**教材支持**（v1）：
+- **Common Core** 数学 + ELA（美国 K-5）
+- **Singapore Math**（华人家长的最爱）
+- **新加坡 UK 体系**（东南亚 + 部分美国 home school）
+
+**评估合规**：
+- 美国各州不同：TX/CA/FL 最宽松，PA/OH 要求标准化测试
+- v1 不做评估自动化（避免监管复杂度），家长手动 record
+- v2 接入 MAP / Iowa Test 准备（home school 常用）
+
+**家长面板**（Web dashboard，非微信）：
+- 每日 / 每周 / 每月 Email digest
+- Portfolio 自动汇总（每周学生做了什么）
+- 进度报告（按 Common Core 标准）
+- 标准化测试准备度（MAP / SAT 自适应练习）
+
+**角色命名**（避免"老师"，避免宗教暗示）：
+- **导师**（mentor），不是 teacher
+- **同学**（study buddy），不是 student peer
+- 家长是 home school 的"主老师"，AI 是辅助
+
+**同伴组**：跨 home school co-op 虚拟同伴（比如"纽约的 Emma" + "加州的 Noah"），更有真实感
+
+**付费模型**：
+- $19.99/月（单孩）
+- $34.99/月（家庭 ≤3 孩）
+- 年付 20% off（home school 家长偏好年付）
+
+**获客渠道**：
+- Facebook "homeschool mom" 群（最活跃）
+- Instagram homeschool influencers（@raisinglifelonglearners 等）
+- Home school conventions（Great Homeschool Convention 等）
+- Well-Trained Mind / Simply Charlotte Mason 等内容合作
+
+### 1.6 6 个设计 mockup
 
 - `mockups/classroom-layout-c.html` — C1（聊天在底）
 - `mockups/classroom-layout-c2.html` — C2（聊天在右下）
@@ -491,6 +545,47 @@ interface StudentKnowledge {
 
 - 东南亚：抽象推送层 → WhatsApp / Telegram / LINE；教材加新加坡 UK 体系
 - 欧美：GDPR / COPPA / FERPA 合规；Common Core / IB 教材；Stripe 支付
+
+### Phase 1': Home School MVP（4 周，2 人）★ 跟 Phase 1 并行
+
+**复用 Phase 1 后端基础**，差异化在 UI + 集成 + 内容：
+
+| 模块 | 工作量 | 差异化 |
+|---|---|---|
+| 学生档案 + onboarding（年级 / 哲学 / 教材版本） | 3 天 | 哲学选 Charlotte Mason / Classical / Eclectic |
+| 错题本 + 归因引擎 | **复用 Phase 1** | — |
+| AI mentor 角色系统 + Socratic prompt | 4 天 | mentor 定位（不是 teacher）；20min 短课模式 |
+| 跨 home school co-op 虚拟同伴（Emma + Noah） | 5 天 | "纽约 Emma" / "加州 Noah" 地域感 |
+| Portfolio 自动汇总（每周） | 3 天 | home school 重视的 record keeping |
+| Common Core 进度报告（按章节） | 4 天 | 替代知识图谱，更标准化 |
+| 番茄钟（20min，Charlotte Mason 风格） | 2 天 | 短课而非 25min |
+| Email digest（每日 / 每周 / 每月可设） | 3 天 | 替代微信推送 |
+| 家长 Web dashboard | 5 天 | 替代家长小程序 |
+| 教室布局改造（C3 同 + mentor 定位调整） | 3 天 | "导师" 而非 "班主任" |
+| Stripe 支付集成 | 3 天 | 微信支付 → Stripe |
+| 3 个 mockup（home school 学生首页 / mentor classroom / parent web dashboard） | 2 天 | — |
+
+**关键差异化**：
+- **角色命名**：mentor / study buddy（不是 teacher / student peer）
+- **同伴地理感**：跨 home school co-op（"Emma 在纽约"），更真实社交
+- **家长 dashboard**（不是小程序）：Web 端，桌面友好
+- **Email digest**（不是微信推送）：频率可设，默认周报
+- **Charlotte Mason 短课**：默认 20min 而非 25min
+- **Portfolio 记录**：每周自动汇总（home school 重视的 record）
+- **付费**：$19.99/月 / $34.99/月家庭套餐 / 年付 20% off
+
+**获客首批 50 家庭**：
+- Facebook "homeschool mom" 群发帖（15 个群）
+- Instagram @raisinglifelonglearners / @simply.charlotte.mason 等 homeschool influencers 合作
+- Great Homeschool Convention（线下 booth）
+- 提供 30 天免费试用
+
+**验证指标**（区别中国版）：
+- 学生留存 14 天 ≥ 50%（home school 家长更稳定）
+- 家长 NPS ≥ 40
+- Portfolio 自动汇总采用率 ≥ 70%
+- 同伴互动频率（每周同伴相关 turn 数）≥ 20
+- 付费转化（试用 → 付费）≥ 25%
 
 ---
 
