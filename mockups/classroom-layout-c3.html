@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC 伴学教室 · 最终版 C3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5fb;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #e6e4f0;
+    --primary: #722ed1;
+    --primary-soft: #efe6fb;
+    --blackboard: #2d4a3a;
+    --blackboard-text: #fef9e7;
+    --teacher: #8b5cf6;
+    --teacher-soft: #ede9fe;
+    --student-1: #ec4899;
+    --student-2: #10b981;
+    --student-3: #f59e0b;
+    --me: #3b82f6;
+    --whisper: #fffbeb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Layout: header / main / input-bar */
+  .app {
+    display: grid;
+    grid-template-rows: 56px 1fr 64px;
+    height: 100vh;
+  }
+
+  /* ========== Header ========== */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    gap: 16px;
+  }
+  .hamburger { font-size: 20px; color: var(--muted); cursor: pointer; }
+  .teacher-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    background: var(--primary-soft);
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .teacher-pill .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--teacher);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .pomodoro {
+    display: flex; align-items: center; gap: 8px;
+    margin-left: auto;
+    padding: 6px 14px;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #dc2626;
+  }
+  .pomodoro .dot {
+    width: 8px; height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+  .mode-tabs { display: flex; gap: 4px; }
+  .mode-tabs button {
+    border: none; background: transparent;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .mode-tabs button.active {
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+  .chat-toggle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    font-size: 14px;
+  }
+  .chat-toggle .badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: #ef4444;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    min-width: 14px;
+  }
+
+  /* ========== Main split ========== */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1px;
+    background: var(--line);
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* ----- Left: classroom with floating bubbles ----- */
+  .classroom {
+    background: linear-gradient(180deg, #fef9e7 0%, #fdf3d8 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .classroom::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .blackboard {
+    background: var(--blackboard);
+    color: var(--blackboard-text);
+    border: 8px solid #5d3a1f;
+    border-radius: 6px;
+    padding: 28px 36px;
+    font-family: 'Caveat', cursive;
+    font-size: 30px;
+    font-weight: 700;
+    box-shadow:
+      inset 0 2px 8px rgba(0,0,0,0.3),
+      0 4px 16px rgba(0,0,0,0.1);
+    min-height: 180px;
+    position: relative;
+    z-index: 1;
+  }
+  .blackboard::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+  .board-step {
+    display: inline-block;
+    border-bottom: 2px solid rgba(254,249,231,0.4);
+    padding-bottom: 2px;
+    margin-right: 14px;
+  }
+  .board-step.active {
+    background: rgba(254,249,231,0.08);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .cursor-blink {
+    display: inline-block;
+    width: 3px; height: 28px;
+    background: var(--blackboard-text);
+    vertical-align: middle;
+    animation: blink 0.8s infinite;
+    margin-left: 4px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Teacher at podium with floating speech bubble */
+  .teacher-stage {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 18px 0 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .podium {
+    background: #8b6f47;
+    border-radius: 4px 4px 0 0;
+    padding: 4px 12px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: -8px;
+  }
+  .teacher-avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--teacher);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .teacher-avatar::after {
+    content: '🎤';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    background: #fff;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .teacher-avatar.speaking {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.4), 0 4px 12px rgba(139, 92, 246, 0.4);
+    animation: speaking-pulse 1.2s infinite;
+  }
+  @keyframes speaking-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.4), 0 4px 12px rgba(139, 92, 246, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(139, 92, 246, 0.4); }
+  }
+  .teacher-bubble {
+    background: #fff;
+    border: 2px solid var(--teacher-soft);
+    padding: 12px 16px;
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15);
+    max-width: 360px;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+  }
+  .teacher-bubble::before {
+    content: '小诺姐姐';
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--teacher);
+    margin-bottom: 4px;
+  }
+
+  /* Desks with floating bubbles per student */
+  .desks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: auto;
+    position: relative;
+    z-index: 1;
+  }
+  .desk {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    padding-top: 80px; /* space for floating bubble */
+  }
+  .student-avatar {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    border: 3px solid #fff;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .student-avatar.hand::before {
+    content: '✋';
+    position: absolute;
+    top: -8px; right: -8px;
+    background: #fbbf24;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    animation: wave 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes wave {
+    from { transform: rotate(-15deg); }
+    to { transform: rotate(15deg); }
+  }
+  .student-avatar.speaking {
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.4), 0 3px 8px rgba(0,0,0,0.15);
+    animation: speaking-pulse 1.2s infinite;
+  }
+  .student-avatar.thinking::after {
+    content: '💭';
+    position: absolute;
+    top: -10px; left: -10px;
+    font-size: 18px;
+    animation: bounce 1s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .student-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg);
+    background: rgba(255,255,255,0.9);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .desk-table {
+    width: 80px; height: 22px;
+    background: linear-gradient(180deg, #d4a373 0%, #a47148 100%);
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  /* Floating bubble above desk */
+  .desk-bubble {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--whisper);
+    border: 1.5px solid #fde68a;
+    padding: 6px 10px;
+    border-radius: 10px 10px 10px 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    max-width: 140px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    z-index: 2;
+  }
+  .desk-bubble::before {
+    content: attr(data-name);
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .desk-bubble.pink { border-color: #fbcfe8; background: #fdf2f8; }
+  .desk-bubble.pink::before { color: var(--student-1); }
+  .desk-bubble.green { border-color: #a7f3d0; background: #f0fdf4; }
+  .desk-bubble.green::before { color: var(--student-2); }
+  .desk-bubble.amber { border-color: #fde68a; background: #fffbeb; }
+  .desk-bubble.amber::before { color: var(--student-3); }
+  .desk-bubble.blue { border-color: #bfdbfe; background: #eff6ff; }
+  .desk-bubble.blue::before { color: var(--me); }
+
+  .desk-bubble.thinking {
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  /* Whisper indicator between desks */
+  .whisper-line {
+    position: absolute;
+    top: 30px;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #c4b5fd 0 6px, transparent 6px 12px);
+    z-index: 1;
+    opacity: 0.7;
+  }
+
+  /* Annotations */
+  .annotate {
+    position: absolute;
+    background: #fff;
+    border: 2px dashed var(--primary);
+    color: var(--primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    max-width: 170px;
+    box-shadow: 0 4px 12px rgba(114, 46, 209, 0.15);
+    z-index: 10;
+  }
+  .annot-1 { top: 18%; left: 4%; }
+  .annot-2 { bottom: 32%; right: 4%; }
+
+  /* ----- Right: assignment ----- */
+  .assignment {
+    background: #fff;
+    padding: 20px 22px;
+    overflow-y: auto;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .problem-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    background: linear-gradient(180deg, #fdfcff 0%, #fff 100%);
+  }
+  .problem-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .problem-meta .badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .problem-text {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 12px 0;
+    text-align: center;
+  }
+  .fraction {
+    display: inline-flex;
+    flex-direction: column;
+    text-align: center;
+    vertical-align: middle;
+    margin: 0 4px;
+    font-size: 20px;
+  }
+  .fraction .num { border-bottom: 2px solid var(--fg); padding: 0 6px; }
+  .fraction .den { padding: 0 6px; }
+  .answer-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 14px;
+    padding: 10px;
+    background: #f9f8fc;
+    border-radius: 8px;
+  }
+  .answer-row input {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    background: #fff;
+    outline: none;
+  }
+  .submit-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .help-actions {
+    display: flex; gap: 6px; margin-top: 10px;
+  }
+  .help-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px dashed var(--line);
+    background: #fafafe;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .help-btn.primary {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    font-weight: 600;
+  }
+  .mistake-list { display: flex; flex-direction: column; gap: 5px; }
+  .mistake-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+  .mistake-item .check { color: #92400e; font-weight: 600; }
+  .mistake-item .q { flex: 1; }
+  .mistake-item .reason {
+    color: var(--muted);
+    font-size: 10px;
+    padding: 1px 5px;
+    background: rgba(146, 64, 14, 0.1);
+    border-radius: 4px;
+  }
+
+  /* ========== Bottom input bar ========== */
+  .input-bar {
+    background: #fff;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+  }
+  .input-bar input {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: #f9f8fc;
+    outline: none;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+  .input-bar input:focus { border-color: var(--primary); background: #fff; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: rgba(0,0,0,0.05); }
+  .hand-btn {
+    background: #fbbf24;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .hand-btn:hover { background: #f59e0b; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="hamburger">☰</div>
+    <div class="teacher-pill">
+      <div class="avatar">👩‍🏫</div>
+      <span>小诺姐姐</span>
+    </div>
+    <div class="mode-tabs">
+      <button class="active">✏️ 作业</button>
+      <button>📖 复习</button>
+      <button>💬 自由</button>
+    </div>
+    <div class="pomodoro">
+      <span class="dot"></span>
+      <span>🍅 23:14 / 25:00</span>
+    </div>
+    <button class="chat-toggle" title="完整聊天">
+      💬
+      <span class="badge">3</span>
+    </button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT: classroom with floating bubbles -->
+    <div class="classroom">
+      <div class="blackboard">
+        <span class="board-step">异分母分数加法</span>
+        <span class="board-step active">① 先找公分母 (6)</span>
+        <span class="board-step">② 转化：1/2 = 3/6</span>
+        <span class="board-step">③ 相加：3/6 + 2/6</span>
+        <span class="cursor-blink"></span>
+      </div>
+
+      <div class="teacher-stage">
+        <div class="podium">讲台</div>
+        <div class="teacher-avatar speaking">👩‍🏫</div>
+        <div class="teacher-bubble">
+          小红举手了。先想一下：为什么要先找<strong>公分母</strong>呀？
+        </div>
+      </div>
+
+      <div class="annotate annot-1">
+        <strong>🎈 浮气泡</strong>：每个角色的话"贴"在自己头像旁边 — 真教室感最强
+      </div>
+      <div class="annotate annot-2">
+        <strong>👧👦 同伴对话</strong>：小红 ↔ 小亮 在小声讨论，气泡浮在课桌旁，不在底部
+      </div>
+
+      <div class="desks">
+
+        <!-- 小红：举手 + 浮气泡 -->
+        <div class="desk">
+          <div class="desk-bubble pink" data-name="小红 ✋">
+            我猜公分母是 6，因为 2 和 3 的最小公倍数？
+          </div>
+          <div class="student-avatar hand" style="background: var(--student-1);">👧</div>
+          <div class="student-name">小红</div>
+          <div class="desk-table"></div>
+        </div>
+
+        <!-- 小亮：跟小红 whisper -->
+        <div class="desk">
+          <div class="desk-bubble green" data-name="小亮 💭">
+            嗯对... 我刚才把分母直接加了 😅
+          </div>
+          <div class="student-avatar" style="background: var(--student-2);">👦</div>
+          <div class="student-name">小亮</div>
+          <div class="desk-table"></div>
+        </div>
+
+        <!-- 阿泽：思考中 -->
+        <div class="desk">
+          <div class="desk-bubble amber thinking" data-name="阿泽 💭">
+            嗯... 🤔
+          </div>
+          <div class="student-avatar thinking" style="background: var(--student-3);">👦</div>
+          <div class="student-name">阿泽</div>
+          <div class="desk-table"></div>
+        </div>
+
+        <!-- 你：自己的气泡 -->
+        <div class="desk">
+          <div class="desk-bubble blue" data-name="你（自己）">
+            嗯... 是要乘以 3？
+          </div>
+          <div class="student-avatar" style="background: var(--me);">📷</div>
+          <div class="student-name">你</div>
+          <div class="desk-table"></div>
+        </div>
+      </div>
+
+      <!-- whisper 线：小红 ↔ 小亮 -->
+      <svg style="position:absolute;inset:0;pointer-events:none;z-index:0;" width="100%" height="100%">
+        <path d="M 18% 78% Q 30% 65% 42% 78%" stroke="#c4b5fd" stroke-width="2" stroke-dasharray="4 4" fill="none" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <!-- RIGHT: assignment -->
+    <div class="assignment">
+      <div class="section-title">📝 当前题目</div>
+      <div class="problem-card">
+        <div class="problem-meta">
+          <span class="badge">第 3 题</span>
+          <span>· 难度 ⭐⭐</span>
+          <span>· 同分母→异分母</span>
+        </div>
+        <div class="problem-text">
+          <span class="fraction"><span class="num">1</span><span class="den">2</span></span>
+          <span> + </span>
+          <span class="fraction"><span class="num">1</span><span class="den">3</span></span>
+          <span> = ?</span>
+        </div>
+        <div class="answer-row">
+          <input type="text" placeholder="输入答案（如 5/6）" />
+          <button class="submit-btn">提交</button>
+        </div>
+        <div class="help-actions">
+          <button class="help-btn primary">✋ 需要帮助</button>
+          <button class="help-btn">💡 要提示</button>
+          <button class="help-btn">📷 拍题</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 16px;">📕 今日错题 (3)</div>
+      <div class="mistake-list">
+        <div class="mistake-item">
+          <span class="check">✗</span>
+          <span class="q">1/4 + 1/6 = ?</span>
+          <span class="reason">公分母错</span>
+        </div>
+        <div class="mistake-item">
+          <span class="check">✗</span>
+          <span class="q">2/3 + 1/4 = ?</span>
+          <span class="reason">计算粗心</span>
+        </div>
+        <div class="mistake-item">
+          <span class="check">⏱</span>
+          <span class="q">5/6 - 1/3 = ?</span>
+          <span class="reason">待复习</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM INPUT BAR -->
+  <div class="input-bar">
+    <button class="icon-btn" title="拍题">📷</button>
+    <input type="text" placeholder="跟小诺姐姐或同学说话...  ✋ 举手后被叫到才能发言" />
+    <button class="icon-btn" title="语音">🎤</button>
+    <button class="icon-btn" title="表情">😊</button>
+    <button class="hand-btn">✋ 举手</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC 伴学 · 学生首页</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9fe;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ebe8f4;
+    --primary: #722ed1;
+    --primary-soft: #efe6fb;
+    --primary-dark: #5b21b6;
+    --teacher: #8b5cf6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 32px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    padding: 8px 16px 8px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+  }
+  .user-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .user-meta { line-height: 1.2; }
+  .user-meta .name { font-weight: 700; font-size: 14px; }
+  .user-meta .sub { font-size: 11px; color: var(--muted); }
+  .header-actions { display: flex; gap: 8px; }
+  .header-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    position: relative;
+  }
+  .header-btn .badge {
+    position: absolute;
+    top: -2px; right: -2px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+  }
+
+  /* Hero CTA — Continue */
+  .hero {
+    background: linear-gradient(135deg, #722ed1 0%, #5b21b6 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 12px 32px rgba(114, 46, 209, 0.25);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: 80px; bottom: -60px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .hero-sub {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 16px;
+  }
+  .hero-progress {
+    background: rgba(255,255,255,0.15);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    max-width: 360px;
+  }
+  .hero-progress-fill {
+    height: 100%;
+    width: 60%;
+    background: #fff;
+    border-radius: 999px;
+  }
+  .hero-progress-text {
+    font-size: 11px;
+    opacity: 0.7;
+  }
+  .hero-cta {
+    background: #fff;
+    color: var(--primary-dark);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+  .hero-cta:hover { transform: translateY(-2px); }
+  .hero-cta .arrow {
+    width: 24px; height: 24px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+  .hero-avatars {
+    position: absolute;
+    right: 32px; top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    z-index: 1;
+  }
+  .hero-avatars .a {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 3px solid #5b21b6;
+    margin-left: -12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  .hero-avatars .a:first-child { margin-left: 0; }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--line);
+  }
+  .card-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title h3 {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .more {
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* Today list */
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f9f8fc;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .task-item:hover { border-color: var(--primary); background: #fff; }
+  .task-item.urgent {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+  .task-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .task-item.urgent .task-icon { background: #fee2e2; color: var(--danger); }
+  .task-text { flex: 1; }
+  .task-text .label { font-weight: 600; font-size: 13px; }
+  .task-text .meta { font-size: 11px; color: var(--muted); }
+  .task-action {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .task-action.ghost {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  /* Knowledge radar */
+  .skill-list { display: flex; flex-direction: column; gap: 10px; }
+  .skill-row { display: flex; align-items: center; gap: 10px; }
+  .skill-name { width: 80px; font-size: 12px; font-weight: 500; }
+  .skill-bar {
+    flex: 1;
+    height: 8px;
+    background: #f0eef8;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .skill-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--teacher) 0%, var(--primary) 100%);
+  }
+  .skill-fill.warn { background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%); }
+  .skill-pct { width: 40px; font-size: 11px; color: var(--muted); text-align: right; }
+  .skill-row.weak .skill-name { color: var(--danger); font-weight: 700; }
+
+  /* Mistakes */
+  .mistake-list { display: flex; flex-direction: column; gap: 6px; }
+  .mistake-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .mistake-item .q { flex: 1; font-weight: 500; }
+  .mistake-item .reason {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(146, 64, 14, 0.1);
+    border-radius: 4px;
+    color: #92400e;
+  }
+
+  /* Teacher note */
+  .teacher-note {
+    background: linear-gradient(135deg, #fdf4ff 0%, #fef7e0 100%);
+    border: 1px solid #f5d0fe;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .teacher-note .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--teacher);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .teacher-note .body { flex: 1; }
+  .teacher-note .name { font-size: 11px; font-weight: 600; color: var(--teacher); margin-bottom: 4px; }
+  .teacher-note .text { font-size: 13px; line-height: 1.5; }
+  .teacher-note .time { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    position: relative;
+  }
+  .nav-item.active { color: var(--primary); }
+  .nav-item .icon { font-size: 20px; }
+  .nav-item .badge {
+    position: absolute;
+    top: 0; right: 4px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 9px;
+    padding: 1px 5px;
+  }
+
+  /* Annotations */
+  .annot {
+    position: absolute;
+    background: #fff;
+    border: 2px dashed var(--primary);
+    color: var(--primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    max-width: 180px;
+    box-shadow: 0 4px 12px rgba(114, 46, 209, 0.15);
+    z-index: 50;
+  }
+  .hero-annot { top: -10px; right: -10px; }
+
+  .parent-preview {
+    margin-top: 32px;
+    padding: 24px;
+    background: #f3f1f9;
+    border-radius: 16px;
+    border: 1px dashed var(--muted);
+  }
+  .parent-preview h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--muted);
+  }
+  .parent-preview .mockup {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--fg);
+    border: 1px solid var(--line);
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="user-pill">
+      <div class="user-avatar">小</div>
+      <div class="user-meta">
+        <div class="name">小明 · 4 年级</div>
+        <div class="sub">人教版 · 已学习 12 天</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn" title="今日学习时长">
+        🍅 <span style="font-size:11px;margin-left:4px;color:var(--muted);">23分/25分</span>
+      </button>
+      <button class="header-btn" title="通知">
+        🔔
+        <span class="badge">2</span>
+      </button>
+      <button class="header-btn" title="设置">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Hero CTA: Continue -->
+  <div class="hero" style="position: relative;">
+    <div class="hero-content">
+      <span class="hero-tag">⏱ 上次学到一半</span>
+      <h2 class="hero-title">继续"异分母分数加法"</h2>
+      <p class="hero-sub">小诺姐姐在等你 · 上次做到第 3 题（还差 5 题）</p>
+      <div class="hero-progress"></div>
+      <div class="hero-progress-fill"></div>
+      <div class="hero-progress-text">本页进度 60%</div>
+    </div>
+    <div>
+      <div class="hero-avatars">
+        <div class="a" style="background: var(--teacher);">👩‍🏫</div>
+        <div class="a" style="background: #ec4899;">👧</div>
+        <div class="a" style="background: #10b981;">👦</div>
+      </div>
+      <button class="hero-cta" style="margin-top: 70px;">
+        进入教室
+        <span class="arrow">→</span>
+      </button>
+    </div>
+    <div class="annot hero-annot">
+      <strong>主 CTA</strong>：永远显示"继续上次的课"，零思考进入
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <!-- Today's tasks -->
+    <div class="card">
+      <div class="card-title">
+        <h3>📚 今日学习 (3 项)</h3>
+        <span class="more">查看全部 →</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item urgent">
+          <div class="task-icon">📕</div>
+          <div class="task-text">
+            <div class="label">复习 3 道错题</div>
+            <div class="meta">⚠️ 异分母分数 · 已超过 1 天没复习</div>
+          </div>
+          <button class="task-action">开始</button>
+        </div>
+        <div class="task-item">
+          <div class="task-icon">✏️</div>
+          <div class="task-text">
+            <div class="label">数学作业 · 异分母分数</div>
+            <div class="meta">已完成 5/8 题</div>
+          </div>
+          <button class="task-action ghost">继续</button>
+        </div>
+        <div class="task-item">
+          <div class="task-icon">📖</div>
+          <div class="task-text">
+            <div class="label">英语朗读 · Unit 3</div>
+            <div class="meta">跟读单词 12 个 · 预计 8 分钟</div>
+          </div>
+          <button class="task-action ghost">开始</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Knowledge radar -->
+    <div class="card">
+      <div class="card-title">
+        <h3>📊 学情（本周）</h3>
+        <span class="more">查看详情 →</span>
+      </div>
+      <div class="skill-list">
+        <div class="skill-row">
+          <div class="skill-name">同分母</div>
+          <div class="skill-bar"><div class="skill-fill" style="width: 90%;"></div></div>
+          <div class="skill-pct">90%</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-name">分数意义</div>
+          <div class="skill-bar"><div class="skill-fill" style="width: 75%;"></div></div>
+          <div class="skill-pct">75%</div>
+        </div>
+        <div class="skill-row weak">
+          <div class="skill-name">异分母 ⚠️</div>
+          <div class="skill-bar"><div class="skill-fill warn" style="width: 30%;"></div></div>
+          <div class="skill-pct">30%</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-name">分数应用</div>
+          <div class="skill-bar"><div class="skill-fill" style="width: 45%;"></div></div>
+          <div class="skill-pct">45%</div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-name">英语单词</div>
+          <div class="skill-bar"><div class="skill-fill" style="width: 65%;"></div></div>
+          <div class="skill-pct">65%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent mistakes -->
+    <div class="card">
+      <div class="card-title">
+        <h3>📕 最近错题</h3>
+        <span class="more">错题本 →</span>
+      </div>
+      <div class="mistake-list">
+        <div class="mistake-item">
+          <span>✗</span>
+          <span class="q">1/4 + 1/6 = ?</span>
+          <span class="reason">公分母错</span>
+        </div>
+        <div class="mistake-item">
+          <span>✗</span>
+          <span class="q">2/3 + 1/4 = ?</span>
+          <span class="reason">计算粗心</span>
+        </div>
+        <div class="mistake-item">
+          <span>⏱</span>
+          <span class="q">5/6 - 1/3 = ?</span>
+          <span class="reason">待复习</span>
+        </div>
+        <div class="mistake-item">
+          <span>✗</span>
+          <span class="q">3/8 + 1/2 = ?</span>
+          <span class="reason">概念混淆</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teacher note -->
+    <div class="card">
+      <div class="card-title">
+        <h3>💬 小诺姐姐的留言</h3>
+        <span class="more">全部对话 →</span>
+      </div>
+      <div class="teacher-note">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐 · 2 天前</div>
+          <div class="text">
+            小明今天学校讲了小数对吧？记得把今天数学作业里的小数题也拍照给我看哦，我发现你对"异分母"还有点模糊，明天我们专门练一下 💪
+          </div>
+          <div class="time">14:23 · 妈妈已读</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parent preview -->
+  <div class="parent-preview">
+    <h2>📱 家长侧入口（独立小程序 / Web）</h2>
+    <div class="mockup">📊 小明 · 今天的学习报告
+━━━━━━━━━━━━━━━━━━━━
+⏱️ 学习时长：23 分钟 / 25 分钟
+✅ 完成题目：8 题
+❌ 错题：3 题（异分母分数）
+📈 弱项提醒：异分母分数 30%（建议明天重点复习）
+😊 情绪：专注 + 偶尔皱眉（错题时）
+👧 同伴互动：跟小红讨论了 2 次
+💬 关键发言："为什么要找公分母"
+📕 错题清单：
+  • 1/4+1/6  分母通分错
+  • 2/3+1/4  计算粗心
+  • 3/8+1/2  概念混淆
+🔔 建议：今晚可以问问孩子"公分母是什么"
+        鼓励一下，错题≠笨</div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="nav-item active">
+    <span class="icon">🏠</span>
+    <span>首页</span>
+  </div>
+  <div class="nav-item">
+    <span class="icon">📕</span>
+    <span>错题本</span>
+    <span class="badge">3</span>
+  </div>
+  <div class="nav-item">
+    <span class="icon">📊</span>
+    <span>学情</span>
+  </div>
+  <div class="nav-item">
+    <span class="icon">🎒</span>
+    <span>我的</span>
+  </div>
+</div>
+</body>
+</html>
