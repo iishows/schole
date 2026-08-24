@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC · Home School Parent Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf8f1;
+    --paper: #fdfbf6;
+    --fg: #2a2722;
+    --muted: #7a6f60;
+    --line: #e8dcc6;
+    --primary: #b8763e;
+    --primary-soft: #f4e3cf;
+    --primary-dark: #8d5829;
+    --mentor: #c2410c;
+    --buddy-1: #0e7490;
+    --buddy-2: #6d28d9;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0284c7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 32px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .brand {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--primary-dark);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .brand .logo {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--mentor) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+  }
+  .parent-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 14px 4px 4px;
+  }
+  .parent-pill .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--buddy-1) 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .parent-pill .meta { line-height: 1.2; }
+  .parent-pill .name { font-weight: 600; font-size: 13px; }
+  .parent-pill .role { font-size: 10px; color: var(--muted); }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    position: relative;
+  }
+  .icon-btn .badge {
+    position: absolute; top: -2px; right: -2px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+  }
+
+  /* Hero / Today digest */
+  .digest {
+    background: linear-gradient(135deg, #fdf6e3 0%, #fef7e8 50%, #f9e8d0 100%);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .digest::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184, 118, 62, 0.08), transparent 70%);
+  }
+  .digest-tag {
+    display: inline-block;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.03em;
+  }
+  .digest h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--fg);
+  }
+  .digest-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .digest-stats {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 14px;
+  }
+  .dstat .v {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    line-height: 1;
+  }
+  .dstat .l {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .mentor-quote {
+    background: var(--paper);
+    border-left: 3px solid var(--mentor);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-style: italic;
+    color: var(--fg);
+    font-size: 13px;
+    max-width: 480px;
+    position: relative;
+  }
+  .mentor-quote::before {
+    content: '🍁 Ms. Maple:';
+    display: block;
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--mentor);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+  .digest-cta {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .big-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(184, 118, 62, 0.3);
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+  }
+  .card {
+    background: var(--paper);
+    border-radius: 14px;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-head h3 {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-head .more {
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* Portfolio weekly */
+  .portfolio-week {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .portfolio-week.current {
+    border-left: 3px solid var(--primary);
+    background: linear-gradient(90deg, var(--primary-soft) 0%, #fff 30%);
+  }
+  .pw-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .pw-week {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pw-standards {
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .pw-body {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .pw-stat {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .pw-stat .v { font-size: 16px; font-weight: 700; color: var(--primary-dark); }
+  .pw-stat .l { font-size: 9px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+  .pw-mistakes {
+    background: #fef2f2;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #991b1b;
+    margin-bottom: 8px;
+  }
+  .pw-activities {
+    font-size: 11px;
+    color: var(--fg);
+    line-height: 1.5;
+  }
+  .pw-activities strong { color: var(--primary-dark); }
+  .pw-actions {
+    display: flex; gap: 6px; margin-top: 8px;
+  }
+  .pw-btn {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .pw-btn.primary {
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    border-color: var(--primary);
+  }
+
+  /* Common Core progress */
+  .cc-list { display: flex; flex-direction: column; gap: 8px; }
+  .cc-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .cc-item:last-child { border-bottom: none; }
+  .cc-code {
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    width: 78px;
+    flex-shrink: 0;
+  }
+  .cc-name { flex: 1; font-size: 12px; font-weight: 500; }
+  .cc-bar {
+    width: 100px; height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-right: 8px;
+  }
+  .cc-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--buddy-1), var(--primary));
+  }
+  .cc-fill.warn { background: linear-gradient(90deg, var(--warning), var(--danger)); }
+  .cc-pct { font-size: 11px; color: var(--muted); width: 32px; text-align: right; }
+
+  /* Push channel settings */
+  .channel-list { display: flex; flex-direction: column; gap: 8px; }
+  .channel {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .channel.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+  }
+  .channel-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    background: #fff;
+  }
+  .channel.active .channel-icon {
+    background: var(--primary);
+    color: #fff;
+  }
+  .channel-info { flex: 1; line-height: 1.3; }
+  .channel-info .label { font-weight: 600; font-size: 12px; }
+  .channel-info .desc { font-size: 10px; color: var(--muted); }
+  .channel-toggle {
+    width: 38px; height: 22px;
+    border-radius: 999px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+  }
+  .channel-toggle.on { background: var(--primary); }
+  .channel-toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: 0.2s;
+  }
+  .channel-toggle.on::after { left: 19px; }
+
+  /* Test prep */
+  .test-prep {
+    background: linear-gradient(135deg, #fef7e8 0%, #fde6cf 100%);
+    border: 1px solid var(--warning);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .test-prep strong { color: var(--warning); display: block; margin-bottom: 4px; }
+
+  /* Annotations */
+  .annot {
+    position: absolute;
+    background: #fff;
+    border: 2px dashed var(--primary);
+    color: var(--primary-dark);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    max-width: 180px;
+    box-shadow: 0 4px 12px rgba(184, 118, 62, 0.15);
+    z-index: 50;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="brand">
+        <div class="logo">M</div>
+        OpenMAIC
+      </div>
+      <div class="parent-pill">
+        <div class="avatar">SM</div>
+        <div class="meta">
+          <div class="name">Sarah Miller</div>
+          <div class="role">Home School Parent · TX</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" title="Notifications">
+        🔔
+        <span class="badge">2</span>
+      </button>
+      <button class="icon-btn" title="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Today's digest -->
+  <div class="digest" style="position: relative;">
+    <div>
+      <div class="digest-tag">📊 TODAY · Wed, Aug 25</div>
+      <h2>Lily practiced 32 minutes today</h2>
+      <div class="digest-sub">She asked Ms. Maple 4 questions · got 7/9 right · one review pending</div>
+      <div class="digest-stats">
+        <div class="dstat"><div class="v">32m</div><div class="l">Time</div></div>
+        <div class="dstat"><div class="v">7/9</div><div class="l">Solved</div></div>
+        <div class="dstat"><div class="v">2</div><div class="l">Buddies chatted</div></div>
+        <div class="dstat"><div class="v">📚</div><div class="l">Read 1 book</div></div>
+      </div>
+      <div class="mentor-quote">
+        Lily had a real breakthrough today — she figured out WHY we need a common denominator instead of just memorizing the rule. That's the kind of understanding that lasts.
+      </div>
+    </div>
+    <div class="digest-cta">
+      <button class="big-btn">View full report →</button>
+    </div>
+    <div class="annot" style="top: -10px; right: -10px;">
+      <strong>Parent-as-teacher framing</strong>: AI is the "mentor", YOU are the primary teacher
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <!-- LEFT: portfolio -->
+    <div class="card">
+      <div class="card-head">
+        <h3>📔 Weekly Portfolio</h3>
+        <span class="more">All weeks →</span>
+      </div>
+
+      <!-- Week 12 -->
+      <div class="portfolio-week current">
+        <div class="pw-head">
+          <div class="pw-week">Week 12 · In progress</div>
+          <div class="pw-standards">Common Core 4.NF.A.1 · 4.NF.A.2</div>
+        </div>
+        <div class="pw-body">
+          <div class="pw-stat"><div class="v">32m</div><div class="l">Today</div></div>
+          <div class="pw-stat"><div class="v">7/9</div><div class="l">Solved</div></div>
+          <div class="pw-stat"><div class="v">2</div><div class="l">Mistakes</div></div>
+          <div class="pw-stat"><div class="v">5/5</div><div class="l">Days hit</div></div>
+        </div>
+        <div class="pw-mistakes">
+          ⚠️ <strong>Mistakes to review together:</strong> 1/4 + 1/6 (added denominators), 3/8 + 1/2 (concept confusion)
+        </div>
+        <div class="pw-activities">
+          <strong>Today's activities:</strong> Adding fractions · Read "Fraction Action" · 1 live mentor session · Chatted with Emma (NY) and Noah (CA)
+        </div>
+        <div class="pw-actions">
+          <button class="pw-btn primary">📥 Export portfolio PDF</button>
+          <button class="pw-btn">📝 Add my notes</button>
+          <button class="pw-btn">🎯 Suggest next lesson</button>
+        </div>
+      </div>
+
+      <!-- Week 11 -->
+      <div class="portfolio-week">
+        <div class="pw-head">
+          <div class="pw-week">Week 11 · Completed</div>
+          <div class="pw-standards">⭐⭐⭐ mastery</div>
+        </div>
+        <div class="pw-body">
+          <div class="pw-stat"><div class="v">2h 45m</div><div class="l">Total</div></div>
+          <div class="pw-stat"><div class="v">12/13</div><div class="l">Solved</div></div>
+          <div class="pw-stat"><div class="v">1</div><div class="l">Mistake</div></div>
+          <div class="pw-stat"><div class="v">5/5</div><div class="l">Days hit</div></div>
+        </div>
+        <div class="pw-activities">
+          <strong>Highlights:</strong> Live group session with Emma & Noah (cross-cohort!) · Built base-10 model with dried beans · Read "Sir Cumference and the First Round Table"
+        </div>
+      </div>
+
+      <!-- Week 10 -->
+      <div class="portfolio-week">
+        <div class="pw-head">
+          <div class="pw-week">Week 10 · Completed</div>
+          <div class="pw-standards">⭐⭐⭐ mastery</div>
+        </div>
+        <div class="pw-activities">
+          <strong>Highlights:</strong> Multi-digit multiplication mastery · 7 mentor sessions · Nature walk + journaling
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: standards + push + test prep -->
+    <div>
+
+      <!-- Common Core standards -->
+      <div class="card">
+        <div class="card-head">
+          <h3>📐 Common Core Progress</h3>
+          <span class="more">All standards →</span>
+        </div>
+        <div class="cc-list">
+          <div class="cc-item">
+            <div class="cc-code">4.OA.B.4</div>
+            <div class="cc-name">Multiples & factors</div>
+            <div class="cc-bar"><div class="cc-fill" style="width: 92%;"></div></div>
+            <div class="cc-pct">92%</div>
+          </div>
+          <div class="cc-item">
+            <div class="cc-code">4.NBT.B.5</div>
+            <div class="cc-name">Multi-digit multiplication</div>
+            <div class="cc-bar"><div class="cc-fill" style="width: 88%;"></div></div>
+            <div class="cc-pct">88%</div>
+          </div>
+          <div class="cc-item">
+            <div class="cc-code">4.NF.A.1</div>
+            <div class="cc-name">Equivalent fractions</div>
+            <div class="cc-bar"><div class="cc-fill" style="width: 75%;"></div></div>
+            <div class="cc-pct">75%</div>
+          </div>
+          <div class="cc-item">
+            <div class="cc-code">4.NF.A.2</div>
+            <div class="cc-name">Compare fractions</div>
+            <div class="cc-bar"><div class="cc-fill warn" style="width: 50%;"></div></div>
+            <div class="cc-pct">50%</div>
+          </div>
+          <div class="cc-item">
+            <div class="cc-code">4.NF.B.3</div>
+            <div class="cc-name">Add/subtract fractions ⚠️</div>
+            <div class="cc-bar"><div class="cc-fill warn" style="width: 32%;"></div></div>
+            <div class="cc-pct">32%</div>
+          </div>
+          <div class="cc-item">
+            <div class="cc-code">4.G.A.1</div>
+            <div class="cc-name">Lines & angles</div>
+            <div class="cc-bar"><div class="cc-fill" style="width: 60%;"></div></div>
+            <div class="cc-pct">60%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test prep -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-head">
+          <h3>🎯 MAP Test Prep (Spring 2027)</h3>
+          <span class="more">Schedule →</span>
+        </div>
+        <div class="test-prep">
+          <strong>🌟 Recommended: Add MAP-style questions to weekly portfolio</strong>
+          Texas doesn't require standardized testing, but many home school co-ops do. Adding 5 MAP-style problems/week prepares Lily without adding study load.
+        </div>
+        <button class="pw-btn primary" style="width:100%; padding: 8px; font-size:11px;">Enable MAP practice →</button>
+      </div>
+
+      <!-- Push channels -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-head">
+          <h3>🔔 How should we keep you posted?</h3>
+        </div>
+        <div class="channel-list">
+          <div class="channel active">
+            <div class="channel-icon">📧</div>
+            <div class="channel-info">
+              <div class="label">Email digest</div>
+              <div class="desc">Weekly · every Sunday 7pm CT</div>
+            </div>
+            <div class="channel-toggle on"></div>
+          </div>
+          <div class="channel active">
+            <div class="channel-icon">💬</div>
+            <div class="channel-info">
+              <div class="label">WhatsApp</div>
+              <div class="desc">Daily · 8pm CT · +1 (555) 234-5678</div>
+            </div>
+            <div class="channel-toggle on"></div>
+          </div>
+          <div class="channel">
+            <div class="channel-icon">📱</div>
+            <div class="channel-info">
+              <div class="label">SMS (urgent only)</div>
+              <div class="desc">Struggling streak / safety alerts</div>
+            </div>
+            <div class="channel-toggle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

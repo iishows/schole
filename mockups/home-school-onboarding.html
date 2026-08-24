@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC · Home School Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf8f1;
+    --paper: #fdfbf6;
+    --fg: #2a2722;
+    --muted: #7a6f60;
+    --line: #e8dcc6;
+    --primary: #b8763e;
+    --primary-soft: #f4e3cf;
+    --primary-dark: #8d5829;
+    --mentor: #c2410c;
+    --buddy-1: #0e7490;
+    --buddy-2: #6d28d9;
+    --me: #475569;
+    --success: #16a34a;
+    --buddy-1-bg: #ecfeff;
+    --buddy-2-bg: #f3e8ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(180deg, #fef7e8 0%, #fdfbf6 100%);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top progress */
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    gap: 8px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .step-dot {
+    width: 32px; height: 6px;
+    border-radius: 999px;
+    background: var(--line);
+    transition: 0.3s;
+  }
+  .step-dot.done { background: var(--success); }
+  .step-dot.current { background: var(--primary); width: 48px; }
+  .step-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-left: 12px;
+  }
+
+  /* Content */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    overflow-y: auto;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 36px 40px;
+    max-width: 640px;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(184, 118, 62, 0.1);
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--fg);
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  h1 .cursive {
+    font-family: 'Caveat', cursive;
+    color: var(--primary-dark);
+    font-size: 34px;
+    font-weight: 700;
+  }
+  .lede {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* Philosophy choice */
+  .philosophy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .philosophy {
+    border: 2px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+  }
+  .philosophy:hover { border-color: var(--primary-soft); transform: translateY(-1px); }
+  .philosophy.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .philosophy .icon { font-size: 28px; margin-bottom: 8px; }
+  .philosophy .name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .philosophy .desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .philosophy .tag {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .philosophy.selected .tag {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  /* Mentor / buddy cards */
+  .character-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .character-card {
+    border: 2px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+  }
+  .character-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .char-head {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .char-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .char-meta .name { font-weight: 700; font-size: 14px; }
+  .char-meta .role { font-size: 11px; color: var(--muted); }
+  .char-tag {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+  }
+  .character-card.mentor .char-tag {
+    background: var(--mentor);
+    color: #fff;
+  }
+  .char-persona {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .char-voice {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .voice-chip {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* WhatsApp opt-in */
+  .wa-step {
+    background: #dcf8c6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid #25d366;
+    font-size: 12px;
+  }
+  .wa-step .head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #075e54;
+  }
+  .wa-step .preview {
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    margin-top: 6px;
+    border: 1px solid #c5e8c0;
+  }
+  .wa-step .preview .sender { font-size: 10px; font-weight: 700; color: #075e54; margin-bottom: 2px; }
+
+  /* Inputs */
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--primary); }
+
+  /* Footer / nav */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(184, 118, 62, 0.25);
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  /* Annotation */
+  .annot {
+    position: absolute;
+    background: #fff;
+    border: 2px dashed var(--primary);
+    color: var(--primary-dark);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    max-width: 180px;
+    box-shadow: 0 4px 12px rgba(184, 118, 62, 0.15);
+    z-index: 50;
+  }
+</style>
+</head>
+<body>
+
+<!-- Step progress -->
+<div class="stepper">
+  <div class="step-dot done"></div>
+  <div class="step-dot done"></div>
+  <div class="step-dot current"></div>
+  <div class="step-dot"></div>
+  <div class="step-dot"></div>
+  <div class="step-label">Step 3 of 5 · Pick your mentor & study buddies</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+  <div class="card" style="position: relative;">
+
+    <!-- Eyebrow -->
+    <div class="eyebrow">🍁 Mentor + Study Buddies</div>
+
+    <!-- Headline -->
+    <h1>Pick <span class="cursive">Ms. Maple</span> as Lily's mentor</h1>
+    <p class="lede">Each mentor has a distinct teaching style. Lily will see this mentor every session. You can swap any time — we just ask you try one for 2 weeks.</p>
+
+    <!-- Mentor + 2 study buddies (selected) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+      <!-- Mentor -->
+      <div class="character-card mentor selected" style="grid-column: 1 / -1;">
+        <div class="char-tag">🍁 MENTOR</div>
+        <div class="char-head">
+          <div class="char-avatar" style="background: var(--mentor);">🍁</div>
+          <div class="char-meta">
+            <div class="name">Ms. Maple · warm guide</div>
+            <div class="role">Charlotte Mason · patient, nature-loving</div>
+          </div>
+        </div>
+        <div class="char-persona">
+          Believes every child can love learning. Asks "why" before "how". Reads nature with kids.
+          "I won't give answers — I'll ask the question that lets you find it yourself."
+        </div>
+        <div class="char-voice">
+          <span class="voice-chip">🌳 Calm forest</span>
+          <span class="voice-chip">📖 Storyteller</span>
+          <span class="voice-chip">🎵 Soft soprano</span>
+        </div>
+      </div>
+
+      <!-- Study buddies -->
+      <div class="character-card selected">
+        <div class="char-tag" style="background: var(--buddy-1); color: #fff;">BUDDY · NY</div>
+        <div class="char-head">
+          <div class="char-avatar" style="background: var(--buddy-1);">👧</div>
+          <div class="char-meta">
+            <div class="name">Emma · Brooklyn, NY</div>
+            <div class="role">Study buddy · age 10 · curious</div>
+          </div>
+        </div>
+        <div class="char-persona">
+          Always raises her hand first. Asks "but why?" three times. Loves art + science.
+          <em>"I think fractions are like Lego pieces you have to match first!"</em>
+        </div>
+      </div>
+
+      <div class="character-card selected">
+        <div class="char-tag" style="background: var(--buddy-2); color: #fff;">BUDDY · CA</div>
+        <div class="char-head">
+          <div class="char-avatar" style="background: var(--buddy-2);">👦</div>
+          <div class="char-meta">
+            <div class="name">Noah · San Diego, CA</div>
+            <div class="role">Study buddy · age 10 · honest</div>
+          </div>
+        </div>
+        <div class="char-persona">
+          Says when he's confused (lily loves this). Reads adventure books.
+          <em>"Wait — I'm confused. Can someone explain it like I'm 5?"</em>
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp opt-in -->
+    <div class="wa-step">
+      <div class="head">💬 Get Lily's daily updates on WhatsApp</div>
+      <div>We'll send a quick 4-line report after each lesson. Reply to ask questions or send encouragement.</div>
+      <div class="preview">
+        <div class="sender">📊 OpenMAIC · today</div>
+        📊 Lily practiced 32m today · 7/9 solved · asked about common denominators 💡 Ask her tonight: "what was the trick?" — she figured it out!
+      </div>
+    </div>
+
+    <!-- Phone field -->
+    <div class="field">
+      <label>📱 Your WhatsApp number</label>
+      <input type="tel" placeholder="+1 (555) 234-5678" value="+1 (555) 234-5678" />
+    </div>
+
+    <!-- Annotation -->
+    <div class="annot" style="top: -10px; right: -10px;">
+      <strong>Onboarding principles</strong>: parent = primary teacher, AI = mentor assistant. Pick personas, not rigid teachers.
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button class="btn btn-ghost">← Back</button>
+      <div style="font-size: 11px; color: var(--muted);">3 of 5 · ~2 minutes left</div>
+      <button class="btn btn-primary">Continue →</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
