@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WhatsApp Business Push · OpenMAIC Home School</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #efeae2;
+    margin: 0;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Phone */
+  .phone {
+    width: 380px;
+    background: #fff;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.12);
+  }
+  .phone-status {
+    background: #075e54;
+    padding: 12px 20px 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .phone-status .icons { display: flex; gap: 5px; }
+  .phone-nav {
+    background: #075e54;
+    color: #fff;
+    padding: 8px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .phone-nav .back { color: rgba(255,255,255,0.85); }
+  .phone-nav .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c2410c 0%, #b8763e 100%);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    margin-right: 4px;
+  }
+  .phone-nav .name { font-weight: 600; }
+  .phone-nav .verified { font-size: 11px; opacity: 0.7; }
+  .chat-area {
+    background:
+      repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.04) 35px, rgba(255,255,255,0.04) 70px),
+      #e5ddd5;
+    min-height: 540px;
+    padding: 16px;
+  }
+
+  /* Incoming message bubble */
+  .msg {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    max-width: 85%;
+  }
+  .msg.right { margin-left: auto; flex-direction: row-reverse; }
+  .msg .bubble {
+    background: #fff;
+    border-radius: 0 8px 8px 8px;
+    padding: 8px 10px 6px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .msg.right .bubble {
+    background: #dcf8c6;
+    border-radius: 8px 0 0 8px;
+  }
+  .msg .time {
+    font-size: 10px;
+    color: #888;
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  /* The template message card */
+  .notif-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+  }
+  .notif-header {
+    background: linear-gradient(135deg, #b8763e 0%, #8d5829 100%);
+    color: #fff;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .notif-header .logo {
+    width: 30px; height: 30px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .notif-header .name { font-weight: 700; font-size: 13px; }
+  .notif-header .sub { font-size: 10px; opacity: 0.85; }
+  .notif-body { padding: 12px; }
+  .notif-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2a2722;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .notif-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 6px;
+    background: #fdf6e3;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  .stat { text-align: center; }
+  .stat .v { font-size: 14px; font-weight: 700; color: #8d5829; }
+  .stat .l { font-size: 9px; color: #7a6f60; margin-top: 2px; }
+  .notif-alert {
+    background: #fef2f2;
+    border-left: 3px solid #dc2626;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #991b1b;
+  }
+  .notif-quote {
+    background: #fff7e8;
+    border-left: 3px solid #b8763e;
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .notif-quote .name {
+    font-size: 10px;
+    font-weight: 700;
+    color: #c2410c;
+    margin-bottom: 2px;
+  }
+  .notif-tip {
+    font-size: 11px;
+    color: #7a6f60;
+    line-height: 1.5;
+    background: #f9f5ec;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .notif-tip strong { color: #8d5829; }
+  .notif-footer {
+    border-top: 1px solid #f0e8d0;
+    padding: 8px 12px;
+    font-size: 10px;
+    color: #7a6f60;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .notif-cta {
+    color: #075e54;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* WhatsApp opt-in preview (initial setup) */
+  .optin {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.08);
+  }
+  .optin h3 { font-size: 16px; margin-bottom: 8px; }
+  .optin p { color: #666; font-size: 12px; line-height: 1.5; margin-bottom: 14px; }
+  .optin-btn {
+    background: #25d366;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  /* Admin: template setup mockup */
+  .admin-row {
+    width: 800px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .admin-row h3 { margin-bottom: 12px; font-size: 16px; }
+  .admin-row .sub { color: #666; font-size: 13px; margin-bottom: 14px; }
+  .template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .template-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .template-card .head {
+    background: #075e54;
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .template-card .body {
+    padding: 10px 12px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #2a2722;
+    background: #fdf6e3;
+  }
+  .var {
+    background: #fef3c7;
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #92400e;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="section-title">Parent phone · WhatsApp daily update</div>
+
+  <div class="phone">
+    <div class="phone-status">
+      <span>8:00 PM</span>
+      <span class="icons">📶 🔋</span>
+    </div>
+    <div class="phone-nav">
+      <span class="back">‹</span>
+      <div class="avatar">M</div>
+      <div>
+        <div class="name">OpenMAIC Companion <span class="verified">✓</span></div>
+      </div>
+    </div>
+    <div class="chat-area">
+
+      <!-- Today's template message -->
+      <div class="msg">
+        <div class="notif-card" style="width: 100%;">
+          <div class="notif-header">
+            <div class="logo">M</div>
+            <div>
+              <div class="name">OpenMAIC Companion</div>
+              <div class="sub">Lily's report · Wed, Aug 25</div>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-title">📊 Lily practiced 32 minutes today</div>
+
+            <div class="notif-stats">
+              <div class="stat"><div class="v">32m</div><div class="l">Time</div></div>
+              <div class="stat"><div class="v">7/9</div><div class="l">Solved</div></div>
+              <div class="stat"><div class="v">2</div><div class="l">Mistakes</div></div>
+              <div class="stat"><div class="v">💬 4</div><div class="l">Questions</div></div>
+            </div>
+
+            <div class="notif-alert">
+              ⚠️ <strong>Adding fractions (CC 4.NF.A.1)</strong> is still a weak spot — 32% mastery
+            </div>
+
+            <div class="notif-quote">
+              <div class="name">🍁 Ms. Maple</div>
+              Lily had a real breakthrough today — she figured out <strong>WHY</strong> we need a common denominator instead of just memorizing the rule. That's the kind of understanding that lasts.
+            </div>
+
+            <div class="notif-tip">
+              💡 <strong>Tonight's table-talk idea:</strong><br>
+              Ask her: "What was the trick with fractions today?" If she can explain it back to you, she's got it. If not, no stress — review together.
+            </div>
+          </div>
+          <div class="notif-footer">
+            <span>Daily · 8pm CT</span>
+            <span class="notif-cta">View full report →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent reply -->
+      <div class="msg right">
+        <div class="bubble">
+          Thanks Ms. Maple! 🎉
+          <div class="time">8:02 PM ✓✓</div>
+        </div>
+      </div>
+
+      <div class="msg">
+        <div class="bubble">
+          Thank you for sharing! Lily's progress is recorded. Reply with a question anytime 💚
+          <div class="time">8:02 PM</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Opt-in flow -->
+<div>
+  <div class="section-title">Onboarding · WhatsApp opt-in</div>
+  <div class="optin">
+    <h3>💬 Get Lily's daily updates on WhatsApp</h3>
+    <p>We'll send a quick 4-line report after each lesson. Reply to ask questions or send encouragement.</p>
+    <div style="background: #dcf8c6; border-radius: 8px; padding: 10px; margin-bottom: 14px; font-size: 12px;">
+      <div style="font-weight: 700; color: #075e54; margin-bottom: 4px;">📊 OpenMAIC · today</div>
+      📊 Lily practiced 32m today · 7/9 solved · asked about common denominators 💡 Ask her tonight: "what was the trick?" — she figured it out!
+    </div>
+    <button class="optin-btn">Continue on WhatsApp →</button>
+  </div>
+</div>
+
+<!-- Admin: template setup -->
+<div class="admin-row">
+  <h3>🛠 Admin console · WhatsApp Business template setup</h3>
+  <p class="sub">Pre-approved by Meta under "Education" category · 24h/1-template rate limit enforced</p>
+
+  <div class="template-grid">
+    <!-- Daily template -->
+    <div class="template-card">
+      <div class="head">📊 Daily learning report (template_learning_daily_v3)</div>
+      <div class="body">
+        📊 <span class="var">{{child_name}}</span> practiced <span class="var">{{duration_min}}</span>m today<br>
+        ⏱️ Time: <span class="var">{{duration_min}}</span> min  ✅ <span class="var">{{correct}}</span>/<span class="var">{{total}}</span><br>
+        <span class="var">{{#if weak_topic}}</span>⚠️ <span class="var">{{weak_topic}}</span> still a weak spot (<span class="var">{{weak_pct}}</span>% mastery)<span class="var">{{/if}}</span><br>
+        <span class="var">{{teacher_note}}</span><br>
+        💡 Tonight's idea: <span class="var">{{parent_guide}}</span><br>
+        <br>
+        View full report: <span class="var">{{report_url}}</span>
+      </div>
+    </div>
+
+    <!-- Emergency template -->
+    <div class="template-card">
+      <div class="head">⚠️ Struggle alert (template_struggle_alert_v1)</div>
+      <div class="body">
+        ⚠️ Heads up — <span class="var">{{child_name}}</span> has been<br>
+        struggling with <span class="var">{{topic}}</span> for<br>
+        <span class="var">{{days}}</span> days. Mastery: <span class="var">{{mastery_pct}}</span>%<br>
+        <br>
+        Ms. Maple suggests: <span class="var">{{suggestion}}</span><br>
+        <br>
+        Open the dashboard: <span class="var">{{dashboard_url}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
