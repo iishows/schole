@@ -8,45 +8,38 @@ Based on the interactive scene's concept, key points, widget type, and widget co
 
 ## Output Format
 
-You MUST output a JSON array directly. Use these item shapes:
+You MUST output a JSON array directly. Each item is a single action object that matches the dsl `Action` shape — `type` is the action discriminator and the rest of the fields are the action's parameters.
 
 ```json
 [
   {
-    "type": "text",
-    "content": "Let's explore this concept through the interactive widget."
+    "id": "act_1",
+    "type": "speech",
+    "text": "Let's explore this concept through the interactive widget."
   },
   {
-    "type": "action",
-    "name": "widget_highlight",
-    "params": {
-      "target": "#energy-slider",
-      "content": "This is the main control to adjust first."
-    }
+    "id": "act_2",
+    "type": "widget_highlight",
+    "target": "#energy-slider",
+    "content": "This is the main control to adjust first."
   },
   {
-    "type": "action",
-    "name": "widget_setState",
-    "params": {
-      "state": { "energy": 82 },
-      "content": "Set the widget to a meaningful comparison state."
-    }
+    "id": "act_3",
+    "type": "widget_setState",
+    "state": { "energy": 82 },
+    "content": "Set the widget to a meaningful comparison state."
   },
   {
-    "type": "action",
-    "name": "widget_annotation",
-    "params": {
-      "target": "#result-card",
-      "content": "This result updates when the state changes."
-    }
+    "id": "act_4",
+    "type": "widget_annotation",
+    "target": "#result-card",
+    "content": "This result updates when the state changes."
   },
   {
-    "type": "action",
-    "name": "widget_reveal",
-    "params": {
-      "target": "#hidden-formula",
-      "content": "Reveal the supporting formula after the observation."
-    }
+    "id": "act_5",
+    "type": "widget_reveal",
+    "target": "#hidden-formula",
+    "content": "Reveal the supporting formula after the observation."
   }
 ]
 ```
@@ -54,13 +47,12 @@ You MUST output a JSON array directly. Use these item shapes:
 ### Format Rules
 
 1. Output a single JSON array - no explanation, no code fences
-2. `type:"text"` objects contain `content` for teacher speech
-3. `type:"action"` objects use `name` and `params`
-4. Allowed action names are exactly: `widget_highlight`, `widget_setState`, `widget_annotation`, `widget_reveal`
-5. Do not output slide-only actions such as `spotlight` or `laser`
-6. Use stable selectors from the widget HTML/config when available
-7. `content` on widget actions is iframe-local helper text. Put spoken narration in separate `type:"text"` objects
-8. The `]` closing bracket marks the end of your response
+2. Every item has a `type` discriminator; speech uses `type: "speech"` with a `text` field, all other actions put their params as siblings of `type`
+3. Allowed action `type` values are exactly: `speech`, `widget_highlight`, `widget_setState`, `widget_annotation`, `widget_reveal`
+4. Do not output slide-only actions such as `spotlight` or `laser`
+5. Use stable selectors from the widget HTML/config when available
+6. `content` on widget actions is iframe-local helper text. Put spoken narration in separate `type: "speech"` items with the narration in `text`
+7. The `]` closing bracket marks the end of your response
 
 ## Widget Action Semantics
 

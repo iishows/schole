@@ -4,11 +4,26 @@ import type { AppScene } from '@/lib/types/stage';
 import { omitUndefinedObjectMembers } from '@/lib/persistence/plain-json';
 
 import type { AppStage } from './persistence-types';
+import { sanitizeSceneActions } from './sanitize-actions';
 
 let wrappers = new WeakMap<DocumentStore<AppScene, AppStage>, DocumentStore<AppScene, AppStage>>();
 
 export function resetPlainJsonDocumentWritesForTests(): void {
   wrappers = new WeakMap();
+}
+
+/**
+ * Storage-boundary normalization chain: drop undefined leaf fields, then
+ * sanitize scene actions so chat-shape `type:"text"` / `type:"action"` items
+ * from agent streams are remapped to dsl-shape before the storage validator
+ * sees them.
+ */
+function prepDocument(document: unknown): unknown {
+  return sanitizeSceneActions(omitUndefinedObjectMembers(document));
+}
+
+function prepScene(scene: unknown): unknown {
+  return sanitizeSceneActions(omitUndefinedObjectMembers(scene));
 }
 
 export function withPlainJsonDocumentWrites(
@@ -19,7 +34,7 @@ export function withPlainJsonDocumentWrites(
 
   const methods: DocumentStore<AppScene, AppStage> = {
     saveDocument(document) {
-      return store.saveDocument(omitUndefinedObjectMembers(document));
+      return store.saveDocument(prepDocument(document));
     },
     loadDocument(stageId) {
       return store.loadDocument(stageId);
@@ -34,7 +49,7 @@ export function withPlainJsonDocumentWrites(
       return store.putStage(stageId, omitUndefinedObjectMembers(stage));
     },
     putScene(stageId, scene) {
-      return store.putScene(stageId, omitUndefinedObjectMembers(scene));
+      return store.putScene(stageId, prepScene(scene));
     },
     getScene(stageId, sceneId) {
       return store.getScene(stageId, sceneId);
