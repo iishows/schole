@@ -28,6 +28,7 @@ export * from './stage.js';
 export * from './interactive.js';
 export * from './pbl.js';
 export * from './action.js';
+export * from './classroom-actions.js';
 export * from './validate.js';
 export * from './normalize.js';
 export * from './version.js';

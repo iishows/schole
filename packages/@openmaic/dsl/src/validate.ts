@@ -22,6 +22,7 @@ import { isPBLProject } from './pbl.js';
 import { isSceneType } from './stage.js';
 import { isIsoTimestamp, isRuntimeSessionStatus } from './runtime.js';
 import { isWellFormedDslVersion } from './version.js';
+import { validateClassroomAction } from './classroom-actions.js';
 
 export interface ValidationIssue {
   /** JSON-pointer-ish path to the offending value, e.g. `/actions/0/elementId`. */
@@ -160,6 +161,29 @@ function checkAction(doc: unknown, path: string, errors: ValidationIssue[]): voi
       message: `unknown action type: ${JSON.stringify(doc.type)}`,
     });
     return; // can't check variant fields without a known type
+  }
+  // Classroom shell actions (period_start/end/bell, raise_hand, call_on,
+  // pass_note, blackboard_annotate) are validated by their own pure-JS
+  // structural validator — they are a parallel union kept out of
+  // ACTION_REQUIRED_FIELDS to avoid coupling the standard 22-action contract
+  // to a separate schema surface (see classroom-actions.ts).
+  const CLASSROOM_ACTION_TYPES: ReadonlySet<string> = new Set([
+    'period_start',
+    'period_end',
+    'period_bell',
+    'raise_hand',
+    'call_on',
+    'pass_note',
+    'blackboard_annotate',
+  ]);
+  if (CLASSROOM_ACTION_TYPES.has(doc.type)) {
+    if (!validateClassroomAction(doc)) {
+      errors.push({
+        path: `${path}`,
+        message: `invalid classroom action: ${doc.type}`,
+      });
+      return;
+    }
   }
   for (const [field, kind] of Object.entries(ACTION_REQUIRED_FIELDS[doc.type])) {
     const value = doc[field];
