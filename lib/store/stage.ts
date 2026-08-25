@@ -29,6 +29,12 @@ import {
   stageDeletionEpoch,
   stageDeletionSettled,
 } from '@/lib/utils/deleted-stages';
+import type { ClassroomAction } from '@openmaic/dsl';
+import {
+  type ClassroomState,
+  classroomReducer,
+  initialClassroomState,
+} from './classroom-state';
 
 const log = createLogger('StageStore');
 
@@ -324,6 +330,14 @@ interface StageState {
   saveToStorage: () => Promise<boolean>;
   loadFromStorage: (stageId: string, loadToken?: StageSceneLoadToken) => Promise<void>;
   clearStore: () => void;
+
+  // Classroom shell slice (Task 3). The reducer + initial state live in
+  // ./classroom-state so the slice stays additive: existing fields above
+  // are untouched, and `useStageStore.use.classroom` is auto-derived by
+  // `createSelectors` (no bespoke selector helper needed).
+  classroom: ClassroomState;
+  dispatchClassroomAction: (action: ClassroomAction) => void;
+  resetClassroom: () => void;
 }
 
 function isDeckComplete({
@@ -426,6 +440,7 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
   generationStatus: 'idle' as const,
   currentGeneratingOrder: -1,
   failedOutlines: [],
+  classroom: initialClassroomState(),
 
   // Actions
   setStage: (stage) => {
@@ -740,6 +755,18 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
       failedOutlines: get().failedOutlines.filter((o) => o.id !== outlineId),
     });
   },
+
+  // Classroom shell slice (Task 3). The reducer is pure; the store only
+  // routes the action through it and exposes a reset for test setup /
+  // stage handoff. Feature-flag gating lives at the dispatch boundary
+  // (ActionEngine in Task 5), NOT here — keeps this slice a thin adapter
+  // so it stays usable even when the flag is off.
+  dispatchClassroomAction: (action) =>
+    set((state) => ({
+      classroom: classroomReducer(state.classroom, action),
+    })),
+
+  resetClassroom: () => set({ classroom: initialClassroomState() }),
 
   // Getters
   getCurrentScene: () => {
