@@ -3,13 +3,6 @@
   "displayName": "Singapore",
   "defaultLocale": "en-SG",
   "supportedLocales": ["en-SG", "zh-SG"],
-  "defaultLanguage": "en-SG",
-  "supportedLanguages": ["en-SG", "zh-SG"],
-  "theme": {
-    "default": "ocean",
-    "available": ["ocean", "warm-wood", "light", "dark"],
-    "highContrastRequired": false
-  },
   "personas": {
     "mentors": [
       {

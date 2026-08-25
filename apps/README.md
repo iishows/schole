@@ -1,90 +1,104 @@
-# OpenMAIC Product Apps
+# OpenMAIC Product Apps — Region-Deployed
 
 OpenMAIC 主仓库承载 multi-agent 课程生成 + 渲染基础设施（`packages/`, `app/`, `lib/`）。
-`apps/` 下是**产品化的子项目**，每个有独立的 spec + README + regions 配置 + 后续代码路径。
+`apps/` 下是 **5 个 region 独立部署**——每个 region 1 个独立子项目，物理隔离。
 
-## 子项目
+## 部署模型（重构于 2026-08-25）
 
-| 子项目 | 类型 | Spec | README | Regions |
+每个 region = **1 个独立部署**：
+- 独立代码库（即使在 monorepo 内）
+- 独立基础设施（CN 在阿里云 / US 在 AWS us-east-1 / EU 在 AWS eu-central-1）
+- 独立合规（数据本地化强制 / GDPR-K / PIPL / COPPA+FERPA）
+- 独立团队（CN 团队 / US 团队 / EU 团队）
+
+**共享**：底层包（`packages/@openmaic/*`）+ 共享架构 spec（`specs/companion.md`）。
+
+## 5 个 region 独立子项目
+
+| Region | 部署目标 | 合规 | 数据本地化 | Mockups |
 |---|---|---|---|---|
-| [`companion/`](./companion/) | 单产品 + region 配置 | [`SPEC.md`](./companion/SPEC.md) | [`README.md`](./companion/README.md) | CN / US-TX / AU-NSW / SG / EU-DE |
+| [`cn/`](./cn/) | 微信小程序 + 公众号 | PIPL + 未年人保护法 | **cn 强制** | [`cn-*.html`](../mockups/) |
+| [`us/`](./us/) | Web + Email + WhatsApp | COPPA + FERPA + TX §25.086 | us (default) | [`home-school-*.html`](../mockups/) + [`whatsapp-push.html`](../mockups/) |
+| [`au-nsw/`](./au-nsw/) | Web + Email + WhatsApp | Privacy Act 1988 | au (preferred) | (clone from US) |
+| [`sg/`](./sg/) | Web + Email + WhatsApp | PDPA 2012 | sg (preferred) | (clone from US, bilingual EN/ZH) |
+| [`eu-de/`](./eu-de/) | Web + Email | GDPR-K (DSGVO) | **EU 强制** | (clone from US, GDPR-K + WCAG) |
 
-**关键转变（2026-08-25 refactor）**：从"两个独立产品（cn-companion + intl-companion）"重构为
-"**单一产品 + region 配置**"。理由：所有地区差异（推送渠道 / 教材 / 合规 / 定价）都是
-**配置**而非代码——见 [`specs/companion.md`](../specs/companion.md) §2 region config schema。
+每个子项目结构：
+```
+apps/<region>/
+├── README.md       ← 产品定位 + 部署信息
+├── SPEC.md         ← region 专属 spec（合规 / 工作量 / 风险）
+└── config.json     ← personas / textbooks / channels / pricing
+```
+
+## 添加新 region 的流程
+
+1. **复制模板子项目**：`cp -R apps/us/ apps/eu-fr/`（找最近的 region 模板）
+2. **改 config.json**：region code / displayName / personas / textbooks / compliance / pricing / i18n / theme
+3. **改 README + SPEC**：region-specific 合规 / 工作量 / 风险
+4. **部署到 region 的云**：AWS / 阿里云 / 腾讯云 per region
+5. **CI/CD**：每个 region 独立 pipeline
 
 ## 共享架构
 
-所有 region 共享 OpenMAIC 主仓库底层：
+**所有 region 共用**：
+- `packages/@openmaic/dsl` — DSL types
+- `packages/@openmaic/storage` — PostgreSQL + IndexedDB persistence
+- `packages/@openmaic/generation` — outline + scene generation
+- `packages/@openmaic/renderer` — rendering incl. video export
+- `packages/@openmaic/importer` — PPTX / PDF import
+- `packages/@openmaic/editor` — slide editor
+- `app/` — Next.js app shell (per-region build target)
+- `lib/` — server + client libs
+- `lib/companion-core/` — companion-specific core
+- `specs/companion.md` — **共享架构 spec**（multi-agent / director / RBAC / 抽象接口）
+- `mockups/` — UI 设计稿
 
-```
-OpenMAIC (D:/projects/openmaic/)
-├── packages/@openmaic/dsl         ← DSL types (shared)
-├── packages/@openmaic/storage      ← PostgreSQL + IndexedDB persistence (shared)
-├── packages/@openmaic/generation   ← outline + scene generation (shared)
-├── packages/@openmaic/renderer    ← rendering incl. video export (shared)
-├── packages/@openmaic/importer    ← PPTX / PDF import (shared)
-├── packages/@openmaic/editor      ← slide editor (shared)
-├── app/                            ← Next.js app shell (region-aware via config)
-├── lib/                            ← server + client libs (shared)
-├── lib/companion-core/             ← companion-specific core (future)
-├── mockups/                        ← UI design mockups (region-agnostic + per-region)
-├── specs/                          ← canonical spec (single source)
-│   └── companion.md                ← single product spec (region-driven)
-└── apps/
-    └── companion/                   ← single product sub-project
-        ├── README.md
-        ├── SPEC.md                   ← copy of canonical spec
-        └── regions/
-            ├── cn/config.json
-            ├── us-tx/config.json
-            ├── au-nsw/config.json
-            ├── sg/config.json
-            └── eu-de/config.json
-```
+**Region-specific**（每个 region 独立）：
+- 部署 URL
+- 推送渠道（WeChat / Email / WhatsApp / SMS）
+- 支付（微信支付 / Stripe / PayPal）
+- 合规（PIPL / COPPA+FERPA / PDPA / GDPR-K）
+- 教材（人教版 / Common Core / Singapore Math / KMK / Australian Curriculum）
+- 角色名 + 头像 + 城市（班主任 vs mentor / 同学 vs buddy）
+- 定价 + 货币
 
-**Feature flag**（v1）：
-```bash
-NEXT_PUBLIC_COMPANION=true pnpm dev   # enabled; region picked at runtime
-```
+## Mockups（14 个）
 
-**Spec 一致性原则**：
-- `specs/companion.md` 是**唯一事实源**
-- `apps/companion/SPEC.md` 是同步拷贝（子项目拥有）
-- Spec 修订先改 `specs/`，再 sync 到 `apps/companion/SPEC.md`
-
-## 当前状态
-
-| 子项目 | Spec | Regions | Mockups | 代码 |
-|---|---|---|---|---|
-| **companion** | ✅ | ✅ 5 个示例 | ✅ 12 个 | ❌ 待启动 |
-
-## Mockups（12 个）
-
-**Universal / region-agnostic**（4 个）：
-- `classroom-layout-c3.html` — 教室 C3（定版）
+Universal / region-agnostic：
+- `classroom-layout-c3.html` — 教室 C3
 - `student-home.html` — 学生开始页
 - `admin-console.html` — 管理后台
-- `region-picker.html` — 首次访问 region 选择（NEW）
+- `region-picker.html` — Region 选择（架构 demo）
+- `admin-region-config.html` — Admin Region 配置（架构 demo）
+- `admin-i18n-theme-editor.html` — Admin i18n + 主题编辑
 
-**Operator**（2 个）：
-- `admin-region-config.html` — operator 配置 region（NEW）
-- (admin-console.html 也覆盖)
-
-**Region-flavored**（6 个，按 channel 区分）：
+Region-flavored：
 - `wechat-push.html` — 微信小程序推送（CN）
-- `whatsapp-push.html` — WhatsApp Business 推送（INTL）
-- `home-school-classroom.html` — INTL 教室（Ms. Maple 暖木）
-- `home-school-parent-dashboard.html` — INTL 家长 dashboard
-- `home-school-onboarding.html` — INTL onboarding
-- `cn-parent-recording.html` — CN 课堂录制嵌入
-- `cn-wechat-moments-share.html` — CN 朋友圈 H5
+- `whatsapp-push.html` — WhatsApp 推送（INTL）
+- `cn-parent-recording.html` — 课堂回放（CN 独有）
+- `cn-wechat-moments-share.html` — 朋友圈 H5（CN 独有）
+- `home-school-classroom.html` — 国际学生教室（US/AU/SG 风格）
+- `home-school-parent-dashboard.html` — 国际家长 dashboard
+- `home-school-onboarding.html` — 国际 onboarding
+
+**demo 站点**：`mockups/index.html`（多语言 + 多主题切换）
+
+## 状态
+
+| Region | Spec | Config | Mockups | 代码 |
+|---|---|---|---|---|
+| cn | ✅ | ✅ | ✅ | ❌ 待启动 |
+| us | ✅ | ✅ | ✅ | ❌ 待启动 |
+| au-nsw | ✅ | ✅ | ✅（克隆自 US） | ❌ 待启动 |
+| sg | ✅ | ✅ | ✅（克隆自 US） | ❌ 待启动 |
+| eu-de | ✅ | ✅ | ✅（克隆自 US + GDPR） | ❌ 待启动 |
 
 ## 下一步
 
-按 `specs/companion.md`：
-1. Phase 1 MVP（CN + US-TX 并行，4 周，2-3 人）
-2. Phase 2 增加 AU / SG / EU-DE（4 周）
-3. Phase 3 高级功能（录制 / 语音评测 / MAP Test Prep，4 周）
+按 `specs/companion.md`（共享架构 spec）+ 每个 region 的 `SPEC.md`（专属 spec）：
+1. 每个 region 独立 Phase 1 MVP（CN 3-4 周 / US 4 周 / AU/SG/EU 各自 ~2 周启动）
+2. 每个 region 独立 CI/CD
+3. 共享包更新通过 monorepo workspace
 
-调用 `writing-plans` skill 拆任务后启动实施。
+调用 `writing-plans` skill 拆每个 region 的实施任务。

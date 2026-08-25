@@ -3,13 +3,6 @@
   "displayName": "Australia (New South Wales)",
   "defaultLocale": "en-AU",
   "supportedLocales": ["en-AU"],
-  "defaultLanguage": "en-AU",
-  "supportedLanguages": ["en-AU"],
-  "theme": {
-    "default": "warm-wood",
-    "available": ["warm-wood", "light", "dark"],
-    "highContrastRequired": false
-  },
   "personas": {
     "mentors": [
       {

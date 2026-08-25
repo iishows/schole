@@ -1,8 +1,10 @@
 # OpenMAIC Companion · Product Spec (region-driven)
 
-**Date**: 2026-08-25 (rev: region-driven refactor)
+**Date**: 2026-08-25 (rev: per-region independent deployment)
 **Status**: Draft · Pending review
-**Architecture**: Single product, region-scoped configuration
+**Architecture**: Shared architecture + per-region independent deployment
+
+> **Refactor note (2026-08-25)**: Originally designed as single product + region-config runtime. After operator feedback ("每个区域都是部署一套独立系统"), restructured as **5 independent region deployments** + shared architecture spec. Each region = 1 standalone sub-project with its own spec, config, deployment, team, and compliance boundary.
 
 ---
 
@@ -51,7 +53,7 @@ The product solves a universal pain: **a child needs a teacher who's always avai
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Architecture | **Single product + region config** | All regional differences are config, not code |
+| Architecture | **Shared architecture + per-region independent deployment** | Each region = 1 standalone deploy (own infra, compliance, team); share `packages/@openmaic/*` + this spec |
 | Persona creation | **Operator-created templates, parent tweakable** | Quality control + personalization |
 | Mentor memory isolation | **Strict per-student** | COPPA / PIPL / GDPR-K + safety |
 | Parent sees mentor chat | **Default summary + on-demand full** | Privacy by default |
@@ -66,33 +68,42 @@ The product solves a universal pain: **a child needs a teacher who's always avai
 
 ```
 D:/projects/openmaic/
-├── specs/companion.md           ← this file (canonical single spec)
-├── apps/
-│   ├── README.md
-│   └── companion/               ← product sub-project
-│       ├── README.md
-│       ├── SPEC.md              ← copy of canonical spec (sub-project owns)
-│       └── regions/             ← region-scoped configs (operator-editable)
-│           ├── cn/config.json
-│           ├── us-tx/config.json
-│           ├── au-nsw/config.json
-│           ├── sg/config.json
-│           └── eu-de/config.json
-├── mockups/                     ← UI mockups (region-agnostic + per-region)
-│   ├── region-picker.html       ← NEW: first-launch region select
-│   ├── admin-region-config.html ← NEW: operator configures regions
+├── specs/companion.md           ← this file (shared architecture spec — read by all regions)
+├── apps/                         ← 5 independent region deployments
+│   ├── README.md                ← deployment model overview
+│   ├── cn/                      ← China deployment (independent)
+│   │   ├── README.md
+│   │   ├── SPEC.md              ← CN-specific spec
+│   │   └── config.json          ← personas / textbooks / channels / pricing
+│   ├── us/                      ← US-TX deployment (independent)
+│   ├── au-nsw/                  ← AU deployment
+│   ├── sg/                      ← SG deployment
+│   └── eu-de/                   ← EU-DE deployment (GDPR-K)
+├── mockups/                     ← UI mockups (shared by all regions + per-region)
+│   ├── index.html               ← demo site (multi-language + multi-theme switcher)
+│   ├── region-picker.html
+│   ├── admin-region-config.html
+│   ├── admin-i18n-theme-editor.html
 │   ├── classroom-layout-c3.html
 │   ├── student-home.html
 │   ├── admin-console.html
-│   ├── wechat-push.html         ← CN-flavored push
-│   ├── whatsapp-push.html       ← INTL-flavored push
-│   ├── cn-parent-recording.html ← CN region feature
-│   ├── cn-wechat-moments-share.html ← CN region feature
-│   ├── home-school-classroom.html ← INTL region feature (US/AU)
-│   └── home-school-parent-dashboard.html ← INTL region feature
+│   ├── wechat-push.html
+│   ├── whatsapp-push.html
+│   ├── cn-parent-recording.html
+│   ├── cn-wechat-moments-share.html
+│   ├── home-school-classroom.html
+│   ├── home-school-parent-dashboard.html
+│   └── home-school-onboarding.html
 ├── lib/companion-core/          ← shared core (future)
-└── packages/@openmaic/*         ← existing OpenMAIC packages (shared)
+└── packages/@openmaic/*         ← existing OpenMAIC packages (shared across all regions)
 ```
+
+**Deployment model (refactor 2026-08-25)**:
+- `specs/companion.md` = **shared architecture spec** (multi-agent / director / RBAC / abstractions / personas schema / textbook schema / compliance config schema / theme config schema / language config schema)
+- `apps/<region>/SPEC.md` = **region-specific spec** (deployment infra / region compliance / region phasing / region risks)
+- `apps/<region>/config.json` = **region business config** (personas / textbooks / channels / compliance / pricing / onboarding / i18n / theme)
+- `apps/<region>/` = **1 independent deployment target** (own build / own CI / own team / own infra)
+- `packages/@openmaic/*` = **shared core packages** (reused across all 5 deployments)
 
 ---
 
