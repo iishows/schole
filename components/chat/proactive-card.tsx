@@ -9,10 +9,14 @@ import { DISCUSSION_AUTO_SKIP_MS } from '@/lib/choreography';
 import type { DiscussionAction } from '@/lib/types/action';
 
 interface ProactiveCardProps {
-  action: DiscussionAction;
-  mode: 'playback' | 'paused' | 'autonomous';
+  // === Existing discussion-card fields (Task 7 makes them optional so the
+  //     classroom call-on variant — which renders top-anchored without an
+  //     anchor ref or callbacks — type-checks. All existing callers already
+  //     pass these so this is purely an additive widening. ===
+  action?: DiscussionAction;
+  mode?: 'playback' | 'paused' | 'autonomous';
   /** Ref to the anchor element the card points to (avatar, etc.) */
-  anchorRef: React.RefObject<HTMLElement | null>;
+  anchorRef?: React.RefObject<HTMLElement | null>;
   /** Where the card prefers to align relative to the anchor */
   align?: 'left' | 'right';
   /** Portal target — defaults to document.body. Pass the fullscreen container
@@ -21,9 +25,24 @@ interface ProactiveCardProps {
   agentName?: string;
   agentAvatar?: string;
   agentColor?: string;
-  onSkip: () => void;
-  onListen: () => void;
-  onTogglePause: () => void;
+  onSkip?: () => void;
+  onListen?: () => void;
+  onTogglePause?: () => void;
+  // === Classroom-shell extension (Task 7) — additive, no impact on existing
+  //     discussion-card callers. `displayMode` is intentionally a separate
+  //     field (not the existing `mode`) so we don't widen the required
+  //     'playback' | 'paused' | 'autonomous' union. ===
+  /** When 'call_on', render the classroom-mode call-on card variant.
+   *  When undefined / 'default', the existing discussion card is rendered. */
+  displayMode?: 'default' | 'call_on';
+  /** Call-on variant: title text (e.g. "请回答"). */
+  callOnTitle?: string;
+  /** Call-on variant: prompt body shown to the addressed agent. */
+  callOnPrompt?: string;
+  /** Call-on variant: agent id being called on. */
+  targetAgentId?: string;
+  /** Call-on variant: auto-dismiss countdown in ms. */
+  countdownMs?: number;
 }
 
 const CARD_WIDTH = 256; // w-64
@@ -47,6 +66,11 @@ export const ProactiveCard = ({
   onSkip,
   onListen,
   onTogglePause,
+  displayMode,
+  callOnTitle,
+  callOnPrompt,
+  targetAgentId,
+  countdownMs,
 }: ProactiveCardProps) => {
   const { t } = useI18n();
   const [progress, setProgress] = useState(100);
@@ -61,7 +85,10 @@ export const ProactiveCard = ({
   } | null>(null);
 
   const updatePosition = useCallback(() => {
-    const el = anchorRef.current;
+    // anchorRef is optional in the type (call-on callers don't supply it);
+    // the discussion path always passes one. Guard here so the optional
+    // field type-checks and the rAF tick stays a no-op when missing.
+    const el = anchorRef?.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const anchorCenterX = rect.left + rect.width / 2;
@@ -112,11 +139,52 @@ export const ProactiveCard = ({
   }, [mode]);
 
   useEffect(() => {
-    if (progress <= 0 && !skippedRef.current && mode === 'playback') {
+    if (progress <= 0 && !skippedRef.current && mode === 'playback' && onSkip) {
       skippedRef.current = true;
       onSkip();
     }
   }, [progress, onSkip, mode]);
+
+  // === Classroom-shell call-on variant (Task 7) ===
+  // Rendered BEFORE the discussion-card position gate so call-on callers
+  // (which intentionally do not pass an anchorRef) can render the card
+  // immediately. The existing discussion-card path (`mode === 'playback' |
+  // 'paused' | 'autonomous'`) is untouched below.
+  if (displayMode === 'call_on') {
+    const callOnCard = (
+      <motion.div
+        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+        className="fixed w-64 z-[9999] pointer-events-auto left-1/2 -translate-x-1/2 top-6"
+      >
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-3.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-amber-200 dark:border-amber-700 flex flex-col gap-2.5 relative overflow-hidden">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+              {t('proactiveCard.discussion')}
+            </span>
+            <span className="text-[10px] tabular-nums text-gray-500 dark:text-gray-400">
+              {Math.max(0, Math.ceil((countdownMs ?? 4000) / 1000))}s
+            </span>
+          </div>
+          <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug">
+            {callOnTitle ?? '请回答'}
+          </p>
+          {callOnPrompt && (
+            <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">
+              {callOnPrompt}
+            </p>
+          )}
+          {targetAgentId && (
+            <p className="text-[10px] text-gray-400 dark:text-gray-500" data-testid="call-on-target">
+              → {targetAgentId}
+            </p>
+          )}
+        </div>
+      </motion.div>
+    );
+    return createPortal(callOnCard, portalContainer || document.body);
+  }
 
   if (!pos) return null;
 
@@ -139,7 +207,7 @@ export const ProactiveCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onSkip();
+            onSkip?.();
           }}
           className="absolute -top-2 -right-2 w-6 h-6 bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:scale-110 transition-all z-20 group/close"
           title={t('proactiveCard.skip')}
@@ -207,14 +275,14 @@ export const ProactiveCard = ({
           </div>
 
           <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200 leading-snug px-0.5">
-            {action.topic}
+            {action?.topic}
           </p>
 
           <div className="flex items-center gap-1.5 mt-0.5">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onListen();
+                onListen?.();
               }}
               className="flex-1 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 dark:from-amber-500 dark:to-amber-600 dark:hover:from-amber-600 dark:hover:to-amber-700 text-white text-[11px] font-black rounded-lg flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] shadow-sm shadow-amber-200/50 dark:shadow-amber-800/50"
             >
@@ -224,7 +292,7 @@ export const ProactiveCard = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onTogglePause();
+                onTogglePause?.();
               }}
               className={`p-2 aspect-square rounded-lg border transition-colors active:scale-90 ${
                 isPaused
