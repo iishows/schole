@@ -306,6 +306,7 @@ mockup 是**静态 HTML**，所有按钮 / 表单不连真实逻辑。点击效�
 | 🧒 孩子 | [`demo-child.mp4`](./videos/demo-child.mp4) | 6 步 | 39s | 1.2 MB |
 | ⚙️ 管理员 | [`demo-admin.mp4`](./videos/demo-admin.mp4) | 7 步 | 38s | 1.2 MB |
 | 🛡️ 客服 | [`demo-support.mp4`](./videos/demo-support.mp4) | 3 步 | 18s | 0.4 MB |
+| 🎓 Classroom | [`demo-classroom.mp4`](./videos/demo-classroom.mp4) | 6 步 | 42s | 1.3 MB |
 
 每段视频都附了 GIF 预览（`demo-{role}.gif`）方便在文档/PPT 里直接展示。
 
@@ -497,3 +498,4 @@ mockups/cn/
 | 2026-08-25 | 更新 README + demo-flow 含全部 30 | — |
 | 2026-08-25 | Classroom Mode (C) 6 mockups · CW1-CW5 + master | classroom-period-bar / hand-raise / call-on / pass-note / blackboard / overview |
 | 2026-08-25 | CN MVP plan + tasks 集成 CW1-CW5 并行 | — |
+| 2026-08-25 | 录 Classroom 视频 + demo-flow-classroom.html | demo-classroom.mp4 + .gif |
