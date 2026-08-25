@@ -35,10 +35,11 @@
 | **CM2** | **Classroom · 举手 + `raise_hand`（CW2 并行）** | 3 天 | M3, CM1 | CW2（与 W2 并行）|
 | **CM3** | **Classroom · 叫答 + `call_on`（CW3 并行）** | 3 天 | CM2 | CW3（与 W3 并行）|
 | **CM4** | **Classroom · 同桌 + `pass_note` + seatLayout（CW4 并行）** | 3 天 | CM2 | CW4（与 W4 并行）|
-| **CM5** | **Classroom · 黑板 + `blackboard_annotate`（CW5 并行）** | 3 天 | 无 | CW5（与 W5 并行）|
-| **总计（含 C）** | — | **5 周** | — | — |
+| **CM5** | **Classroom · 黑板 + `blackboard_annotate`（CW5 并行）** | 3.25 天 | 无 | CW5（与 W5 并行）|
+| **CM6** | **Classroom · 集成验证（CW6 跨 W8 e2e）** | 2 天 | CM1-CM5 | CW6（W8 同期）|
+| **总计（含 C）** | — | **5 周主路径 + 4 周商业化** | — | — |
 
-> **CW1-CW5 与 W1-W5 并行**，不延长 timeline。详见 [`classroom-mode-design.md §6`](./classroom-mode-design.md#6-5-周增量实施)。
+> **CW1-CW6 与 W1-W5 + W8 并行**（CM 兼职 0.5 工时 5.5 周 = 14 人天工时，容纳 15-16 人天 CM 工作 + buffer）。详见 [`classroom-mode-design.md §6`](./classroom-mode-design.md#6-5-周增量实施)。
 
 ### 0.2 周排期总览
 
@@ -50,11 +51,11 @@ W4: M6（OCR）+ M7（Socratic 对话 UI）                       ⫻ CW4 · CM4
 W5: M8（DSL + Whiteboard）+ M9（间隔重复）                  ⫻ CW5 · CM5（黑板 + blackboard_annotate）
 W6: M10（公众号周报）+ M11（微信支付）
 W7: M12（PIPL + 内容审核）+ M13（部署）
-W8: M14（端到端测试）
+W8: M14（端到端测试）                                       ⫻ CW6 · CM6（Classroom 集成验证 · 跨 e2e 同期）
 W9: M15（灰度 + 正式上线）
 ```
 
-**CM1-CM5 全部并行**（D-1 决策）：CM2 走独立 `ClassroomService.callRaiseHand()`，不侵入 Director graph 主路径；所有 7 个新 DSL action 增量加入 action schema validator；CM4 seatLayout 默认 `ClassroomLayoutService.autoGenerate()`。
+**CM1-CM6 全部并行**（D-1 决策）：CM2 走独立 `ClassroomService.callRaiseHand()`，不侵入 Director graph 主路径；所有 7 个新 DSL action 增量加入 action schema validator；CM4 seatLayout 默认 `ClassroomLayoutService.autoGenerate()`；CM6 集成测试跨 W8 e2e 同期。
 
 ### 0.3 团队配置
 
@@ -485,9 +486,9 @@ W9: M15（灰度 + 正式上线）
 | # | 任务 | 工作量 | 依赖 | 产出 |
 |---|---|---|---|---|
 | CM4.1.1 | `ClassroomLayoutService.autoGenerate()`（"邻座=同桌"算法）| 0.5 天 | CM2 | service ready |
-| CM4.1.2 | admin settings UI（座位图可视化 + override 单个座位）| 0.5 天 | CM4.1.1 | admin UI |
+| CM4.1.2 | admin settings UI（座位图可视化 + override 单个座位）| **1.5 天** | CM4.1.1 | admin UI |
 | CM4.1.3 | `pass_note` DSL action + deskmates 校验 | 0.5 天 | CM4.1.1 | action 通过 |
-| CM4.1.4 | 飞纸条动画（贝塞尔曲线）+ 收方 hint | 1 天 | CM4.1.3 | animation ok |
+| CM4.1.4 | 飞纸条动画（贝塞尔曲线）+ 收方 hint | **1.5 天** | CM4.1.3 | animation ok |
 | CM4.1.5 | 同桌收方默认触发 `speech` 回应 | 0.5 天 | CM4.1.4 | cascade |
 | CM4.1.6 | e2e（含 admin override 流程）| 0.5 天 | CM4.1.5 | tests pass |
 
@@ -508,9 +509,10 @@ W9: M15（灰度 + 正式上线）
 |---|---|---|---|---|
 | CM5.1.1 | canvas 顶部 tab 加"白板/幻灯片"切换 | 0.5 天 | 无 | tab ready |
 | CM5.1.2 | `blackboard_annotate` DSL action | 0.5 天 | 无 | action 通过 |
-| CM5.1.3 | chalk-style 渲染层（SVG 轻量版，V1.1 再升级 canvas）| 1 天 | CM5.1.1 | renderer |
+| CM5.1.3 | chalk-style 渲染层（SVG 轻量版，V1.1 再升级 canvas）| **1.5 天** | CM5.1.1 | renderer |
 | CM5.1.4 | 全角色可写（用户也要能画）| 0.5 天 | CM5.1.3 | user input |
-| CM5.1.5 | snapshot test + e2e（多角色协作）| 0.5 天 | CM5.1.4 | tests pass |
+| CM5.1.5 | **验证与 CM1 共享 `useStageStore.ClassroomState` 不冲突** | 0.25 天 | CM5.1.4 | store 兼容 |
+| CM5.1.6 | snapshot test + e2e（多角色协作）| 0.5 天 | CM5.1.5 | tests pass |
 
 ### CM5.2 验收标准
 
@@ -523,11 +525,13 @@ W9: M15（灰度 + 正式上线）
 
 ## CM · 跨 W 资源与人力
 
-- 1 工程师 0.5 兼职（与主路径同 1 人分时）
-- CW1 + CW5 完全独立（≤ 0.5 周工时）
-- CW2-CW4 在 W2-W4 兼职工时内完成
+- 1 全栈工程师 兼 0.5 工时（即每周 20 小时），与主路径同 1 人分时
+- CM1 + CM5 完全独立（≤ 0.5 周工时）
+- CM2-CM4 在 W2-W4 兼职工时内完成
+- CM6 跨 W8 M14 e2e 同期，CM 工时累计 = 19.25 工作日
+- 5.5 周 × 0.5 兼职 = 13.75d 工时（紧 0.5d buffer，可吸收）
 - 加外包 ¥1 万（CM5 chalk 渲染验证 + INTL 文案校对）
-- **总人力不变**（7 月 ¥66.5 万 → 仍 7 月，因并行不延 timeline）
+- **总人力不变**（3 月 ¥28.5 万人力 + ¥8 万外包 + ¥30 万运营 = ¥66.5 万，因 CM 兼职 0.5 抵消工期）
 
 ---
 
@@ -540,37 +544,77 @@ W9: M15（灰度 + 正式上线）
 | Blackboard chalk 性能 | 用 SVG 轻量版（≤500 strokes），V1.1 升级 canvas |
 | 移动端 PeriodBar 拥挤 | 自动折叠底部 36px mini bar |
 | INTL 文案缺失 | `classroom.cn.json` + `classroom.intl.json` 双 bundle；失败回退 cn |
+| CM5 store 与 CM1 共享冲突 | CM5.1.5 验证 ClassroomState 写入不破坏 PeriodBar 渲染 |
+| CM 总工作量超 5 周兼职 | 13.75d 工时 / 19.25d 工作 = 紧 0.5d buffer；CM6 跨 W8 e2e 同期可吸收 2d |
+
+---
+
+## CM6 · Classroom · 集成验证（CW6 · 跨 W8 e2e 同期）
+
+CM1-CM5 各自完成后，CM6 在 W8 M14 端到端测试同期做跨模块集成验证。
+
+### CM6.1 任务列表
+
+| # | 任务 | 工作量 | 依赖 | 产出 |
+|---|---|---|---|---|
+| CM6.1.1 | 完整剧本 e2e（开课→举手→叫答→同桌传纸条→白板板书→下课）| 1 天 | CM1-CM5 | e2e pass |
+| CM6.1.2 | i18n 文案切换验证（cn ↔ intl）| 0.5 天 | CM1-CM5 | 双语 OK |
+| CM6.1.3 | feature flag `classroom.enabled` 关闭验证（回到原 Roundtable）| 0.5 天 | CM1-CM5 | 0 副作用 |
+
+### CM6.2 验收标准
+
+- [ ] CM1 顶部 PeriodBar + CM2 举手队列 + CM3 叫答聚光 + CM4 飞纸条 + CM5 黑板 — 全部流程贯通
+- [ ] INTL 模式切到 `homeroom teacher` / `circle time` / `morning basket` 文案生效
+- [ ] `classroom.enabled` = false 时 = 当前 Roundtable 完全不变（CI snapshot test 通过）
 
 ---
 
 ## 任务依赖图
 
 ```
-M0 ────────────── (并行，资质申请)
- ↓
-M1 → M2 → M3 → M4 → M5 ───┐
-              ↓           │
-              M6 ───┬─────┤
-              ↓     │     │
-              M7 ←──┤     │
-              ↓     │     │
-              M8 ←──┘     │
-              ↓           │
-              M9 ←─────────┘
-              ↓
-              M10 → M11 → M12 → M13 → M14 → M15
+                          M0 ────────────── (并行，资质申请)
+                          ↓
+主路径 M 通道（M1-M15 串行）
+                          M1 → M2 → M3 → M4 → M5 ───┐
+                                        ↓           │
+                                        M6 ───┬─────┤
+                                        ↓     │     │
+                                        M7 ←──┤     │
+                                        ↓     │     │
+                                        M8 ←──┘     │
+                                        ↓           │
+                                        M9 ←─────────┘
+                                        ↓
+                                        M10 → M11 → M12 → M13 → M14 → M15
+
+Classroom CM 通道（CW1-CW6 与 W1-W5 + W8 并行，兼职 0.5 工时）
+                          CM1 ──→ CM2 ──┬──→ CM3
+                                       │       ↓
+                                       └──→ CM4
+                                               
+                          CM5 (独立于 CM1-CM4，但共享 ClassroomState store)
+                                               
+                          CM6 (W8 e2e 同期，集成测试)
 ```
 
----
-
-## 关键路径（critical path）
+**关键路径**（critical path）= M1-M15 串行（CM1-CM6 不延长 timeline）
 
 ```
-M1（3天）→ M2（3天）→ M3（3天）→ M4（4天）→ M5（1周）→
-M6（4天）→ M7（3天）→ M8（4天）→ M10（3天）→ M11（4天）→
-M13（3天）→ M14（1周）→ M15（3天）
+M1（3天）→ M2（3天）→ M3（3天）→ M4（4天）→ M5（5天）→
+M6（4天）→ M7（3天）→ M8（4天）→ M9（2天）→
+M10（3天）→ M11（4天）→ M12（3天）→ M13（3天）→ M14（5天）→ M15（3天）
 
-总计：3+3+3+4+5+4+3+4+3+4+3+5+3 = 47 工作日 ≈ 9-10 周
+总计：3+3+3+4+5+4+3+4+2+3+4+3+3+5+3 = 50 工作日 ≈ 10 周（M1-M15）
+       主路径 W1-W5 = 25 工作日 = 5 周 ✓
+       商业化 W6-W9 = 25 工作日 = 5 周（含缓冲）
+       总 = 10 周 / 跨 3 月（开发 + 上线）
+
+CM 通道兼职 0.5 工时（与主路径并发）：
+  CM1（2.5d）→ CM2（3.5d）→ CM3（3d）
+                          ↘ CM4（5d）
+  CM5（3.25d，独立）
+  CM6（2d，跨 W8 e2e 同期）
+  总 CM = 19.25d → 5.5 周 × 0.5 兼职 = 13.75d 工时（紧但可行，含 0.5d buffer）
 ```
 
 ---

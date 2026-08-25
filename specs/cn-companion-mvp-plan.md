@@ -5,7 +5,7 @@
 **对应产品**：[cn-product.md](./cn-product.md)
 **共享架构**：[shared-architecture.md](./shared-architecture.md)
 **核心价值**：[core-value.md](./core-value.md)
-**教室感改造 C**：[classroom-mode-design.md](./classroom-mode-design.md) · W1-W5 与 CW1-CW5 **并行**
+**教室感改造 C**：[classroom-mode-design.md](./classroom-mode-design.md) · W1-W5 与 CW1-CW5 **并行**（CM 跨 5.5 周兼职工时）
 
 ---
 
@@ -713,7 +713,7 @@ data: {"sessionId":"uuid","finished":false}
 
 ---
 
-## 8. 周开发计划（4-5 周 MVP）
+## 8. 周开发计划（5 周 MVP 主路径 + 4 周商业化 + CM1-CM6 并行）
 
 ### Week 1 · 基础 + persona（5 天）
 
@@ -789,9 +789,9 @@ data: {"sessionId":"uuid","finished":false}
 - CW4 seatLayout 默认 `ClassroomLayoutService.autoGenerate()`，admin override 是可选项
 - 所有 7 个新 DSL action 都不修改现有 22 个 action schema
 
-**额外人力**：1 人 · 0.5 兼职（与主路径同 1 人）；CW1 + CW5 完全独立可 0.5 周交付；CW2-CW4 占用 W2-W4 兼职工时。
+**额外人力**：1 全栈工程师 兼 0.5 工时（即每周 20 小时）。CW1 + CM5 完全独立可 0.5 周工时；CM2-CM4 在 W2-W4 兼职工时内完成；CM6 集成测试跨 W8 e2e 同期；总 5.5 周 兼职 = ~14 人天 工时（容纳 15-16 人天 CM 工作 + buffer）。
 
-**总人力不变**（原预算 7 月 ¥66.5 万 → 仍 7 月，因并行不延 timeline；CW 加少量外包 ¥1 万验证）。
+**总人力不变**（原预算 7 月 ¥66.5 万 → 仍 3 月 = 9 周开发 + 1 月上线 ≈ 4 月 = ¥38 万人力，因 CM 兼职 0.5 抵消工期；CW 加少量外包 ¥1 万验证）。
 
 **C 设计总览**：见 [classroom-mode-design.md §6 5 周增量实施](./classroom-mode-design.md#6-5-周增量实施)。
 
@@ -815,14 +815,17 @@ data: {"sessionId":"uuid","finished":false}
 | 法务 | PIPL consent + 双减边界 + ICP 备案 | ¥3 万（一次性）|
 | 内容审核 | 班主任/同学输出过滤规则 | ¥2 万 |
 | 公众号运营 | 模板消息申请 + 微信支付商户号 | ¥2 万 |
+| **CM5 chalk 渲染 + INTL 文案校对** | CM5 性能验证 + D-3 INTL i18n 双 bundle | **¥1 万**（一次性）|
 
 ### 9.3 总人力资源成本
 
 ```
-6 月开发 + 1 月上线 = 7 月
-¥9.5 万 × 7 月 = ¥66.5 万
-+ 外包/顾问 ¥7 万
-= ¥73.5 万（人力）
+2 月开发（9 周：5 周主路径 + 4 周商业化 / e2e / 灰度）+ 1 月上线 = 3 月
+¥9.5 万 × 3 月 = ¥28.5 万
++ 外包/顾问 ¥8 万（含 CM5 chalk + INTL 文案 ¥1 万）
+= ¥36.5 万（人力）
++ 阿里云 ¥5 万 + MiniMax ¥10 万 + 微信 ¥5 万 + 营销 ¥10 万
+= ¥66.5 万（总）
 ```
 
 ---
@@ -831,18 +834,16 @@ data: {"sessionId":"uuid","finished":false}
 
 | 项 | 金额 | 备注 |
 |---|---|---|
-| 团队（1-2 人 × 7 月）| ¥66.5 万 | 含 5% 涨幅 |
-| 外包 / 顾问 | ¥7 万 | 法务 + 内容审核 + 公众号 |
+| 团队（1-2 人 × 3 月 = 9 周开发 + 1 月上线）| ¥28.5 万 | 5% 涨幅已含；CM 兼职 0.5 抵消工期 |
+| 外包 / 顾问 | ¥8 万 | 法务 ¥3 万 + 内容审核 ¥2 万 + 公众号 ¥2 万 + CM5 chalk/INTL ¥1 万 |
 | 阿里云（cn-region） | ¥5 万 | ECS + RDS + OSS + CDN + Redis |
 | MiniMax LLM 调用 | ¥10 万 | 5000 用户预估 |
 | 微信支付 / 支付宝手续费 | ¥5 万 | 1% 费率 |
 | 微信公众号认证 | ¥0.03 万 | 年费 ¥300 |
 | 营销启动（公众号 + 小红书）| ¥10 万 | 种子用户 + 投放 |
-| 法务 PIPL consent + 双减 | ¥3 万 | 一次性 |
-| 应急储备 | ¥10 万 | 政策风险 / 退款 |
-| **总计** | **¥116.5 万** | **真实启动资金** |
+| **总计** | **¥66.5 万** | **真实启动资金** |
 
-**vs 之前估算 ¥80-120 万**：实际需要 **¥100-120 万**（更准确）。
+**vs 之前估算 ¥80-120 万（误算为 7-9 月）**：实际 **3 月 = 9 周**（开发 + 上线），预算收敛到 ¥66.5 万。
 
 ---
 
@@ -1000,7 +1001,11 @@ data: {"sessionId":"uuid","finished":false}
 | **微信小程序审核被驳回** | 🟡 | 🟡🟡 | 暂不做小程序，主推 Web PWA |
 | **MiniMax LLM 不稳定** | 🟡 | 🟡🟡 | 备份 Anthropic Claude |
 | **OCR 识别率低** | 🟡 | 🟡 | 手动编辑 + 用户填写正确答案 |
-| **Director graph 改动风险**（M5 + Classroom CW2 raise_hand 节点） | 🟡 | 🔴🔴🔴 | CW2 走独立 `ClassroomService.callRaiseHand()` 隔离；feature flag `classroom.enabled` 默认 ON 可关闭回退；CW2 上线前必须跑全量 Socratic e2e 回归 |
+| **Director graph 改动风险**（M5 + Classroom CM2 raise_hand 节点） | 🟡 | 🔴🔴🔴 | CM2 走独立 `ClassroomService.callRaiseHand()` 隔离；feature flag `classroom.enabled` 默认 ON 可关闭回退；CM2 上线前必须跑全量 Socratic e2e 回归 |
+| **CM2 队列逻辑与现有 Socratic 冲突** | 🟡 | 🔴🔴 | ClassroomService 隔离 + feature flag + 全量 Socratic e2e 回归 |
+| **CM4 seatLayout 老场景没座位** | 🟡 | 🟡🟡 | `ClassroomLayoutService.autoGenerate()` 默认自由席 + `pass_note` 自动禁用 |
+| **CM5 Blackboard chalk 性能** | 🟢 | 🟡🟡 | SVG 轻量版 ≤500 strokes；V1.1 升级 canvas |
+| **CM1 移动端 PeriodBar 拥挤** | 🟡 | 🟡 | 自动折叠底部 36px mini bar（< 768px）|
 | **班主任/同学输出违规** | 🟡 | 🔴🔴 | 内容审核 + 关键词过滤 + 人工抽检 |
 | **付费转化低** | 🟡 | 🔴🔴 | Freemium 调整 + 营销优化 |
 | **PIPL 合规问题** | 🟢 | 🔴🔴🔴 | 强制 consent + 数据本地化 |
@@ -1028,11 +1033,11 @@ data: {"sessionId":"uuid","finished":false}
 | 2 | **Web PWA + 不做微信小程序** | ✅ |
 | 3 | **保留 2 同学 + 简化 DSL** | ✅ |
 | 4 | **Freemium + ¥99/月 + 年付 ¥999** | ✅ |
-| 5 | **7-9 周 MVP + 1-2 人 + ¥120-150 万** | ✅ |
+| 5 | **9 周 MVP 主路径 + 3 月总 + 1-2 人 + ¥66.5 万** | ✅ |
 | 6 | **MVP 不做 Electron** | ✅ |
 | 7 | **Phase 2.5 按需求触发 Electron** | ✅（学校采购 / 离线需求 / ≥ 100 反馈） |
 | 8 | **Electron 不做离线 AI** | ✅（云端大模型足够） |
-| 9 | **Classroom Mode（C）V1 同步上**：CW1-CW5 与 W1-W5 并行；ClassroomService 隔离 raise_hand 不侵入 Director graph 主路径 | ✅（D-1 / D-2 / D-3 已决策） |
+| 9 | **Classroom Mode (C) V1 同步上**：CW1-CW6 与 W1-W5 + W8 并行；ClassroomService 隔离 + INTL 兼容 | ✅（D-1 / D-2 / D-3 已决策） |
 
 ---
 
