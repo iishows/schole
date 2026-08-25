@@ -1,5 +1,6 @@
 import type { ClassroomAction } from '@openmaic/dsl';
 import { ClassroomLayoutService } from '@/lib/services/classroom-layout-service';
+import { ClassroomService } from '@/lib/services/classroom-service';
 
 // Plan §4.1 — state sub-shapes. The DSL only ships the action union
 // and the wire-format action interfaces; the reducer-internal views
@@ -100,6 +101,11 @@ export function classroomReducer(state: ClassroomState, action: ClassroomAction)
       if (state.period !== 'before-class' && state.period !== 'break') {
         return { ...state, lastError: `illegal transition: period_start from ${state.period}` };
       }
+      // V1.1 L2 (Task 3) — Director 不阻塞 spec §7: schedule the auto
+      // period_end timer so the lesson window closes even if no manual
+      // period_end ever arrives. Returns a cancel function the manual
+      // path can call to cancel a stale timer.
+      ClassroomService.scheduleAutoEnd(action.duration * 1000);
       return {
         ...state,
         period: 'lesson',
