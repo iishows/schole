@@ -102,4 +102,41 @@ describe('BlackboardChalkLayer', () => {
     });
     expect(useStageStore.getState().classroom.blackboardMode).toBe(true);
   });
+
+  it('M3: blackboard_annotate auto-toggle (false→true) shows 3s toast warning that auto-dismisses', async () => {
+    vi.useFakeTimers();
+    try {
+      // Seed mode=false so the component picks up a false→true transition
+      // when we flip the store below.
+      useStageStore.setState((s) => ({
+        ...s,
+        classroom: { ...s.classroom, blackboardMode: false },
+      }));
+      await act(async () => {
+        root.render(<BlackboardChalkLayer />);
+      });
+      // No toast yet — mode=false.
+      expect(container.querySelector('[data-testid="blackboard-auto-open-toast"]')).toBeNull();
+      // Simulate the reducer auto-toggle triggered by a blackboard_annotate
+      // action (e.g. teacher agent dispatched one in non-blackboard mode).
+      useStageStore.setState((s) => ({
+        ...s,
+        classroom: { ...s.classroom, blackboardMode: true },
+      }));
+      await act(async () => {
+        // Allow the useEffect edge-detection to fire and set toast state.
+      });
+      // Toast is now visible.
+      const toast = container.querySelector('[data-testid="blackboard-auto-open-toast"]');
+      expect(toast).not.toBeNull();
+      expect(toast?.textContent).toContain('黑板已开启');
+      // Advance past 3s — toast should auto-dismiss.
+      await act(async () => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(container.querySelector('[data-testid="blackboard-auto-open-toast"]')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
