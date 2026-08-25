@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CW4 · Pass-Note 飞纸条</title>
+<style>
+  :root { --primary: #722ed1; --primary-soft: #f3ebfd; --bg: #faf9fe; --surface: #fff; --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --amber-bg: #fef3c7; --amber-fg: #854d0e; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; padding: 24px 16px 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .anno { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border: 1px dashed #facc15; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--amber-fg); margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px; border-left: 3px solid var(--primary); }
+  .demo { background: var(--surface); border-radius: 12px; border: 1px solid var(--line); padding: 16px; margin-bottom: 16px; min-height: 300px; position: relative; }
+  .demo-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; padding: 3px 8px; background: var(--primary-soft); border-radius: 999px; display: inline-block; }
+  .tip { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* Seat grid (俯瞰) */
+  .seat-grid { position: relative; width: 100%; height: 360px; background: linear-gradient(135deg, #faf9fe 0%, #f3ebfd 100%); border-radius: 8px; overflow: hidden; }
+  .desk { width: 80px; height: 60px; background: var(--surface); border: 2px solid var(--line); border-radius: 6px; position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; font-size: 10px; font-weight: 600; transition: all 0.3s; }
+  .desk.zone-front { border-color: var(--primary); background: var(--primary-soft); }
+  .desk.active { border-color: var(--warn); box-shadow: 0 0 0 3px #fef3c7; }
+  .desk.receiver { border-color: var(--success); box-shadow: 0 0 0 3px #d1fae5; }
+  .desk .seat-id { font-size: 9px; color: var(--muted); margin-top: 2px; font-family: monospace; }
+  .desk .avatar-tiny { font-size: 16px; }
+
+  /* Blackboard top */
+  .blackboard-top { width: 70%; height: 50px; background: linear-gradient(135deg, #2d4a3a 0%, #1a2e23 100%); color: #fef9e7; border-radius: 6px; position: absolute; top: 16px; left: 15%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+
+  /* Note SVG path */
+  .note-path { stroke: var(--warn); stroke-width: 2; stroke-dasharray: 6 3; fill: none; }
+  .note-stationery { font-size: 24px; }
+  .note-content { background: var(--surface); border: 1px solid var(--warn); border-radius: 8px; padding: 6px 10px; font-size: 11px; box-shadow: 0 2px 8px rgba(245,158,11,0.3); }
+
+  /* Receiver hint */
+  .receive-hint { position: absolute; background: var(--success); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 11px; box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+
+  /* Bubble */
+  .thread { padding: 12px; background: #faf9fe; border-radius: 8px; font-size: 13px; }
+  .thread-row { display: flex; gap: 8px; padding: 4px 0; }
+  .thread-who { font-weight: 700; min-width: 64px; }
+
+  /* States */
+  .state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📨 CW4 · 飞纸条 + 同桌（pass_note DSL）</h1>
+  <p class="sub">classroom-mode-design.md §5.4 + §6 W4 · 5 状态：路径规划 / 起飞 / 飞行 / 收方 hint / 接力 speech</p>
+
+  <div class="anno">📨 CW4 · Pass-Note · 邻桌同学可传纸条，收方收到 hint 后 3s 内 speech 回应。seatLayout 默认自动布局，admin 可 override（D-2 决策）。</div>
+
+  <!-- 状态 1：俯瞰布局 + 邻桌关系 -->
+  <div class="section-title">状态 1 · 座位图（默认布局 — 邻座 = 同桌）</div>
+  <div class="demo" style="min-height: 400px;">
+    <span class="demo-label">seatLayout:autoGen</span>
+    <div class="seat-grid">
+      <div class="blackboard-top">📝 黑板 · 异分母分数加法 · 1/2 + 1/3 = ?</div>
+      <!-- 老师区 -->
+      <div class="desk zone-front" style="top: 80px; left: 50%; transform: translateX(-50%);">
+        <div style="font-size: 18px;">👩‍🏫</div>
+        <div>老师</div>
+        <div class="seat-id">讲台</div>
+      </div>
+      <!-- 第 1 排 3 桌（座位 1-3） -->
+      <div class="desk active" style="top: 170px; left: 12%;">
+        <div class="avatar-tiny">👧</div>
+        <div>小红</div>
+        <div class="seat-id">A1</div>
+      </div>
+      <div class="desk active" style="top: 170px; left: 38%;">
+        <div class="avatar-tiny">🧒</div>
+        <div style="color: var(--primary);">你</div>
+        <div class="seat-id">A2</div>
+      </div>
+      <div class="desk" style="top: 170px; left: 64%;">
+        <div class="avatar-tiny">👦</div>
+        <div>阿泽</div>
+        <div class="seat-id">A3</div>
+      </div>
+      <!-- 第 2 排（4-6）-->
+      <div class="desk" style="top: 250px; left: 12%;">
+        <div class="avatar-tiny">👦</div>
+        <div>小亮</div>
+        <div class="seat-id">B1</div>
+      </div>
+      <div class="desk" style="top: 250px; left: 38%;">
+        <div class="avatar-tiny">👧</div>
+        <div>小慧</div>
+        <div class="seat-id">B2</div>
+      </div>
+      <div class="desk" style="top: 250px; left: 64%;">
+        <div class="avatar-tiny">👧</div>
+        <div>小敏</div>
+        <div class="seat-id">B3</div>
+      </div>
+
+      <!-- 邻桌连接线（半透明） -->
+      <svg style="position: absolute; inset: 0; pointer-events: none; opacity: 0.4;">
+        <line x1="20%" y1="200px" x2="30%" y2="200px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="46%" y1="200px" x2="56%" y2="200px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="72%" y1="200px" x2="82%" y2="200px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="20%" y1="280px" x2="30%" y2="280px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="46%" y1="280px" x2="56%" y2="280px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+        <line x1="72%" y1="280px" x2="82%" y2="280px" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+      </svg>
+
+      <!-- 同桌关系标签（A1 你↔小红 = 同桌） -->
+      <div style="position: absolute; top: 140px; left: 22%; background: var(--warn); color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700;">
+        👫 同桌（A1↔A2）
+      </div>
+    </div>
+    <p class="tip">用户（A2）和小红（A1）是同桌，可互相 pass_note；其他同学隔桌不能传</p>
+  </div>
+
+  <!-- 状态 2：传纸条 modal -->
+  <div class="section-title">状态 2 · 用户传给小红（输入 modal）</div>
+  <div class="demo" style="min-height: 200px;">
+    <div class="thread" style="border: 2px dashed var(--warn); background: #fffbeb;">
+      <div class="thread-row">
+        <span class="thread-who" style="color: var(--primary);">你：</span>
+        <textarea readonly rows="2" style="flex: 1; border: 1px dashed var(--warn); border-radius: 6px; padding: 8px; font-family: inherit; font-size: 13px; background: #fff;">小红，这题公分母是不是 6 ？我有点不确定 ✍️</textarea>
+      </div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px;">
+        <button style="padding: 6px 12px; border-radius: 6px; background: var(--warn); color: #fff; border: none; font-weight: 700; font-size: 12px; cursor: pointer;">📨 传给 小红（A1）</button>
+      </div>
+    </div>
+  </div>
+  <p class="tip">输入 → 点"传给 X" → 触发 pass_note action（仅 deskmates 可选）</p>
+
+  <!-- 状态 3：飞纸条动画 -->
+  <div class="section-title">状态 3 · 飞行（贝塞尔曲线 SVG path — 起点 → 终点）</div>
+  <div class="demo" style="min-height: 240px; background: linear-gradient(135deg, #faf9fe 0%, #f3ebfd 100%);">
+    <div style="position: relative; height: 200px;">
+      <div style="position: absolute; top: 80px; left: 12%; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <div style="font-size: 18px;">🧒</div>
+        <div style="font-size: 10px; color: var(--muted); font-weight: 600;">你 A2</div>
+      </div>
+      <div style="position: absolute; top: 80px; left: 38%; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <div style="font-size: 18px;">👧</div>
+        <div style="font-size: 10px; color: var(--muted); font-weight: 600;">小红 A1</div>
+      </div>
+      <svg style="position: absolute; inset: 0; width: 100%; height: 100%;">
+        <path d="M 100,80 Q 180,-30 290,80" class="note-path" marker-end="url(#arrowhead)"/>
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+            <polygon points="0 0, 6 3, 0 6" fill="var(--warn)" />
+          </marker>
+        </defs>
+      </svg>
+      <!-- 飞行中的纸条 -->
+      <div style="position: absolute; top: 6px; left: 30%; transform: rotate(-15deg);">
+        <div class="note-content">📨 这题公分母是不是 6 ？</div>
+      </div>
+    </div>
+    <p class="tip">贝塞尔曲线（控制点向上凸起，模拟抛物线飞行）；纸条 SVG 沿 path 移动；总时长 1.2s</p>
+  </div>
+
+  <!-- 状态 4：收方 hint + 接力 speech -->
+  <div class="section-title">状态 4 · 小红收到 → 3s 内接力 speech</div>
+  <div class="state-grid">
+    <div class="demo" style="min-height: 140px; background: #f0fdf4; border-color: var(--success);">
+      <span class="demo-label" style="background: #d1fae5; color: var(--success);">receive</span>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+        <div style="font-size: 22px;">👧</div>
+        <div class="note-content" style="background: var(--surface); border-color: var(--success);">📨 "公分母是不是 6 ？"</div>
+      </div>
+      <p class="tip">小红头像角标 ✉️ 飘动 + 收到弹窗 3s</p>
+    </div>
+    <div class="demo" style="min-height: 140px; background: var(--surface);">
+      <span class="demo-label">speech</span>
+      <div style="margin-top: 8px; padding: 10px 14px; background: #dbeafe; border-radius: 12px; font-size: 12px; line-height: 1.5;">
+        👧 <strong>小红：</strong> 我觉得是的！2 和 3 的最小公倍数是 6，1/2 变 3/6，1/3 变 2/6，加起来就是 5/6 ✨
+      </div>
+      <p class="tip">收方 agent 收到 speech hint → 3s 内 speech 回应</p>
+    </div>
+  </div>
+
+  <!-- 状态 5：禁传（非邻桌） -->
+  <div class="section-title">状态 5 · 禁止传（非邻桌）— DSL 校验拒绝</div>
+  <div class="demo" style="min-height: 120px;">
+    <div class="thread" style="background: #fef2f2; border: 2px dashed var(--danger);">
+      <div class="thread-row">
+        <span class="thread-who" style="color: var(--primary);">你 → 小亮（B1）：</span>
+        <span style="color: var(--danger); font-weight: 700;">❌ 小亮不是你的同桌，不能传纸条</span>
+      </div>
+    </div>
+  </div>
+  <p class="tip">pass_note action 校验 deskmates 字段；非邻桌自动 reject + Director warning</p>
+</div>
+</body>
+</html>

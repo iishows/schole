@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CW2 · Hand-Raise 举手按钮</title>
+<style>
+  :root { --primary: #722ed1; --primary-soft: #f3ebfd; --bg: #faf9fe; --surface: #fff; --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --amber-bg: #fef3c7; --amber-fg: #854d0e; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; padding: 24px 16px 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .anno { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border: 1px dashed #facc15; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--amber-fg); margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px; border-left: 3px solid var(--primary); }
+  .demo { background: var(--surface); border-radius: 12px; border: 1px solid var(--line); padding: 16px; margin-bottom: 16px; position: relative; min-height: 380px; }
+  .demo-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; padding: 3px 8px; background: var(--primary-soft); border-radius: 999px; display: inline-block; }
+  .tip { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .stage-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #fff 0%, #faf9fe 100%); border-radius: 12px; z-index: 0; }
+  .stage-content { position: relative; z-index: 1; padding-top: 60px; }
+
+  /* PeriodBar 复用 */
+  .period-bar { height: 48px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; position: absolute; top: 0; left: 0; right: 0; border-radius: 12px 12px 0 0; z-index: 2; }
+  .pb-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .pb-text { display: flex; flex-direction: column; flex: 1; }
+  .pb-title { font-size: 13px; font-weight: 700; }
+  .pb-sub { font-size: 11px; color: var(--muted); }
+  .pb-time { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--primary); background: var(--primary-soft); padding: 3px 10px; border-radius: 999px; }
+
+  /* Roundtable 简化呈现 */
+  .row { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #faf9fe; border-radius: 999px; margin: 12px 0; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .avatar.teacher { background: var(--primary); }
+  .avatar.student1 { background: #ec4899; }
+  .avatar.student2 { background: #10b981; }
+  .avatar.user { background: #3b82f6; }
+  .avatar.small { width: 28px; height: 28px; font-size: 12px; }
+
+  /* Bubble */
+  .bubble { max-width: 75%; padding: 12px 16px; border-radius: 16px; font-size: 13px; margin: 10px 0; position: relative; }
+  .bubble.teacher { background: var(--surface); border: 1px solid var(--line); }
+  .bubble.agent { background: #dbeafe; color: #1f2937; }
+  .bubble.user { background: var(--primary); color: #fff; align-self: flex-end; }
+  .speech { display: flex; flex-direction: column; }
+
+  /* HandRaise 浮按钮 */
+  .raise-fab { position: absolute; bottom: 16px; right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 10; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .raise-fab:hover { transform: scale(1.05); border-color: var(--primary); }
+  .raise-fab .label { font-size: 9px; color: var(--muted); margin-top: 2px; font-weight: 700; }
+  .raise-fab.queued { background: var(--warn); border-color: var(--warn); }
+  .raise-fab.queued .label, .raise-fab.queued { color: #fff; }
+  .raise-fab .badge { position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; border-radius: 999px; padding: 2px 6px; font-size: 10px; font-weight: 700; border: 2px solid var(--surface); }
+
+  /* Queue toast */
+  .queue { position: absolute; bottom: 80px; right: 16px; background: var(--surface); border: 1px solid var(--warn); border-radius: 12px; padding: 12px; box-shadow: 0 4px 16px rgba(245,158,11,0.2); z-index: 11; width: 220px; }
+  .queue-title { font-size: 11px; font-weight: 700; color: var(--warn); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .queue-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
+  .queue-item:last-child { border-bottom: none; }
+  .queue-item .position { font-weight: 700; color: var(--muted); min-width: 20px; }
+  .queue-item.you { background: #fef3c7; padding: 6px 8px; border-radius: 6px; margin: 4px -8px; }
+
+  /* Raise modal */
+  .raise-modal { position: absolute; bottom: 80px; right: 16px; width: 280px; background: var(--surface); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 12; padding: 14px; border: 1px solid var(--primary); }
+  .raise-modal h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .raise-modal textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 12px; resize: none; min-height: 64px; font-family: inherit; margin-bottom: 8px; }
+  .raise-modal .actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .raise-modal button { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .raise-modal .cancel { background: transparent; color: var(--muted); }
+  .raise-modal .submit { background: var(--warn); color: #fff; }
+
+  /* Director fallback */
+  .fallback { position: absolute; bottom: 80px; left: 16px; right: 80px; padding: 12px 16px; background: #fef3c7; border: 1px solid var(--warn); border-radius: 12px; font-size: 12px; }
+  .fallback strong { color: var(--warn); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>✋ CW2 · 举手 + raise_hand DSL</h1>
+  <p class="sub">classroom-mode-design.md §5.2 + §6 W2 · 4 状态 + ClassroomService 隔离</p>
+
+  <div class="anno">✋ CW2 · Hand-Raise · 浮按钮 4 态 + 队列 FIFO + 满 3 人自动 cue_user。raise_hand 节点走 ClassroomService 隔离，不侵入 Director graph。</div>
+
+  <!-- 状态 1：default float button -->
+  <div class="section-title">状态 1 · 默认态（浮按钮未点击）</div>
+  <div class="demo">
+    <div class="stage-bg"></div>
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">32:14</span>
+    </div>
+    <div class="stage-content">
+      <div class="speech">
+        <div class="bubble teacher">👩‍🏫 <strong>小诺姐姐</strong> · 异分母相加要先通分，那 1/2 + 1/3 怎么找公分母呢？</div>
+      </div>
+      <div class="row">
+        <div class="avatar teacher">👩‍🏫</div>
+        <div class="avatar student1">👧</div>
+        <div class="avatar student2">👦</div>
+        <div class="avatar user">🧒</div>
+      </div>
+    </div>
+    <div class="raise-fab">
+      ✋
+      <span class="label">举手</span>
+    </div>
+  </div>
+  <p class="tip">右下角浮按钮 🔔 — 灰色边框 / 静态 / 点击展开 modal</p>
+
+  <!-- 状态 2：modal 输入 -->
+  <div class="section-title">状态 2 · 输入提问（点开后 modal）</div>
+  <div class="demo">
+    <div class="stage-bg"></div>
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">32:14</span>
+    </div>
+    <div class="stage-content">
+      <div class="speech">
+        <div class="bubble teacher">👩‍🏫 <strong>小诺姐姐</strong> · 谁能告诉我公分母是什么？</div>
+        <div class="bubble agent">👧 <strong>小红</strong> · 我觉得公分母要找倍数关系...</div>
+      </div>
+      <div class="row">
+        <div class="avatar teacher">👩‍🏫</div>
+        <div class="avatar student1" style="position: relative;">
+          👧
+          <div style="position: absolute; top: -8px; right: -8px; background: var(--warn); color: #fff; border-radius: 999px; padding: 2px 4px; font-size: 9px;">✋</div>
+        </div>
+        <div class="avatar student2">👦</div>
+        <div class="avatar user">🧒</div>
+      </div>
+    </div>
+    <div class="raise-modal">
+      <h4>✋ 我要举手</h4>
+      <textarea placeholder="你想问/说什么？（选填）">公分母是 6 吗？</textarea>
+      <div class="actions">
+        <button class="cancel">取消</button>
+        <button class="submit">✋ 举手</button>
+      </div>
+    </div>
+    <div class="raise-fab" style="background: var(--primary-soft); border-color: var(--primary);">
+      ✋
+      <span class="label" style="color: var(--primary);">输入中</span>
+    </div>
+  </div>
+  <p class="tip">点开后弹 modal：输入框 + 提交按钮；小红已先举手（🎈角标）</p>
+
+  <!-- 状态 3：queued (队列已加入) -->
+  <div class="section-title">状态 3 · 已加入队列（橙色 + badge + 队列面板显示）</div>
+  <div class="demo">
+    <div class="stage-bg"></div>
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">32:14</span>
+    </div>
+    <div class="stage-content">
+      <div class="speech">
+        <div class="bubble teacher">👩‍🏫 <strong>小诺姐姐</strong> · 谁能告诉我公分母是什么？</div>
+        <div class="bubble agent">👧 <strong>小红</strong> · 我觉得公分母要找倍数关系...</div>
+      </div>
+      <div class="row">
+        <div class="avatar teacher">👩‍🏫</div>
+        <div class="avatar student1">👧</div>
+        <div class="avatar student2" style="position: relative;">👦<div style="position: absolute; top: -8px; right: -8px; background: var(--warn); color: #fff; border-radius: 999px; padding: 2px 4px; font-size: 9px;">✋</div></div>
+        <div class="avatar user" style="position: relative;">🧒<div style="position: absolute; top: -8px; right: -8px; background: var(--warn); color: #fff; border-radius: 999px; padding: 2px 4px; font-size: 9px;">✋</div></div>
+      </div>
+    </div>
+    <div class="queue">
+      <div class="queue-title">✋ 举手队列（2/3）</div>
+      <div class="queue-item">
+        <span class="position">1.</span>
+        <div class="avatar small" style="background: #10b981;">👦</div>
+        <span>阿泽</span>
+        <span style="margin-left: auto; font-size: 10px; color: var(--muted);">2 分前</span>
+      </div>
+      <div class="queue-item you">
+        <span class="position">2.</span>
+        <div class="avatar small user">🧒</div>
+        <span style="font-weight: 700;">你（"公分母是 6 吗？"）</span>
+      </div>
+    </div>
+    <div class="raise-fab queued">
+      ✋
+      <span class="label">队列中</span>
+      <span class="badge">2</span>
+    </div>
+  </div>
+  <p class="tip">颜色变橙；右下角 badge 显示队列长度；上面列表展示顺序（最先举手 = 优先被叫）</p>
+
+  <!-- 状态 4：full 自动 cue_user -->
+  <div class="section-title">状态 4 · 队列满 3 人 — 自动转 cue_user</div>
+  <div class="demo">
+    <div class="stage-bg"></div>
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">31:48</span>
+    </div>
+    <div class="stage-content">
+      <div class="bubble teacher" style="background: #fef3c7; border-color: var(--warn);">
+        👩‍🏫 <strong>小诺姐姐</strong> · 好的，阿泽（举手最久），请你来回答！
+      </div>
+    </div>
+    <div class="fallback">
+      🎯 <strong>自动 cue_user</strong> · 队列 ≥ 3 时 Director 转 spoke-on 给最早举手者
+    </div>
+    <div class="queue" style="bottom: 100px;">
+      <div class="queue-title">✋ 已自动叫答 · 队列清空</div>
+      <div class="queue-item" style="opacity: 0.5;">
+        <span class="position">1.</span>
+        <div class="avatar small" style="background: #10b981;">👦</div>
+        <span>阿泽</span>
+        <span style="margin-left: auto; font-size: 10px; color: var(--success);">✓ 已叫</span>
+      </div>
+    </div>
+  </div>
+  <p class="tip">CM2 验收：FIFO + ≥3 自动转 cue_user；feature flag `classroom.enabled` 关闭 = 当前 Roundtable 完全不变</p>
+</div>
+</body>
+</html>

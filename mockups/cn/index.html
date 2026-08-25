@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · CN 伴读系统 · Mockup 索引</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --nunu: #722ed1;
+    --hong: #ec4899;
+    --aze: #f59e0b;
+    --me: #3b82f6;
+    --admin: #3b82f6;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 50%, #d946ef 100%);
+    color: #fff;
+    padding: 48px 20px 64px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '👩‍🏫👧👦🧒';
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 36px;
+    opacity: 0.2;
+  }
+  .header-logo {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+  .header-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .header-sub {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 24px;
+  }
+  .header-stats {
+    display: inline-flex;
+    gap: 16px;
+    background: rgba(255,255,255,0.15);
+    padding: 8px 16px;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    font-size: 13px;
+    font-weight: 600;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .header-stat strong {
+    color: #fbbf24;
+    margin-right: 4px;
+  }
+  .header-stat-divider { opacity: 0.3; }
+  .header-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+  }
+  .header-btn:hover {
+    background: rgba(255,255,255,0.3);
+  }
+
+  /* Main */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  /* Section title */
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+  .section-header:first-child { margin-top: 0; }
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .section-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--line);
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  /* Card grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--fg);
+    display: flex; flex-direction: column;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(114, 46, 209, 0.08);
+    border-color: var(--primary);
+  }
+  .card-admin:hover {
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+    border-color: var(--admin);
+  }
+
+  .card-preview {
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, #faf9fe 0%, #f3ebfd 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .card-admin .card-preview {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+  .card-preview-icon { font-size: 36px; }
+  .card-admin .card-preview-icon { filter: brightness(1.5); }
+  .card-preview-tag {
+    position: absolute;
+    top: 10px; left: 10px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    backdrop-filter: blur(10px);
+  }
+  .card-admin .card-preview-tag {
+    color: #60a5fa;
+    background: rgba(15,23,42,0.85);
+  }
+  .card-preview-tag.warn { color: var(--warn); }
+  .card-preview-tag.info { color: var(--me); }
+  .card-preview-tag.danger { color: var(--danger, #dc2626); }
+
+  .card-body {
+    padding: 14px 16px;
+    flex: 1;
+    display: flex; flex-direction: column;
+  }
+  .card-id {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  .card-admin .card-id { color: var(--admin); }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .card-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .card-meta-tag {
+    padding: 2px 6px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .card-meta-tag.k12 { background: #fef3c7; color: #92400e; }
+  .card-meta-tag.parent { background: #dbeafe; color: #1e40af; }
+  .card-meta-tag.compliance { background: #fee2e2; color: #b91c1c; }
+  .card-meta-tag.review { background: #d1fae5; color: #065f46; }
+  .card-meta-tag.onboarding { background: #fce7f3; color: #831843; }
+  .card-meta-tag.common { background: #e0e7ff; color: #3730a3; }
+  .card-meta-tag.admin { background: #1e3a8a; color: #dbeafe; }
+
+  /* Color variants */
+  .card-parent .card-preview {
+    background: linear-gradient(135deg, #faf9fe 0%, #dbeafe 100%);
+  }
+  .card-kid .card-preview {
+    background: linear-gradient(135deg, #faf9fe 0%, #f3ebfd 100%);
+  }
+  .card-compliance .card-preview {
+    background: linear-gradient(135deg, #faf9fe 0%, #fef3c7 100%);
+  }
+  .card-review .card-preview {
+    background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+  }
+  .card-onboarding .card-preview {
+    background: linear-gradient(135deg, #faf9fe 0%, #fce7f3 100%);
+  }
+  .card-common .card-preview {
+    background: linear-gradient(135deg, #faf9fe 0%, #e0e7ff 100%);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 20px 24px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+    margin-top: 48px;
+  }
+  .footer a { color: var(--primary); text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header { padding: 32px 16px 48px; }
+    .header-title { font-size: 24px; }
+    .main { padding: 24px 12px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">小诺学伴 · CN 伴读系统</div>
+  <h1 class="header-title">Mockup 索引</h1>
+  <p class="header-sub">30 个 mockup / 18 个 SOP / ~8300 行 / 静态 HTML</p>
+  <div class="header-stats">
+    <span class="header-stat"><strong>30</strong>mockup</span>
+    <span class="header-stat-divider">·</span>
+    <span class="header-stat"><strong>8</strong>分类</span>
+    <span class="header-stat-divider">·</span>
+    <span class="header-stat"><strong>18</strong>SOP</span>
+    <span class="header-stat-divider">·</span>
+    <span class="header-stat"><strong>4</strong>角色</span>
+  </div>
+  <br>
+  <a class="header-btn" href="./demo-flow.html">▶ 自动播放 SOP 演示 (30 步)</a>
+  <a class="header-btn" href="./videos/">📹 查看分角色视频</a>
+</div>
+
+<!-- Videos section -->
+<div class="main" style="padding-top: 0;">
+  <div class="section-header" style="margin-top: 8px;">
+    <div class="section-icon" style="background: #1e293b; color: #60a5fa;">🎬</div>
+    <div class="section-title">分角色 SOP 视频</div>
+    <div class="section-count">4 个</div>
+  </div>
+  <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));">
+    <a class="card card-parent" href="./videos/demo-parent.mp4" target="_blank">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">14 步 · 73s · 1.7MB</span>
+        <div class="card-preview-icon">👨‍👩‍👧</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">VIDEO · 家长端</div>
+        <div class="card-title">家长 SOP 完整流程</div>
+        <div class="card-desc">触达首次进入 → 孩子管理 → 查看报告 → 个人设置 → 退订管理（14 步）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>MP4 + GIF</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./videos/demo-child.mp4" target="_blank">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">6 步 · 39s · 1.2MB</span>
+        <div class="card-preview-icon">🧒</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">VIDEO · 孩子端 K12</div>
+        <div class="card-title">孩子 SOP 完整流程</div>
+        <div class="card-desc">Socratic 对话核心 → 错题讲解 → 错题详情 → 艾宾浩斯复习（6 步）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>MP4 + GIF</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./videos/demo-admin.mp4" target="_blank">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">7 步 · 38s · 1.2MB</span>
+        <div class="card-preview-icon">⚙️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">VIDEO · 管理员端</div>
+        <div class="card-title">管理员 SOP 完整流程</div>
+        <div class="card-desc">登录 → 数据看板 → 内容审核 → 用户/Perosna/Textbook/模板管理（7 步）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>MP4 + GIF</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-compliance" href="./videos/demo-support.mp4" target="_blank">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">3 步 · 18s · 0.4MB</span>
+        <div class="card-preview-icon">🛡️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">VIDEO · 客服端</div>
+        <div class="card-title">客服 SOP 完整流程</div>
+        <div class="card-desc">投诉 / 申诉 → 未成年保护 → 404 通用错误页（3 步）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag compliance">客服</span>
+          <span>MP4 + GIF</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- 1. 家长端 -->
+  <div class="section-header">
+    <div class="section-icon" style="background: var(--primary-soft); color: var(--primary);">👨‍👩‍👧</div>
+    <div class="section-title">家长端</div>
+    <div class="section-count">5 个</div>
+  </div>
+  <div class="grid">
+    <a class="card card-parent" href="./landing-h5.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">SOP 1</span>
+        <div class="card-preview-icon">🏠</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-1</div>
+        <div class="card-title">访客 H5 落地页</div>
+        <div class="card-desc">未注册用户首次进入 — Hero + 4 痛点 + Socratic 示例 + 4 大功能 + CTA</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>486 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./kids-select.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">Onboarding</span>
+        <div class="card-preview-icon">👧👦</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-2</div>
+        <div class="card-title">同家庭多孩选择</div>
+        <div class="card-desc">家长选择孩子 · 显示每个孩子的 persona（小诺姐姐 + 同学）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>432 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./learning-report.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">周报</span>
+        <div class="card-preview-icon">📊</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-3</div>
+        <div class="card-title">本周学习报告</div>
+        <div class="card-desc">3 卡片（掌握度 / 错题 TOP 3 / 改进建议）— 家长付费触发点</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>410 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./add-kid.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">SOP 2</span>
+        <div class="card-preview-icon">➕</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-4</div>
+        <div class="card-title">添加第 2 个孩子</div>
+        <div class="card-desc">多孩管理 · 套餐检查 + 孩子表单 + 选 persona + 班主任锁定</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>475 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./upgrade-family.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">SOP 3</span>
+        <div class="card-preview-icon">⬆️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-5</div>
+        <div class="card-title">升级家庭版</div>
+        <div class="card-desc">单孩 → 家庭版 · 差价计算（按剩余天数抵扣）· 月付 / 年付</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>383 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 2. 家长设置 -->
+  <div class="section-header">
+    <div class="section-icon" style="background: var(--primary-soft); color: var(--primary);">⚙️</div>
+    <div class="section-title">家长设置</div>
+    <div class="section-count">5 个</div>
+  </div>
+  <div class="grid">
+    <a class="card card-parent" href="./subscription-cancel.html">
+      <div class="card-preview">
+        <span class="card-preview-tag danger">SOP 4</span>
+        <div class="card-preview-icon">⚠️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-6</div>
+        <div class="card-title">取消订阅 / 注销</div>
+        <div class="card-desc">退订保留数据 30 天 · 注销 30 天宽限期 + 物理删除 · 退订前后对比</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>294 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./account-security.html">
+      <div class="card-preview">
+        <span class="card-preview-tag info">SOP 5</span>
+        <div class="card-preview-icon">🔒</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-7</div>
+        <div class="card-title">账号安全</div>
+        <div class="card-desc">修改密码 · 二次验证 toggle · 登录管理 · 危险区域（注销）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>330 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./notification-prefs.html">
+      <div class="card-preview">
+        <span class="card-preview-tag info">SOP 6</span>
+        <div class="card-preview-icon">🔔</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-8</div>
+        <div class="card-title">推送设置</div>
+        <div class="card-desc">周报 / 错题 / 学习建议 3 类推送 + 静默时段 · 微信 + 邮箱多选</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>368 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./swap-persona.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">SOP 7</span>
+        <div class="card-preview-icon">🔄</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-9</div>
+        <div class="card-title">换班主任</div>
+        <div class="card-desc">班主任锁定到学期末（100 天后解锁）· 4 班主任卡（locked 半透明）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>378 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./pipl-data.html">
+      <div class="card-preview">
+        <span class="card-preview-tag info">SOP 8</span>
+        <div class="card-preview-icon">📦</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">P-10</div>
+        <div class="card-title">PIPL 数据权利</div>
+        <div class="card-desc">导出（PDF + JSON）/ 删除（30 天宽限）/ 限制处理 + 删除确认 modal</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">家长</span>
+          <span>308 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 3. Onboarding（新增） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #fce7f3; color: #831843;">🚀</div>
+    <div class="section-title">Onboarding 新手流程</div>
+    <div class="section-count">4 个（新增）</div>
+  </div>
+  <div class="grid">
+    <a class="card card-onboarding" href="./pwa-install.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M1</span>
+        <div class="card-preview-icon">📲</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">O-1</div>
+        <div class="card-title">PWA 安装提示</div>
+        <div class="card-desc">"添加到主屏幕" 引导 + 离线能力说明 + iOS / Android 分步骤</div>
+        <div class="card-meta">
+          <span class="card-meta-tag onboarding">Onboarding</span>
+          <span>M1 PWA</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-onboarding" href="./register-login.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M2</span>
+        <div class="card-preview-icon">🔐</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">O-2</div>
+        <div class="card-title">注册登录</div>
+        <div class="card-desc">手机号 + 验证码 + 微信扫码双入口 · 隐私协议一次性勾选</div>
+        <div class="card-meta">
+          <span class="card-meta-tag onboarding">Onboarding</span>
+          <span>M2 登录</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-onboarding" href="./pipl-consent.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M12</span>
+        <div class="card-preview-icon">✅</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">O-3</div>
+        <div class="card-title">PIPL 4 项同意</div>
+        <div class="card-desc">必勾选（必要）+ 选勾（个性化 / 推送 / 数据） + 未成年独立同意</div>
+        <div class="card-meta">
+          <span class="card-meta-tag onboarding">Onboarding</span>
+          <span>M12 PIPL</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-onboarding" href="./payment-success.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M11</span>
+        <div class="card-preview-icon">🎉</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">O-4</div>
+        <div class="card-title">支付成功</div>
+        <div class="card-desc">微信支付 V3 成功页 + 下一步添加孩子 / 邀请家庭成员 CTA</div>
+        <div class="card-meta">
+          <span class="card-meta-tag onboarding">Onboarding</span>
+          <span>M11 支付</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 4. 孩子端 K12（扩充为 5 个） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #f3ebfd; color: var(--primary);">👩‍🏫</div>
+    <div class="section-title">孩子端 K12</div>
+    <div class="section-count">5 个</div>
+  </div>
+  <div class="grid">
+    <a class="card card-kid" href="./socratic-dialogue.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">核心</span>
+        <div class="card-preview-icon">🍕</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">K-1</div>
+        <div class="card-title">Socratic 对话核心场景</div>
+        <div class="card-desc">1 mentor + 2 buddies · 错题 1/2+1/3=2/5 · 白板披萨图 · Socratic 8 轮引导</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>627 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./mistake-list.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M6</span>
+        <div class="card-preview-icon">📒</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">K-2</div>
+        <div class="card-title">错题本列表</div>
+        <div class="card-desc">错题列表 + 状态筛选（待讲 / 复习 / 已掌握）+ 艾宾浩斯间隔标签</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>~180 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./mistake-camera.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M6</span>
+        <div class="card-preview-icon">📷</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">K-3</div>
+        <div class="card-title">拍照 OCR</div>
+        <div class="card-desc">取景框 + 多题分割 + 学科自动识别 + Tesseract 二次确认</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>~135 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./mistake-manual.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M6</span>
+        <div class="card-preview-icon">✍️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">K-4</div>
+        <div class="card-title">手动添加错题</div>
+        <div class="card-desc">题目表单 + 拍照 / 选择 / 快捷 3 入口 + 学科 + 知识点 + 难度</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>~150 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./mistake-detail.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">K-6</span>
+        <div class="card-preview-icon">📝</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">K-5</div>
+        <div class="card-title">错题详情</div>
+        <div class="card-desc">题目 + 步骤 + 时间线 + Socratic 历史 + 同类错题推荐</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">孩子</span>
+          <span>~245 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 5. 复习（新增） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #d1fae5; color: #065f46;">🔁</div>
+    <div class="section-title">复习 · 艾宾浩斯</div>
+    <div class="section-count">1 个（新增）</div>
+  </div>
+  <div class="grid">
+    <a class="card card-review" href="./review-queue.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">M9</span>
+        <div class="card-preview-icon">🧠</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">R-1</div>
+        <div class="card-title">艾宾浩斯复习队列</div>
+        <div class="card-desc">1 / 3 / 7 / 14 / 30 天间隔 · 题型选择（简答 / 计算 / 应用）· 复习路径</div>
+        <div class="card-meta">
+          <span class="card-meta-tag review">复习</span>
+          <span>~175 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 6. 合规 / 客服 -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #fef3c7; color: #92400e;">⚠️</div>
+    <div class="section-title">合规 / 客服</div>
+    <div class="section-count">2 个</div>
+  </div>
+  <div class="grid">
+    <a class="card card-compliance" href="./complaint.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">SOP 9</span>
+        <div class="card-preview-icon">📝</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">C-1</div>
+        <div class="card-title">投诉 / 申诉</div>
+        <div class="card-desc">6 类型 · SLA 24/48/72h · 详情 / 截图 / 联系 · 紧急投诉直拨</div>
+        <div class="card-meta">
+          <span class="card-meta-tag compliance">合规</span>
+          <span>411 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-compliance" href="./minor-protection.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">SOP 10</span>
+        <div class="card-preview-icon">⏰</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">C-2</div>
+        <div class="card-title">时长保护</div>
+        <div class="card-desc">≤ 60 分钟 + 21:00-7:00 夜间禁用 · 家长 PIN 验证 · 异常处理</div>
+        <div class="card-meta">
+          <span class="card-meta-tag compliance">合规</span>
+          <span>428 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 7. 通用（新增） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #e0e7ff; color: #3730a3;">🧩</div>
+    <div class="section-title">通用</div>
+    <div class="section-count">1 个（新增）</div>
+  </div>
+  <div class="grid">
+    <a class="card card-common" href="./404.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">404</span>
+        <div class="card-preview-icon">🛸</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">X-1</div>
+        <div class="card-title">通用错误页</div>
+        <div class="card-desc">空状态插画 + 返回首页 + 联系客服 + 帮助中心</div>
+        <div class="card-meta">
+          <span class="card-meta-tag common">通用</span>
+          <span>~70 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 8. 管理员端（新增 7 个） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: #0f172a; color: #60a5fa;">⚙️</div>
+    <div class="section-title">管理员端（深色专业）</div>
+    <div class="section-count">7 个（新增）</div>
+  </div>
+  <div class="grid">
+    <a class="card card-admin" href="./admin-login.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-1</span>
+        <div class="card-preview-icon">🛡️</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-1</div>
+        <div class="card-title">管理员登录</div>
+        <div class="card-desc">邮箱密码 + 2FA 验证码 + 角色识别（运营 / 客服 / admin）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~80 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-dashboard.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-7</span>
+        <div class="card-preview-icon">📊</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-2</div>
+        <div class="card-title">数据看板</div>
+        <div class="card-desc">4 KPI 卡 + 7 日趋势 + 订阅分布 + 章节错题 TOP 5</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~180 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-review.html">
+      <div class="card-preview">
+        <span class="card-preview-tag warn">O-2</span>
+        <div class="card-preview-icon">🔍</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-3</div>
+        <div class="card-title">内容审核</div>
+        <div class="card-desc">待审队列 + 危险词高亮 + 通过 / 拒绝 + SLA 倒计时</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~200 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-users.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-3</span>
+        <div class="card-preview-icon">👥</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-4</div>
+        <div class="card-title">用户管理</div>
+        <div class="card-desc">查询 / 套餐筛选 / 状态筛选 + 停用 / 升级 / 退款操作</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~155 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-personas.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-4</span>
+        <div class="card-preview-icon">🎭</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-5</div>
+        <div class="card-title">Persona CRUD</div>
+        <div class="card-desc">班主任 / 同学模板增删改 + 满意度统计 + 5 mentor 默认列表</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~190 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-textbooks.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-5</span>
+        <div class="card-preview-icon">📚</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-6</div>
+        <div class="card-title">Textbook 管理</div>
+        <div class="card-desc">PDF 上传 + 自动解析章节 + 状态（解析中 / 已上线 / 草稿）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~145 行</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-admin" href="./admin-templates.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">O-6</span>
+        <div class="card-preview-icon">📢</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">A-7</div>
+        <div class="card-title">推送模板编辑器</div>
+        <div class="card-desc">微信公众号模板消息编辑 + 变量插值 + 5 模板（周报 / 错题 / 学习 / 试用 / 订阅）</div>
+        <div class="card-meta">
+          <span class="card-meta-tag admin">管理员</span>
+          <span>~150 行</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- 9. Classroom Mode V1（新增 5 + 1 主视图 · CW1-CW5） -->
+  <div class="section-header">
+    <div class="section-icon" style="background: var(--primary-soft); color: var(--primary);">🎓</div>
+    <div class="section-title">Classroom Mode V1（CW1-CW5 并行）</div>
+    <div class="section-count">6 个（新增）</div>
+  </div>
+  <div class="grid">
+    <a class="card card-parent" href="./classroom-period-bar.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">CW1</span>
+        <div class="card-preview-icon">📅</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">CW1 · Period Bar</div>
+        <div class="card-title">顶部 Period Bar 时钟容器</div>
+        <div class="card-desc">4 状态（lesson / break / after / attention）+ 移动端底部 mini bar 折叠</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">CM1</span>
+          <span>ClassroomService</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./classroom-hand-raise.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">CW2</span>
+        <div class="card-preview-icon">✋</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">CW2 · 举手 + raise_hand</div>
+        <div class="card-title">浮按钮 Hand-Raise 队列</div>
+        <div class="card-desc">4 状态（默认 / 输入 / 已加入 / 满 3 自动 cue_user）· FIFO + ClassroomService 隔离</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">CM2</span>
+          <span>DSL raise_hand</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./classroom-call-on.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">CW3</span>
+        <div class="card-preview-icon">📣</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">CW3 · 叫答 + call_on</div>
+        <div class="card-title">叫答卡片 Call-On</div>
+        <div class="card-desc">4 状态（触发 / 倒计时归零 / target offline / 成功回答）· spotlight 复用</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">CM3</span>
+          <span>DSL call_on</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./classroom-pass-note.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">CW4</span>
+        <div class="card-preview-icon">📨</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">CW4 · 同桌 + pass_note</div>
+        <div class="card-title">飞纸条 + 同桌关系</div>
+        <div class="card-desc">5 状态（俯瞰布局 / 输入 / 飞行 / 收方 hint / 接力 speech）· seatLayout 自动 + admin override</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">CM4</span>
+          <span>DSL pass_note</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-parent" href="./classroom-blackboard.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">CW5</span>
+        <div class="card-preview-icon">📝</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">CW5 · 黑板 + blackboard_annotate</div>
+        <div class="card-title">Canvas tab + chalk 白板</div>
+        <div class="card-desc">4 状态（幻灯片 / 白板 / 测验 / 用户输入）· chalk 笔触 + 全角色可写</div>
+        <div class="card-meta">
+          <span class="card-meta-tag parent">CM5</span>
+          <span>DSL blackboard_annotate</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-kid" href="./classroom-overview.html">
+      <div class="card-preview">
+        <span class="card-preview-tag">⭐ Master</span>
+        <div class="card-preview-icon">🎓</div>
+      </div>
+      <div class="card-body">
+        <div class="card-id">Master · 主视图</div>
+        <div class="card-title">Classroom Mode V1 主视图</div>
+        <div class="card-desc">5 元素全部呈现（Period Bar + 举手 FAB + 叫答 spotlight + 同桌 hint + 白板 toggle）· 一图见完整效果</div>
+        <div class="card-meta">
+          <span class="card-meta-tag k12">CW1-CW5</span>
+          <span>集成主视图</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>
+    <a href="./README.md">📖 README</a> ·
+    <a href="./demo-flow.html">▶ 自动播放</a> ·
+    <a href="../../specs/core-value.md">核心价值</a> ·
+    <a href="../../specs/cn-companion-mvp-plan.md">MVP 计划</a> ·
+    <a href="../../specs/cn-companion-sop.md">SOP</a>
+  </p>
+  <p style="margin-top: 8px;">OpenMAIC CN 伴读 MVP · 36 mockup（30 + 6 Classroom） · ~11000 行 · 2026-08-25</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CW1 · Period Bar 时钟容器</title>
+<style>
+  :root { --primary: #722ed1; --primary-soft: #f3ebfd; --bg: #faf9fe; --surface: #fff; --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --amber-bg: #fef3c7; --amber-fg: #854d0e; --break-bg: #dbeafe; --break-fg: #1e40af; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; padding: 24px 16px 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .anno { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border: 1px dashed #facc15; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--amber-fg); margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px; border-left: 3px solid var(--primary); }
+  .demo { background: var(--surface); border-radius: 12px; border: 1px solid var(--line); padding: 16px; margin-bottom: 12px; }
+  .demo-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; padding: 3px 8px; background: var(--primary-soft); border-radius: 999px; display: inline-block; }
+
+  /* PeriodBar — 4 状态 */
+  .period-bar { height: 48px; padding: 0 16px; background: linear-gradient(90deg, #fff 0%, #faf9fe 100%); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; border-radius: 0; }
+  .pb-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .pb-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .pb-icon.ringing { background: var(--amber-bg); animation: ring 0.6s infinite; }
+  @keyframes ring { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-15deg); } }
+  .pb-text { display: flex; flex-direction: column; min-width: 0; }
+  .pb-title { font-size: 13px; font-weight: 700; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pb-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pb-spacer { flex: 1; }
+  .pb-controls { display: flex; align-items: center; gap: 6px; }
+  .pb-time { font-family: monospace; font-size: 14px; font-weight: 700; color: var(--primary); background: var(--primary-soft); padding: 3px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+  .pb-btn { width: 28px; height: 28px; border-radius: 50%; background: transparent; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 12px; }
+  .pb-btn:hover { background: var(--primary-soft); color: var(--primary); }
+
+  /* States variant */
+  .period-bar.lesson { border-bottom-color: var(--primary); }
+  .period-bar.break { background: linear-gradient(90deg, #f0f9ff 0%, #faf9fe 100%); }
+  .period-bar.break .pb-icon { background: var(--break-bg); color: var(--break-fg); }
+  .period-bar.break .pb-time { background: var(--break-bg); color: var(--break-fg); }
+  .period-bar.after { background: #f5f3ff; border-bottom-color: var(--muted); }
+  .period-bar.attention .pb-icon { background: var(--amber-bg); animation: ring 0.4s infinite; }
+
+  /* Mobile mini bar */
+  .mini-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 36px; background: var(--surface); border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
+  .mini-left { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
+  .mini-right { font-family: monospace; font-size: 11px; color: var(--primary); }
+
+  /* Annotation tip */
+  .tip { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .intl-note { background: #f0fdf4; border: 1px dashed #86efac; padding: 8px 12px; border-radius: 8px; font-size: 11px; color: #166534; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📅 CW1 · Period Bar（顶部时钟容器）</h1>
+  <p class="sub">classroom-mode-design.md §6 W1 + §5.1 · 4 状态 + 移动端 mini bar</p>
+
+  <div class="anno">📅 CW1 · Period Bar · 顶部 48px 时间容器，4 状态切换 + 移动端折叠</div>
+
+  <div class="intl-note">🌍 <strong>INTL 兼容（D-3 验证）</strong>：i18n bundle <code>classroom.intl.json</code> 翻译 "Lesson-1" → "Circle Time 1"、"break" → "Recess"、"上课铃" → "Morning Bell"。功能 100% 复用。</div>
+
+  <!-- 状态 1：lesson（默认） -->
+  <div class="section-title">状态 1 · 上课中（lesson）— 默认态</div>
+  <div class="demo">
+    <span class="demo-label">lesson</span>
+    <div class="period-bar lesson">
+      <div class="pb-left">
+        <div class="pb-icon">📚</div>
+        <div class="pb-text">
+          <span class="pb-title">第 3 节 · 异分母分数加法</span>
+          <span class="pb-sub">人教版 4 年级数学（上）· 4-NF-A-2</span>
+        </div>
+      </div>
+      <div class="pb-spacer"></div>
+      <div class="pb-controls">
+        <span class="pb-time">32:14</span>
+        <button class="pb-btn">⏮</button>
+        <button class="pb-btn">⏸</button>
+        <button class="pb-btn">⏭</button>
+      </div>
+    </div>
+    <p class="tip">紫色主题条，倒计时 mm:ss 显示，左侧 lesson 名 + 教材章节</p>
+  </div>
+
+  <!-- 状态 2：break 课间 -->
+  <div class="section-title">状态 2 · 课间休息（break）— 自动 transition</div>
+  <div class="demo">
+    <span class="demo-label">break</span>
+    <div class="period-bar break">
+      <div class="pb-left">
+        <div class="pb-icon">☕</div>
+        <div class="pb-text">
+          <span class="pb-title">课间休息</span>
+          <span class="pb-sub">下节课 · 应用题单位换算</span>
+        </div>
+      </div>
+      <div class="pb-spacer"></div>
+      <div class="pb-controls">
+        <span class="pb-time">08:42</span>
+        <button class="pb-btn">⏸</button>
+      </div>
+    </div>
+    <p class="tip">蓝色主题，period_end 自动触发；倒计时显示距下节课时长</p>
+  </div>
+
+  <!-- 状态 3：after-class 下课 -->
+  <div class="section-title">状态 3 · 当日完成（after-class）— 家长提示</div>
+  <div class="demo">
+    <span class="demo-label">after-class</span>
+    <div class="period-bar after">
+      <div class="pb-left">
+        <div class="pb-icon">✅</div>
+        <div class="pb-text">
+          <span class="pb-title">今天的课结束啦！</span>
+          <span class="pb-sub">已学 4 节 · 错题 12 道 · 掌握 82%</span>
+        </div>
+      </div>
+      <div class="pb-spacer"></div>
+      <div class="pb-controls">
+        <button class="pb-btn" style="width: auto; padding: 0 12px; border-radius: 999px; background: var(--primary); color: #fff; font-weight: 700; border: none;">📊 看周报</button>
+      </div>
+    </div>
+    <p class="tip">最后一节 period_end 触发（含 isLastLesson），CTA 直接到家长周报</p>
+  </div>
+
+  <!-- 状态 4：attention 铃声提醒 -->
+  <div class="section-title">状态 4 · 注意（attention）— period_bell 触发</div>
+  <div class="demo">
+    <span class="demo-label">attention</span>
+    <div class="period-bar lesson attention">
+      <div class="pb-left">
+        <div class="pb-icon ringing">🔔</div>
+        <div class="pb-text">
+          <span class="pb-title">⏰ 还剩 5 分钟</span>
+          <span class="pb-sub">再过 5 分钟进入课间</span>
+        </div>
+      </div>
+      <div class="pb-spacer"></div>
+      <div class="pb-controls">
+        <span class="pb-time">05:00</span>
+      </div>
+    </div>
+    <p class="tip">period_bell action 触发；图标振铃动画 + 琥珀色高亮</p>
+  </div>
+
+  <!-- 移动端 mini bar -->
+  <div class="section-title">📱 移动端 / iPad 折叠（< 768px）</div>
+  <div class="demo" style="padding: 0; overflow: hidden; max-width: 375px; margin: 0 auto;">
+    <div style="height: 60vh; background: linear-gradient(180deg, #fff 0%, #faf9fe 100%); padding: 16px;">
+      <p style="color: var(--muted); font-size: 12px; text-align: center;">（主区域）</p>
+    </div>
+    <div class="mini-bar">
+      <div class="mini-left">
+        <span>📚</span>
+        <span style="font-size: 10px; color: var(--muted);">第 3 节</span>
+      </div>
+      <div class="mini-right">32:14</div>
+    </div>
+  </div>
+  <p class="tip">移动端 &lt; 768px：顶部 PeriodBar 隐藏，改底部 36px mini bar（break / after 同样折叠）</p>
+</div>
+</body>
+</html>

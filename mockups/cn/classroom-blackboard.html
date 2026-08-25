@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CW5 · Blackboard 黑板模式</title>
+<style>
+  :root { --primary: #722ed1; --primary-soft: #f3ebfd; --bg: #faf9fe; --surface: #fff; --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; padding: 24px 16px 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .anno { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border: 1px dashed #facc15; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--amber-fg); margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px; border-left: 3px solid var(--primary); }
+  .demo { background: var(--surface); border-radius: 12px; border: 1px solid var(--line); padding: 16px; margin-bottom: 16px; min-height: 400px; position: relative; overflow: hidden; }
+  .demo-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; padding: 3px 8px; background: var(--primary-soft); border-radius: 999px; display: inline-block; }
+  .tip { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* PeriodBar 复用 */
+  .period-bar { height: 48px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; position: absolute; top: 0; left: 0; right: 0; border-radius: 12px 12px 0 0; z-index: 5; }
+  .pb-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .pb-text { flex: 1; }
+  .pb-title { font-size: 13px; font-weight: 700; }
+  .pb-sub { font-size: 11px; color: var(--muted); }
+  .pb-time { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--primary); background: var(--primary-soft); padding: 3px 10px; border-radius: 999px; }
+
+  /* Canvas tab bar */
+  .canvas-tabs { display: flex; gap: 4px; padding: 8px 16px; background: #faf9fe; border-bottom: 1px solid var(--line); }
+  .canvas-tab { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); }
+  .canvas-tab.active { background: var(--primary-soft); color: var(--primary); }
+
+  /* Blackboard area */
+  .blackboard { position: relative; height: 360px; padding: 24px; }
+  .board-surface { background: linear-gradient(135deg, #2d4a3a 0%, #1a2e23 100%); border-radius: 8px; box-shadow: inset 0 2px 12px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.6) inset; height: 100%; padding: 20px; position: relative; overflow: hidden; }
+  .board-frame { position: absolute; inset: 8px; border: 4px solid #6b4423; border-radius: 4px; pointer-events: none; }
+
+  /* chalk text */
+  .chalk { color: #fef9e7; font-family: 'Caveat', 'Comic Sans MS', cursive; text-shadow: 0 0 4px rgba(254,249,231,0.3); }
+  .chalk-h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .chalk-h2 { font-size: 18px; margin-top: 12px; }
+  .chalk-mono { font-family: 'Courier New', monospace; font-size: 20px; letter-spacing: 2px; margin: 4px 0; }
+
+  /* SVG drawing */
+  .board-svg { position: absolute; inset: 20px; pointer-events: none; }
+  .stroke { stroke: #fef9e7; stroke-width: 2; fill: none; stroke-linecap: round; opacity: 0.92; filter: url(#chalkFilter); }
+  .stroke.color-purple { stroke: #d8b4fe; }
+  .stroke.color-pink { stroke: #f9a8d4; }
+
+  /* Toolbar */
+  .board-toolbar { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-radius: 999px; padding: 6px 12px; display: flex; gap: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 10; }
+  .tool-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .tool-btn:hover { background: var(--primary-soft); }
+  .tool-btn.active { background: var(--primary); color: #fff; }
+
+  /* Cursor */
+  .cursor { position: absolute; font-size: 11px; font-weight: 700; padding: 2px 6px; background: var(--primary); color: #fff; border-radius: 4px; white-space: nowrap; }
+
+  /* Slide variant */
+  .slide-card { background: var(--surface); border-radius: 8px; padding: 24px; height: 360px; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+  .slide-pizza { width: 200px; height: 200px; }
+  .slide-card h3 { font-size: 18px; margin-bottom: 8px; color: var(--primary); }
+
+  /* Quiz variant */
+  .quiz-card { background: var(--surface); border-radius: 8px; padding: 24px; height: 360px; }
+  .quiz-q { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .quiz-opt { padding: 12px 16px; border: 2px solid var(--line); border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+  .quiz-opt:hover { border-color: var(--primary); background: var(--primary-soft); }
+  .quiz-opt.correct { border-color: var(--success); background: #d1fae5; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📝 CW5 · 黑板模式（blackboard_annotate DSL）</h1>
+  <p class="sub">classroom-mode-design.md §5.5 + §6 W5 · 4 模式：幻灯片 / 白板 / 测验；chalk-style 笔触；全角色可写</p>
+
+  <div class="anno">📝 CW5 · Blackboard · Canvas 顶部 tab 切换：📑 幻灯片 / 📝 白板 / 📊 测验。任何角色调用 blackboard_annotate 都在白板层加一笔（SVG 轻量版 V1，V1.1 升级 canvas）。</div>
+
+  <!-- 状态 1：默认 = 幻灯片 -->
+  <div class="section-title">状态 1 · 顶部 tab · 默认幻灯片模式</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">26:18</span>
+    </div>
+    <div class="canvas-tabs">
+      <div class="canvas-tab active">📑 幻灯片</div>
+      <div class="canvas-tab">📝 白板</div>
+      <div class="canvas-tab">📊 测验</div>
+      <div style="margin-left: auto; font-size: 11px; color: var(--muted); display: flex; align-items: center;">第 2 张 / 共 8 张</div>
+    </div>
+    <div class="slide-card">
+      <h3>🍕 异分母分数加法</h3>
+      <p style="color: var(--muted); margin-bottom: 16px;">披萨图示意：1/2 + 1/3</p>
+      <svg class="slide-pizza" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="#fef3c7" stroke="#92400e" stroke-width="2"/>
+        <!-- 1/2 pizza -->
+        <path d="M 50,50 L 50,10 A 40,40 0 0 1 90,50 Z" fill="#fbbf24" opacity="0.8"/>
+        <!-- 1/3 pizza -->
+        <path d="M 50,50 L 50,10 A 40,40 0 0 0 86.6,80 Z" fill="#fb923c" opacity="0.6"/>
+        <text x="72" y="35" fill="#92400e" font-size="10" font-weight="700">1/2</text>
+        <text x="68" y="75" fill="#fff" font-size="10" font-weight="700">1/3</text>
+      </svg>
+      <p style="color: var(--muted); font-size: 11px; margin-top: 8px;">披萨分法可视化（沿用 wb_draw_shape action 渲染）</p>
+    </div>
+  </div>
+
+  <!-- 状态 2：白板模式 -->
+  <div class="section-title">状态 2 · 白板模式 · chalk-style 笔触（teacher 在白板写）</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">25:42</span>
+    </div>
+    <div class="canvas-tabs">
+      <div class="canvas-tab">📑 幻灯片</div>
+      <div class="canvas-tab active">📝 白板</div>
+      <div class="canvas-tab">📊 测验</div>
+      <div style="margin-left: auto; font-size: 11px; color: var(--success); display: flex; align-items: center; gap: 4px;">● 协作模式 · 3 人正在画</div>
+    </div>
+    <div class="blackboard">
+      <div class="board-surface">
+        <div class="board-frame"></div>
+
+        <!-- Chalk 笔触（teacher 已写） -->
+        <div class="chalk">
+          <div class="chalk-h1">1/2 + 1/3 = ?</div>
+          <div class="chalk-h2">📌 先通分：找公分母</div>
+          <div class="chalk-mono">1/2 = 3/6    1/3 = 2/6</div>
+          <div class="chalk-h2" style="color: #fde68a;">⭐ 3/6 + 2/6 = 5/6</div>
+        </div>
+
+        <!-- SVG paths -->
+        <svg class="board-svg" viewBox="0 0 400 300" preserveAspectRatio="none">
+          <defs>
+            <filter id="chalkFilter">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
+            </filter>
+          </defs>
+          <!-- teacher 笔触（白） -->
+          <path d="M 30,40 L 110,40" class="stroke"/>
+          <path d="M 130,40 L 180,40" class="stroke"/>
+          <path d="M 30,80 Q 70,60 110,80" class="stroke"/>
+          <!-- student 笔触（粉） -->
+          <path d="M 200,40 L 280,40" class="stroke color-pink"/>
+          <!-- user 笔触（紫） -->
+          <path d="M 50,170 L 200,170 Q 230,150 250,170" class="stroke color-purple"/>
+          <text x="60" y="190" fill="#fef9e7" font-family="Caveat, cursive" font-size="16" font-weight="700">我的想法：公分母可能是 6 ？</text>
+        </svg>
+
+        <!-- Active cursors -->
+        <div class="cursor" style="top: 30px; left: 60%;">👩‍🏫 小诺姐姐</div>
+        <div class="cursor" style="bottom: 40px; right: 20%; background: #f59e0b;">🧒 你</div>
+        <div class="cursor" style="top: 50%; left: 30%; background: #ec4899;">👧 小红</div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="board-toolbar">
+        <button class="tool-btn active" title="笔">✏️</button>
+        <button class="tool-btn" title="直线">📏</button>
+        <button class="tool-btn" title="圆形">⭕</button>
+        <button class="tool-btn" title="文字">🅰️</button>
+        <button class="tool-btn" title="撤销">↩️</button>
+        <button class="tool-btn" title="清空">🧹</button>
+      </div>
+    </div>
+    <p class="tip">chalk-style 笔触（SVG 噪点 filter）；3 个角色 cursor 实时显示；颜色按 agent 配置分（白 = teacher / 粉 = 小红 / 紫 = 你）</p>
+  </div>
+
+  <!-- 状态 3：测验 -->
+  <div class="section-title">状态 3 · 测验模式 · Canvas 同样承载（不变 widget 渲染）</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">22:30</span>
+    </div>
+    <div class="canvas-tabs">
+      <div class="canvas-tab">📑 幻灯片</div>
+      <div class="canvas-tab">📝 白板</div>
+      <div class="canvas-tab active">📊 测验</div>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-q">❓ 1/2 + 1/3 = ?</div>
+      <div class="quiz-opt">A. 2/5</div>
+      <div class="quiz-opt correct">✓ B. 5/6</div>
+      <div class="quiz-opt">C. 2/6</div>
+      <div class="quiz-opt">D. 4/5</div>
+    </div>
+  </div>
+  <p class="tip">测验模式 = 现有 widget 渲染（W 不变）；CW5 只新增"白板"层</p>
+
+  <!-- 状态 4：用户也能画（input） -->
+  <div class="section-title">状态 4 · 用户也能在白板写（input 允许）</div>
+  <div class="demo" style="min-height: 200px;">
+    <div style="display: flex; gap: 12px; align-items: center; padding: 12px; background: #f0fdf4; border-radius: 8px;">
+      <div style="font-size: 22px;">🧒</div>
+      <div>
+        <div style="font-weight: 700; color: var(--success);">✅ 你也能在白板写！</div>
+        <div style="font-size: 12px; color: var(--muted);">点空白处 → 自动 prompt text input → 调用 <code>blackboard_annotate</code></div>
+      </div>
+    </div>
+    <p class="tip" style="margin-top: 12px;">黑板权限：teacher 默认可写 · buddies 默认只读 · user 默认可写（家长可控）+ INTL "homeroom teacher" 同样权限</p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CW3 · Call-On 叫答卡片</title>
+<style>
+  :root { --primary: #722ed1; --primary-soft: #f3ebfd; --bg: #faf9fe; --surface: #fff; --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --amber-bg: #fef3c7; --amber-fg: #854d0e; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; padding: 24px 16px 80px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .anno { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border: 1px dashed #facc15; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--amber-fg); margin-bottom: 20px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; padding-left: 4px; border-left: 3px solid var(--primary); }
+  .demo { background: linear-gradient(180deg, #fff 0%, #faf9fe 100%); border-radius: 12px; border: 1px solid var(--line); padding: 16px; margin-bottom: 16px; min-height: 400px; position: relative; overflow: hidden; }
+  .demo-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; padding: 3px 8px; background: var(--primary-soft); border-radius: 999px; display: inline-block; }
+  .tip { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* PeriodBar */
+  .period-bar { height: 48px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; position: absolute; top: 0; left: 0; right: 0; border-radius: 12px 12px 0 0; z-index: 5; }
+  .pb-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .pb-text { flex: 1; }
+  .pb-title { font-size: 13px; font-weight: 700; }
+  .pb-sub { font-size: 11px; color: var(--muted); }
+  .pb-time { font-family: monospace; font-size: 13px; font-weight: 700; color: var(--primary); background: var(--primary-soft); padding: 3px 10px; border-radius: 999px; }
+
+  /* Roundtable mini */
+  .roundtable { background: var(--surface); border-top: 1px solid var(--line); padding: 12px; display: flex; align-items: center; gap: 8px; position: absolute; bottom: 0; left: 0; right: 0; border-radius: 0 0 12px 12px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; position: relative; }
+  .avatar.teacher { background: var(--primary); }
+  .avatar.student1 { background: #ec4899; }
+  .avatar.student2 { background: #10b981; }
+  .avatar.student3 { background: #f59e0b; }
+  .avatar.user { background: #3b82f6; }
+
+  /* Spotlight ring */
+  .spotlight { box-shadow: 0 0 0 4px var(--primary), 0 0 24px rgba(114,46,209,0.5); animation: spot-pulse 1.5s infinite; }
+  @keyframes spot-pulse { 0%,100% { box-shadow: 0 0 0 4px var(--primary), 0 0 24px rgba(114,46,209,0.5); } 50% { box-shadow: 0 0 0 8px var(--primary), 0 0 36px rgba(114,46,209,0.7); } }
+  .dimmed { opacity: 0.35; filter: grayscale(0.6); }
+
+  /* CallOn 卡片 — 中心大字 */
+  .call-card { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); border-radius: 20px; box-shadow: 0 12px 48px rgba(114,46,209,0.25); padding: 24px; width: 320px; text-align: center; z-index: 10; border: 2px solid var(--primary); }
+  .call-card .badge { display: inline-block; padding: 3px 10px; background: var(--primary-soft); color: var(--primary); border-radius: 999px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .call-card .who { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .call-card .who .emoji { font-size: 32px; margin-right: 6px; }
+  .call-card .question { font-size: 14px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+  .call-card .timer { font-size: 36px; font-weight: 800; color: var(--primary); font-family: monospace; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+  .call-card .timer.urgent { color: var(--danger); animation: shake 0.5s infinite; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .call-card .timer-label { font-size: 11px; color: var(--muted); }
+  .call-card .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .call-card button { flex: 1; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; }
+  .call-card .ready { background: var(--success); color: #fff; }
+  .call-card .pass { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+
+  /* Answering state */
+  .answering { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--surface); border-radius: 14px; padding: 10px 16px; box-shadow: 0 4px 16px rgba(16,185,129,0.2); display: flex; align-items: center; gap: 10px; z-index: 10; border: 1px solid var(--success); }
+  .answering .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 1s infinite; }
+
+  /* Fallback */
+  .fallback-banner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fef3c7; border: 1px dashed var(--warn); border-radius: 12px; padding: 12px 20px; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📣 CW3 · 叫答卡片（Call-On / call_on DSL）</h1>
+  <p class="sub">classroom-mode-design.md §5.3 + §6 W3 · 3 状态 + 准备倒计时自动 fallback</p>
+
+  <div class="anno">📣 CW3 · Call-On · "请 X 桌 Y 回答" 卡片 + 头像聚光 + 3-5s 准备倒计时。target offline 自动降级 cue_user。</div>
+
+  <!-- 状态 1：call_on 触发 -->
+  <div class="section-title">状态 1 · 老师叫"请 4 号桌 小红 回答"</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">28:32</span>
+    </div>
+    <div class="call-card">
+      <div class="badge">📣 老师叫你回答</div>
+      <div class="who"><span class="emoji">👧</span>小红</div>
+      <div class="question">1/2 + 1/3 的公分母是几？<br>你是怎么找的？</div>
+      <div class="timer" id="timer1">05</div>
+      <div class="timer-label">⏱ 准备倒计时（秒）</div>
+      <div class="actions">
+        <button class="ready">✋ 准备好了</button>
+        <button class="pass">我不会 → 换人</button>
+      </div>
+    </div>
+    <div class="roundtable">
+      <div class="avatar teacher">👩‍🏫</div>
+      <div class="avatar student1 spotlight">👧</div>
+      <div class="avatar student2 dimmed">👦</div>
+      <div class="avatar user dimmed">🧒</div>
+    </div>
+  </div>
+  <p class="tip">小红头像聚光（复用 spotlight 机制）；其他 dim；中心大字"叫答卡片"+ 5s 准备倒计时</p>
+
+  <!-- 状态 2：倒计时归零 -->
+  <div class="section-title">状态 2 · 倒计时归零 — 自动 fallback（归零前 1s 红色 shake）</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">28:25</span>
+    </div>
+    <div class="call-card">
+      <div class="badge" style="background: #fee2e2; color: var(--danger);">⏱ 时间到</div>
+      <div class="who" style="font-size: 22px;"><span class="emoji">⚠️</span>小红没回应，自动跳过</div>
+      <div class="timer urgent">00</div>
+      <div class="timer-label">→ cue_user fallback</div>
+    </div>
+    <div class="roundtable">
+      <div class="avatar teacher">👩‍🏫</div>
+      <div class="avatar student1" style="opacity: 0.5;">👧</div>
+      <div class="avatar student2">👦</div>
+      <div class="avatar user">🧒</div>
+    </div>
+  </div>
+  <p class="tip">最后 1s timer 变红 + shake；归零后自动 fallback cue_user（向所有人发问）</p>
+
+  <!-- 状态 3：target offline -->
+  <div class="section-title">状态 3 · target offline — 警告 + 跳过</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">28:25</span>
+    </div>
+    <div class="fallback-banner">
+      ⚠️ <strong>小红已离开座位</strong> · 自动跳过 · 下一个举手者：阿泽
+    </div>
+    <div class="roundtable">
+      <div class="avatar teacher">👩‍🏫</div>
+      <div class="avatar student1" style="opacity: 0.3; filter: grayscale(1); text-decoration: line-through;">👧</div>
+      <div class="avatar student2 spotlight">👦</div>
+      <div class="avatar user dimmed">🧒</div>
+    </div>
+  </div>
+  <p class="tip">小头像打 line-through + 灰色；自动跳到下一个举手者；Director warning 上报</p>
+
+  <!-- 状态 4：成功回答 -->
+  <div class="section-title">状态 4 · 成功回答（小红说完）</div>
+  <div class="demo">
+    <div class="period-bar">
+      <div class="pb-icon">📚</div>
+      <div class="pb-text"><span class="pb-title">第 3 节 · 异分母分数加法</span><span class="pb-sub">4-NF-A-2</span></div>
+      <span class="pb-time">28:10</span>
+    </div>
+    <div class="answering">
+      <div class="dot"></div>
+      <span><strong>👧 小红</strong> 正在回答中...</span>
+    </div>
+    <div class="roundtable">
+      <div class="avatar teacher">👩‍🏫</div>
+      <div class="avatar student1" style="box-shadow: 0 0 0 3px var(--success);">👧</div>
+      <div class="avatar student2 dimmed">👦</div>
+      <div class="avatar user dimmed">🧒</div>
+    </div>
+  </div>
+  <p class="tip">卡片 dismiss；切换到 answering toast（绿色 ring + dot）；其他 dim</p>
+</div>
+</body>
+</html>
