@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 隐私保护与协议</title>
+<style>
+  :root {
+    --primary: #722ed1; --primary-soft: #f3ebfd;
+    --bg: #faf9fe; --surface: #fff;
+    --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); min-height: 100vh; padding: 16px; }
+  .wrap { max-width: 600px; margin: 0 auto; }
+  .anno { background: #fef3c7; border: 1px dashed #facc15; border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #854d0e; margin-bottom: 12px; }
+  .card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 12px; border: 1px solid var(--line); }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+  .item { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: none; }
+  .item-check { width: 22px; height: 22px; border: 2px solid var(--line); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 2px; }
+  .item-check.checked { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .item-content { flex: 1; }
+  .item-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .required { padding: 1px 6px; background: var(--danger); color: #fff; border-radius: 4px; font-size: 10px; }
+  .optional { padding: 1px 6px; background: var(--line); color: var(--muted); border-radius: 4px; font-size: 10px; }
+  .item-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .summary { padding: 12px; background: var(--primary-soft); border-radius: 8px; margin-bottom: 16px; font-size: 12px; color: #4c1d95; line-height: 1.6; }
+  .btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .footer-link { text-align: center; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .footer-link a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="anno">🔒 M12 · PIPL 隐私保护 · 注册必填</div>
+
+  <div class="card">
+    <h1>📜 隐私保护与用户协议</h1>
+    <p class="sub">根据 PIPL（中华人民共和国个人信息保护法），我们承诺：所有数据存于阿里云中国大陆区域，不出境。</p>
+
+    <div class="summary">
+      🛡️ <strong>4 项必填</strong>：数据收集 / 错题存储 / 周报推送<br>
+      ✏️ <strong>1 项可选</strong>：AI 训练（拒绝不影响主功能）
+    </div>
+
+    <div class="item">
+      <div class="item-check checked" onclick="this.classList.toggle('checked')">✓</div>
+      <div class="item-content">
+        <div class="item-title">1. 数据收集 <span class="required">必填</span></div>
+        <div class="item-desc">错题 / 学习记录 / persona 选择</div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-check checked">✓</div>
+      <div class="item-content">
+        <div class="item-title">2. 错题存储 <span class="required">必填</span></div>
+        <div class="item-desc">阿里云 cn-region（中国大陆，不出境）</div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-check checked">✓</div>
+      <div class="item-content">
+        <div class="item-title">3. 学习报告推送 <span class="required">必填</span></div>
+        <div class="item-desc">微信公众号 + 邮箱（可关闭）</div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-check checked">✓</div>
+      <div class="item-content">
+        <div class="item-title">4. 错题讲解 AI 训练 <span class="required">必填</span></div>
+        <div class="item-desc">用于优化 Socratic 提示工程（脱敏处理）</div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item-check" onclick="this.classList.toggle('checked')">✓</div>
+      <div class="item-content">
+        <div class="item-title">5. 个性化推荐 <span class="optional">可选</span></div>
+        <div class="item-desc">基于错题推荐同类练习题</div>
+      </div>
+    </div>
+
+    <button class="btn" disabled>✅ 同意并继续（4/5）</button>
+    <div class="footer-link">查看完整 <a href="#">《隐私政策》</a> 和 <a href="#">《服务协议》</a></div>
+  </div>
+</div>
+</body>
+</html>

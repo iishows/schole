@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 账号安全</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* User card */
+  .user-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .user-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 17px; font-weight: 600; }
+  .user-phone { font-size: 13px; color: var(--muted); }
+
+  /* Section card */
+  .section {
+    background: var(--surface);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .section-row {
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .section-row:last-child { border-bottom: none; }
+  .row-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ri-password { background: var(--info, #dbeafe); color: #3b82f6; }
+  .ri-2fa { background: var(--success-soft); color: var(--success); }
+  .ri-logout { background: var(--danger-soft); color: var(--danger); }
+  .ri-delete { background: var(--danger-soft); color: var(--danger); }
+  .row-content { flex: 1; }
+  .row-title { font-size: 15px; font-weight: 500; }
+  .row-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .row-arrow { color: var(--muted); font-size: 18px; }
+
+  /* Toggle */
+  .toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--success); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* Change password form */
+  .form-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .form-row { margin-bottom: 14px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 14.5px;
+    background: var(--bg);
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--primary); background: var(--surface); }
+  .form-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .strength-bar {
+    display: flex; gap: 4px;
+    margin-top: 8px;
+  }
+  .strength-seg {
+    flex: 1; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+  }
+  .strength-seg.active-weak { background: var(--danger); }
+  .strength-seg.active-med { background: var(--warn); }
+  .strength-seg.active-strong { background: var(--success); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 10px; }
+  .btn {
+    flex: 1; padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">账号安全</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>账号安全 SOP</strong>：修改密码（短信验证）/ 启用二次验证（防账号被盗）/ 退出其他设备登录。
+    </div>
+  </div>
+
+  <!-- User card -->
+  <div class="user-card">
+    <div class="user-avatar">妈</div>
+    <div class="user-info">
+      <div class="user-name">小诺妈妈</div>
+      <div class="user-phone">📱 138****1234</div>
+    </div>
+  </div>
+
+  <!-- 修改密码 -->
+  <div class="form-card">
+    <div class="form-row">
+      <label class="form-label">当前密码</label>
+      <input type="password" class="form-input" placeholder="••••••" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">新密码</label>
+      <input type="password" class="form-input" placeholder="8-20 字符" value="abcd1234" />
+      <div class="strength-bar">
+        <div class="strength-seg active-strong"></div>
+        <div class="strength-seg active-strong"></div>
+        <div class="strength-seg active-strong"></div>
+        <div class="strength-seg"></div>
+      </div>
+      <div class="form-hint">
+        ✓ 8 字符以上 · ✓ 含数字 · ✓ 含字母 · ✓ 与旧密码不同
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">确认新密码</label>
+      <input type="password" class="form-input" placeholder="再次输入" value="abcd1234" />
+    </div>
+
+    <div class="btn-row" style="margin-top: 14px;">
+      <button class="btn btn-secondary">取消</button>
+      <button class="btn btn-primary">修改密码</button>
+    </div>
+  </div>
+
+  <!-- 二次验证 -->
+  <div class="section">
+    <div class="section-header">二次验证</div>
+    <div class="section-row">
+      <div class="row-icon ri-2fa">🔒</div>
+      <div class="row-content">
+        <div class="row-title">短信验证码</div>
+        <div class="row-desc">登录 + 敏感操作时验证</div>
+      </div>
+      <div class="toggle on"></div>
+    </div>
+    <div class="section-row">
+      <div class="row-icon ri-2fa">📧</div>
+      <div class="row-content">
+        <div class="row-title">邮箱验证码</div>
+        <div class="row-desc">备用验证方式</div>
+      </div>
+      <div class="toggle"></div>
+    </div>
+  </div>
+
+  <!-- 登录管理 -->
+  <div class="section">
+    <div class="section-header">登录管理</div>
+    <div class="section-row">
+      <div class="row-icon" style="background:#dbeafe;color:#3b82f6;">📱</div>
+      <div class="row-content">
+        <div class="row-title">iPhone 15 Pro · Safari</div>
+        <div class="row-desc">北京 · 2026-08-25 09:32</div>
+      </div>
+      <span class="row-arrow">›</span>
+    </div>
+    <div class="section-row">
+      <div class="row-icon" style="background:#dbeafe;color:#3b82f6;">💻</div>
+      <div class="row-content">
+        <div class="row-title">MacBook Pro · Chrome</div>
+        <div class="row-desc">北京 · 2026-08-24 21:15</div>
+      </div>
+      <span class="row-arrow">›</span>
+    </div>
+    <div class="section-row">
+      <div class="row-icon ri-logout">🚪</div>
+      <div class="row-content">
+        <div class="row-title" style="color: var(--danger);">退出其他设备</div>
+        <div class="row-desc">保留当前设备，退出其他 1 个</div>
+      </div>
+      <span class="row-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- 危险区域 -->
+  <div class="section">
+    <div class="section-header">危险区域</div>
+    <div class="section-row">
+      <div class="row-icon ri-delete">🗑️</div>
+      <div class="row-content">
+        <div class="row-title" style="color: var(--danger);">注销账号</div>
+        <div class="row-desc">30 天后物理删除所有数据</div>
+      </div>
+      <span class="row-arrow">›</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

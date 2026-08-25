@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 错题详情</title>
+<style>
+  :root {
+    --primary: #722ed1; --primary-soft: #f3ebfd;
+    --bg: #faf9fe; --surface: #fff;
+    --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5;
+    --success: #10b981; --success-soft: #d1fae5;
+    --warn: #f59e0b; --warn-soft: #fef3c7;
+    --danger: #dc2626; --danger-soft: #fee2e2;
+    --nunu: #722ed1; --hong: #ec4899; --aze: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding-bottom: 80px; min-height: 100vh; }
+  .topbar { background: var(--surface); padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .back { font-size: 20px; cursor: pointer; }
+  .title { font-size: 16px; font-weight: 600; flex: 1; }
+  .more-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }
+  .anno { background: #fef3c7; border: 1px dashed #facc15; border-radius: 8px; padding: 8px 12px; margin: 12px; font-size: 11px; color: #854d0e; }
+  .main { max-width: 720px; margin: 0 auto; padding: 0 12px; }
+  .hero-card { background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #fca5a5; }
+  .hero-status { display: inline-block; padding: 2px 10px; background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+  .hero-question { font-size: 17px; font-weight: 600; line-height: 1.5; margin-bottom: 12px; }
+  .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+  .fraction .num { border-bottom: 1px solid var(--fg); padding: 0 6px; font-weight: 700; }
+  .fraction .den { padding: 0 6px; }
+  .answer-row { display: flex; gap: 16px; padding: 12px; background: rgba(255,255,255,0.6); border-radius: 10px; }
+  .answer-item { flex: 1; text-align: center; }
+  .answer-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .answer-value { font-size: 18px; font-weight: 700; }
+  .answer-value.wrong { color: var(--danger); text-decoration: line-through; }
+  .answer-value.right { color: var(--success); }
+  .arrow-between { display: flex; align-items: center; font-size: 18px; color: var(--primary); }
+  .meta-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 11px; }
+  .meta-tag { padding: 2px 8px; background: rgba(255,255,255,0.7); border-radius: 4px; }
+
+  /* Timeline */
+  .timeline { background: var(--surface); border-radius: 14px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--line); }
+  .timeline-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .step { display: flex; gap: 12px; padding: 10px 0; }
+  .step-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .step.done .step-dot { background: var(--success); color: #fff; }
+  .step.current .step-dot { background: var(--primary); color: #fff; }
+  .step-info { flex: 1; }
+  .step-label { font-size: 13px; font-weight: 500; }
+  .step-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .step-content { flex: 1; }
+
+  /* Socratic preview */
+  .socratic { background: var(--surface); border-radius: 14px; padding: 18px; margin-bottom: 14px; border: 1px solid var(--line); }
+  .socratic-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .chat-list { display: flex; flex-direction: column; gap: 8px; }
+  .chat-msg { display: flex; gap: 8px; align-items: flex-start; }
+  .chat-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .ca-mentor { background: var(--primary-soft); color: var(--nunu); }
+  .ca-hong { background: #fce7f3; color: var(--hong); }
+  .ca-aze { background: #fef3c7; color: var(--aze); }
+  .ca-me { background: #dbeafe; color: #3b82f6; }
+  .chat-bubble { padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; max-width: 85%; }
+  .cm-mentor { background: var(--primary-soft); color: #4c1d95; border-top-left-radius: 4px; }
+  .cm-hong { background: #fce7f3; color: #831843; border-top-left-radius: 4px; }
+  .cm-aze { background: #fef3c7; color: #78350f; border-top-left-radius: 4px; }
+  .cm-me { background: #dbeafe; color: #1e3a8a; border-top-right-radius: 4px; }
+
+  /* Actions */
+  .actions-card { background: var(--surface); border-radius: 14px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .action-btn { padding: 14px 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; text-align: center; cursor: pointer; }
+  .action-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+  .action-icon { font-size: 22px; margin-bottom: 4px; }
+  .action-label { font-size: 12px; font-weight: 500; }
+
+  /* Bottom */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 12px 20px; display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; }
+  .btn-secondary { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+  .btn-primary { background: var(--primary); color: #fff; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="title">错题详情</span>
+  <button class="more-btn">⋯</button>
+</div>
+
+<div class="anno">📋 K-6 · M6 错题详情 · 时间线 + Socratic 历史 + 操作</div>
+
+<div class="main">
+
+  <!-- Hero: 错题信息 -->
+  <div class="hero-card">
+    <div class="hero-status">待复习 · 第 2 轮</div>
+    <div class="hero-question">
+      小红有 <span class="fraction"><span class="num">1</span><span class="den">2</span></span> 个苹果，
+      又买了 <span class="fraction"><span class="num">1</span><span class="den">3</span></span> 个，一共有多少个？
+    </div>
+    <div class="answer-row">
+      <div class="answer-item">
+        <div class="answer-label">孩子写的</div>
+        <div class="answer-value wrong">2/5</div>
+      </div>
+      <div class="arrow-between">→</div>
+      <div class="answer-item">
+        <div class="answer-label">正确答案</div>
+        <div class="answer-value right">5/6</div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="meta-tag">4-NF-A-2 异分母分数加法</span>
+      <span class="meta-tag">📚 4 年级</span>
+      <span class="meta-tag">❌ 粗心</span>
+      <span class="meta-tag">📅 入库 3 天前</span>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    <div class="timeline-title">📅 错题生命周期</div>
+
+    <div class="step done">
+      <div class="step-dot">✓</div>
+      <div class="step-info">
+        <div class="step-label">错题入库</div>
+        <div class="step-time">3 天前 · 拍照识别</div>
+      </div>
+    </div>
+    <div class="step done">
+      <div class="step-dot">✓</div>
+      <div class="step-info">
+        <div class="step-label">小诺姐姐 Socratic 讲解</div>
+        <div class="step-time">3 天前 · 8 轮对话 · 12 分钟</div>
+      </div>
+    </div>
+    <div class="step done">
+      <div class="step-dot">✓</div>
+      <div class="step-info">
+        <div class="step-label">第 1 轮复习（1 天后）</div>
+        <div class="step-time">2 天前 · ✅ 答对</div>
+      </div>
+    </div>
+    <div class="step current">
+      <div class="step-dot">2</div>
+      <div class="step-info">
+        <div class="step-label">第 2 轮复习（3 天后）</div>
+        <div class="step-time">今天 · 待复习</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">3</div>
+      <div class="step-info">
+        <div class="step-label">第 3 轮复习（7 天后）</div>
+        <div class="step-time">4 天后</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">4</div>
+      <div class="step-info">
+        <div class="step-label">第 4 轮复习（14 天后）</div>
+        <div class="step-time">11 天后</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socratic 历史 -->
+  <div class="socratic">
+    <div class="socratic-title">💬 上次 Socratic 讲解（8 轮）</div>
+    <div class="chat-list">
+      <div class="chat-msg">
+        <div class="chat-avatar ca-mentor">👩‍🏫</div>
+        <div class="chat-bubble cm-mentor">你做错了 1/2 + 1/3 = 2/5，我们看看好不好？</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-avatar ca-hong">👧</div>
+        <div class="chat-bubble cm-hong">为什么分母能直接相加呀？</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-avatar ca-aze">👦</div>
+        <div class="chat-bubble cm-aze">我觉得是 2/5 没错呀？</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-avatar ca-me">🧒</div>
+        <div class="chat-bubble cm-me">要先通分！</div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-avatar ca-mentor">👩‍🏫</div>
+        <div class="chat-bubble cm-mentor">太棒啦！你自己想出来了！🎉</div>
+      </div>
+    </div>
+    <button style="margin-top: 12px; width: 100%; padding: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer;">查看完整 8 轮对话 →</button>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-card">
+    <button class="action-btn">
+      <div class="action-icon">📖</div>
+      <div class="action-label">重新讲解</div>
+    </button>
+    <button class="action-btn">
+      <div class="action-icon">⭐</div>
+      <div class="action-label">标记掌握</div>
+    </button>
+    <button class="action-btn">
+      <div class="action-icon">🗑️</div>
+      <div class="action-label">删除</div>
+    </button>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-secondary">📤 分享</button>
+  <button class="btn btn-primary">🔁 开始复习</button>
+</div>
+
+</body>
+</html>

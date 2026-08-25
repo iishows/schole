@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 时长保护</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #3b82f6;
+    --info-soft: #dbeafe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back { font-size: 20px; cursor: pointer; }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Usage today */
+  .usage-card {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .usage-icon { font-size: 36px; margin-bottom: 8px; }
+  .usage-time {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .usage-time .unit {
+    font-size: 18px;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+  .usage-progress {
+    background: rgba(255,255,255,0.2);
+    border-radius: 999px;
+    height: 8px;
+    margin: 14px 0 8px;
+    overflow: hidden;
+  }
+  .usage-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24 0%, #f97316 100%);
+    border-radius: 999px;
+    width: 83%;
+  }
+  .usage-status {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .usage-status strong {
+    color: #fbbf24;
+    font-weight: 700;
+  }
+
+  /* Limit setting */
+  .section-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .setting-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-info { flex: 1; }
+  .setting-name { font-size: 14px; font-weight: 500; }
+  .setting-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .setting-value {
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--success); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* Time slider */
+  .time-slider {
+    width: 100%;
+    margin: 12px 0;
+  }
+  .time-marks {
+    display: flex; justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Warning states */
+  .warn-banner {
+    background: linear-gradient(135deg, var(--warn-soft) 0%, #fed7aa 100%);
+    border: 1px solid var(--warn);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .warn-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: #92400e;
+  }
+  .warn-row::before {
+    content: '⚠️';
+  }
+
+  /* PIN Modal */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 100%; max-width: 360px;
+    padding: 24px;
+    text-align: center;
+  }
+  .modal-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--warn-soft);
+    color: var(--warn);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 16px;
+  }
+  .modal-title {
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .modal-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .pin-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 20px;
+    text-align: center;
+    letter-spacing: 8px;
+    font-family: monospace;
+    background: var(--bg);
+    margin-bottom: 16px;
+  }
+  .pin-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .modal-actions {
+    display: flex; gap: 10px;
+  }
+  .modal-btn {
+    flex: 1; padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+  }
+  .mb-cancel {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .mb-confirm {
+    background: var(--warn);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">时长保护</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>未成年保护 SOP</strong>：每天 ≤ 60 分钟 + 21:00-7:00 夜间禁用。家长可延长（PIN 验证），连续 3 天超时公众号推送家长。
+    </div>
+  </div>
+
+  <!-- Usage today -->
+  <div class="usage-card">
+    <div class="usage-icon">⏰</div>
+    <div class="usage-time">50<span class="unit">分钟</span></div>
+    <div style="font-size: 13px; opacity: 0.9;">今日已使用</div>
+    <div class="usage-progress">
+      <div class="usage-progress-fill"></div>
+    </div>
+    <div class="usage-status">
+      每日上限 <strong>60 分钟</strong> · 还剩 <strong>10 分钟</strong>
+    </div>
+  </div>
+
+  <!-- 时长设置 -->
+  <div class="section-card">
+    <div class="section-title">每日时长上限</div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">工作日（周一-周五）</div>
+        <div class="setting-desc">默认 60 分钟</div>
+      </div>
+      <div class="setting-value">60 分钟</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">周末（周六、周日）</div>
+        <div class="setting-desc">可放宽至 90 分钟</div>
+      </div>
+      <div class="setting-value">90 分钟</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">每次最长连续使用</div>
+        <div class="setting-desc">到达后强制休息 5 分钟</div>
+      </div>
+      <div class="setting-value">30 分钟</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">家长延长（每次）</div>
+        <div class="setting-desc">需输入 PIN 验证</div>
+      </div>
+      <div class="setting-value">30 分钟</div>
+    </div>
+  </div>
+
+  <!-- 夜间禁用 -->
+  <div class="section-card">
+    <div class="section-title">夜间休息</div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">夜间禁用</div>
+        <div class="setting-desc">21:00 - 次日 7:00 不推送、不学习</div>
+      </div>
+      <div class="toggle on"></div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">晚间结束时间</div>
+        <div class="setting-desc">推荐 21:00（保护视力）</div>
+      </div>
+      <div class="setting-value">21:00</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">早间开始时间</div>
+        <div class="setting-desc">推荐 7:00</div>
+      </div>
+      <div class="setting-value">07:00</div>
+    </div>
+  </div>
+
+  <!-- 警告 -->
+  <div class="warn-banner">
+    <div class="setting-row" style="border: none; padding: 0;">
+      <div class="setting-info">
+        <div class="setting-name" style="color: #92400e;">⚠️ 异常处理</div>
+        <div class="setting-desc">保护机制启动条件</div>
+      </div>
+    </div>
+    <div class="warn-row">孩子连续 3 天超时</div>
+    <div class="warn-row">公众号推送家长"孩子使用时长过长"</div>
+    <div class="warn-row">家长未响应 → 锁定账户 24h</div>
+    <div class="warn-row">法务介入（疑似未成年人违规使用）</div>
+  </div>
+
+  <!-- PIN -->
+  <div class="section-card">
+    <div class="section-title">家长 PIN 验证</div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">设置 PIN</div>
+        <div class="setting-desc">延长时长、关闭夜间禁用时验证</div>
+      </div>
+      <div class="setting-value">已设置</div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">防绕过</div>
+        <div class="setting-desc">后端按北京时间校验，不依赖本地</div>
+      </div>
+      <div class="toggle on"></div>
+    </div>
+  </div>
+
+  <!-- 操作 -->
+  <div class="btn-row" style="display: flex; gap: 10px; margin-top: 14px;">
+    <button class="btn" style="flex: 1; padding: 14px; background: var(--surface); color: var(--muted); border: 1px solid var(--line); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px;">查看时长历史</button>
+    <button class="btn" style="flex: 1; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px;">保存设置</button>
+  </div>
+
+</div>
+
+<!-- PIN Modal (示意) -->
+<div class="modal-mask">
+  <div class="modal">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">家长 PIN 验证</div>
+    <div class="modal-desc">
+      您要将今日时长延长 30 分钟<br>
+      请输入家长 PIN
+    </div>
+    <input type="password" class="pin-input" value="····" readonly />
+    <div class="pin-hint">防孩子代家长操作</div>
+    <div class="modal-actions">
+      <button class="modal-btn mb-cancel">取消</button>
+      <button class="modal-btn mb-confirm">确认延长</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

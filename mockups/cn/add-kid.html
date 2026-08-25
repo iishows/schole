@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 添加第 2 个孩子</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  /* Main */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 100px;
+  }
+
+  /* Annotation */
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Step indicator */
+  .step-bar {
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 24px;
+  }
+  .step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .step.active { background: var(--primary); }
+  .step.done { background: var(--success); }
+
+  /* Section title */
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .section-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* Plan check banner */
+  .plan-banner {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 2px solid var(--warn);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .plan-icon { font-size: 28px; }
+  .plan-content { flex: 1; }
+  .plan-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--warn);
+  }
+  .plan-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .plan-btn {
+    padding: 8px 14px;
+    background: var(--warn);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* Form card */
+  .form-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .form-row { margin-bottom: 16px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 14.5px;
+    background: var(--bg);
+    outline: none;
+  }
+  .form-input:focus {
+    border-color: var(--primary);
+    background: var(--surface);
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Age picker */
+  .age-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 480px) {
+    .age-picker { grid-template-columns: repeat(3, 1fr); }
+  }
+  .age-option {
+    padding: 12px 8px;
+    text-align: center;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .age-option.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .age-num {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .age-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Mode picker */
+  .mode-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mode-option {
+    padding: 14px;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .mode-option.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .mode-icon { font-size: 26px; margin-bottom: 4px; }
+  .mode-title { font-size: 14px; font-weight: 600; }
+  .mode-desc { font-size: 11px; color: var(--muted); }
+
+  /* Persona card */
+  .persona-card {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .persona-card.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+  }
+  .persona-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .pa-mentor { background: #f3ebfd; color: var(--primary); }
+  .pa-hong { background: #fce7f3; color: var(--hong, #ec4899); }
+  .pa-aze { background: #fef3c7; color: var(--aze, #f59e0b); }
+  .persona-content { flex: 1; }
+  .persona-name { font-size: 14px; font-weight: 600; }
+  .persona-desc { font-size: 12px; color: var(--muted); }
+  .persona-check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: transparent;
+  }
+  .persona-card.active .persona-check {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  /* Sticky bottom */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex; gap: 12px;
+    z-index: 10;
+  }
+  .btn-cancel {
+    flex: 1;
+    padding: 12px;
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-next {
+    flex: 2;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">添加孩子</span>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Annotation -->
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>多孩管理 SOP</strong>：家长添加第 2 / 3 个孩子——MVP 限制家庭版 ≤ 3 孩，单孩套餐需升级。
+    </div>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-bar">
+    <div class="step done"></div>
+    <div class="step active"></div>
+    <div class="step"></div>
+  </div>
+
+  <!-- Plan check banner (单孩套餐时显示) -->
+  <div class="plan-banner">
+    <div class="plan-icon">⚠️</div>
+    <div class="plan-content">
+      <div class="plan-title">当前套餐：单孩 ¥99/月</div>
+      <div class="plan-desc">已添加 1/1 · 添加第 2 个孩子需升级家庭版</div>
+    </div>
+    <button class="plan-btn">升级 ¥199/月</button>
+  </div>
+
+  <!-- Step 2: 孩子信息 -->
+  <div class="section-title">孩子信息</div>
+  <div class="section-sub">添加第 2 个孩子</div>
+
+  <div class="form-card">
+    <div class="form-row">
+      <label class="form-label">姓名</label>
+      <input type="text" class="form-input" placeholder="例：小宝" value="小宝" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">昵称</label>
+      <input type="text" class="form-input" placeholder="例：宝宝" value="宝宝" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">出生日期</label>
+      <input type="date" class="form-input" value="2020-05-15" />
+      <div class="form-hint">自动计算年级（4 岁 = 学前）</div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">年级（自动）</label>
+      <div class="age-picker">
+        <div class="age-option">
+          <div class="age-num">学前</div>
+          <div class="age-label">3-6 岁</div>
+        </div>
+        <div class="age-option active">
+          <div class="age-num">1</div>
+          <div class="age-label">一年级</div>
+        </div>
+        <div class="age-option">
+          <div class="age-num">2</div>
+          <div class="age-label">二年级</div>
+        </div>
+        <div class="age-option">
+          <div class="age-num">3</div>
+          <div class="age-label">三年级</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">教材（默认人教版）</label>
+      <select class="form-input">
+        <option>人教版 · 一年级 · 语文</option>
+        <option>人教版 · 一年级 · 数学</option>
+        <option>苏教版 · 一年级 · 语文</option>
+        <option>北师大版 · 一年级 · 数学</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">模式</label>
+      <div class="mode-picker">
+        <div class="mode-option active">
+          <div class="mode-icon">📚</div>
+          <div class="mode-title">K12 模式</div>
+          <div class="mode-desc">写作业辅导</div>
+        </div>
+        <div class="mode-option">
+          <div class="mode-icon">📖</div>
+          <div class="mode-title">学前模式</div>
+          <div class="mode-desc">睡前故事</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: 选 persona -->
+  <div class="section-title">选班主任 + 2 同学</div>
+  <div class="section-sub">推荐与大宝不同风格</div>
+
+  <!-- 班主任 -->
+  <div class="form-card">
+    <div class="persona-card active">
+      <div class="persona-avatar pa-mentor">👩‍🏫</div>
+      <div class="persona-content">
+        <div class="persona-name">小诺姐姐（温柔）</div>
+        <div class="persona-desc">温柔的小学老师 · 用生活比喻</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#fee2e2;color:#dc2626;">👩‍🏫</div>
+      <div class="persona-content">
+        <div class="persona-name">严老师（严格）</div>
+        <div class="persona-desc">严格的数学老师 · 追问"为什么"</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#fef3c7;color:#92400e;">👨‍🏫</div>
+      <div class="persona-content">
+        <div class="persona-name">天天叔叔（搞笑）</div>
+        <div class="persona-desc">用段子讲知识 · 适合活泼的孩子</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+  </div>
+
+  <!-- 同学 -->
+  <div class="form-card">
+    <div class="persona-card active">
+      <div class="persona-avatar pa-hong">👧</div>
+      <div class="persona-content">
+        <div class="persona-name">小红📍北京（爱提问）</div>
+        <div class="persona-desc">爱说"为什么"的女生</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+
+    <div class="persona-card active">
+      <div class="persona-avatar pa-aze">👦</div>
+      <div class="persona-content">
+        <div class="persona-name">阿泽📍上海（粗心）</div>
+        <div class="persona-desc">老把分母直接相加</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#d1fae5;color:#10b981;">👧</div>
+      <div class="persona-content">
+        <div class="persona-name">小美📍成都（安静）</div>
+        <div class="persona-desc">喜欢读书的安静女生</div>
+      </div>
+      <div class="persona-check">✓</div>
+    </div>
+  </div>
+
+  <div style="text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px;">
+    🔒 班主任锁定到学期末（2027-01-31），频繁换人影响孩子情感连接
+  </div>
+
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <button class="btn-cancel">取消</button>
+  <button class="btn-next">下一步：选教材 →</button>
+</div>
+
+</body>
+</html>

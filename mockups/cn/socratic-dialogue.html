@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 错题讲解 · Socratic 引导（核心场景）</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --nunu: #722ed1;       /* 班主任·紫 */
+    --nunu-soft: #f3ebfd;
+    --hong: #ec4899;       /* 同学小红·粉 */
+    --hong-soft: #fce7f3;
+    --aze: #f59e0b;       /* 同学阿泽·橙 */
+    --aze-soft: #fef3c7;
+    --me: #3b82f6;        /* 孩子·蓝 */
+    --me-soft: #dbeafe;
+    --blackboard: #2d4a3a;
+    --blackboard-text: #fef9e7;
+    --success: #10b981;
+    --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ Top bar ============ */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    font-weight: 600;
+  }
+  .topbar-title .mistake-tag {
+    padding: 2px 8px;
+    background: #fef2f2;
+    color: #dc2626;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .topbar-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border: none; background: transparent;
+    border-radius: 8px; cursor: pointer;
+    color: var(--muted); font-size: 18px;
+  }
+  .icon-btn:hover { background: var(--line); }
+
+  /* ============ App layout ============ */
+  .app {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 20px 80px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .app {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 20px;
+      padding: 20px 32px 100px;
+    }
+  }
+
+  /* ============ Mistake banner ============ */
+  .mistake-banner {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%);
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .mistake-banner .label { font-size: 12px; color: var(--muted); }
+  .mistake-banner .q-text {
+    font-size: 17px; font-weight: 600; color: #991b1b;
+  }
+  .mistake-banner .user-ans {
+    padding: 4px 10px;
+    background: #fee2e2;
+    color: #b91c1c;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: line-through;
+  }
+  .mistake-banner .chapter {
+    padding: 4px 10px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ============ Whiteboard ============ */
+  .whiteboard-panel {
+    background: var(--blackboard);
+    border-radius: 16px;
+    padding: 24px;
+    color: var(--blackboard-text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    position: relative;
+    min-height: 360px;
+    display: flex; flex-direction: column;
+  }
+  .whiteboard-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .whiteboard-content {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pizza-row {
+    display: flex; align-items: center; gap: 24px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .pizza {
+    width: 140px; height: 140px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pizza svg { width: 100%; height: 100%; }
+  .pizza-label {
+    position: absolute;
+    bottom: -28px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .pizza-plus {
+    font-size: 28px; opacity: 0.8;
+  }
+  .pizza-equals {
+    font-size: 28px; opacity: 0.8;
+  }
+  .wb-hint {
+    margin-top: 16px;
+    font-size: 13px;
+    opacity: 0.65;
+    text-align: center;
+  }
+
+  /* ============ Chat panel ============ */
+  .chat-panel {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    height: 540px;
+    overflow: hidden;
+  }
+  @media (min-width: 900px) {
+    .chat-panel { height: 540px; }
+  }
+  .chat-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(180deg, var(--surface) 0%, #fbfaff 100%);
+  }
+  .chat-header-title {
+    font-weight: 600; font-size: 14px;
+  }
+  .chat-header-sub {
+    font-size: 12px; color: var(--muted);
+  }
+  .chat-header-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    background: var(--nunu-soft);
+    color: var(--nunu);
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+
+  .msg {
+    display: flex; gap: 10px;
+    animation: fadeIn 0.4s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .msg .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .msg .body {
+    max-width: 80%;
+  }
+  .msg .name {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .msg .bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  /* mentor */
+  .msg.mentor .avatar { background: var(--nunu-soft); }
+  .msg.mentor .name { color: var(--nunu); font-weight: 600; }
+  .msg.mentor .bubble {
+    background: var(--nunu-soft);
+    color: #4c1d95;
+    border-top-left-radius: 4px;
+  }
+
+  /* hong */
+  .msg.hong .avatar { background: var(--hong-soft); }
+  .msg.hong .name { color: var(--hong); font-weight: 600; }
+  .msg.hong .bubble {
+    background: var(--hong-soft);
+    color: #831843;
+    border-top-left-radius: 4px;
+  }
+
+  /* aze */
+  .msg.aze .avatar { background: var(--aze-soft); }
+  .msg.aze .name { color: var(--aze); font-weight: 600; }
+  .msg.aze .bubble {
+    background: var(--aze-soft);
+    color: #78350f;
+    border-top-left-radius: 4px;
+  }
+
+  /* me */
+  .msg.me { flex-direction: row-reverse; }
+  .msg.me .avatar { background: var(--me-soft); }
+  .msg.me .name { text-align: right; color: var(--me); font-weight: 600; }
+  .msg.me .bubble {
+    background: var(--me);
+    color: #fff;
+    border-top-right-radius: 4px;
+  }
+
+  /* typing */
+  .msg.typing .bubble {
+    display: inline-flex; gap: 4px; align-items: center;
+    padding: 14px 16px;
+  }
+  .msg.typing .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: typing 1.4s infinite;
+  }
+  .msg.typing .dot:nth-child(2) { animation-delay: 0.2s; }
+  .msg.typing .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-4px); }
+  }
+
+  /* action tag in bubble */
+  .action-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    font-size: 12px;
+    margin: 2px 4px 2px 0;
+    font-weight: 500;
+  }
+
+  /* highlight 错题元素 */
+  .hl {
+    background: #fde68a;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  /* ============ Input bar ============ */
+  .input-bar {
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .input-bar input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 14.5px;
+    outline: none;
+  }
+  .input-bar input:focus {
+    border-color: var(--primary);
+    background: var(--surface);
+  }
+  .send-btn {
+    width: 40px; height: 40px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ============ Bottom actions ============ */
+  .bottom-actions {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    z-index: 5;
+  }
+  .bottom-actions .left {
+    flex: 1; font-size: 13px; color: var(--muted);
+  }
+  .bottom-actions .left strong {
+    color: var(--fg);
+  }
+  .btn-master {
+    padding: 8px 18px;
+    background: var(--success);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .btn-master:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ============ Annotation: 关键提示 ============ */
+  .anno {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .anno-icon {
+    width: 24px; height: 24px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ======== Top bar ======== -->
+<div class="topbar">
+  <span class="back">←</span>
+  <div class="topbar-title">
+    错题讲解
+    <span class="mistake-tag">异分母分数加法</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" title="收藏">☆</button>
+    <button class="icon-btn" title="设置">⚙</button>
+  </div>
+</div>
+
+<!-- ======== App content ======== -->
+<div class="app">
+
+  <!-- Annotation: 解决痛点 #2 错题没人讲 -->
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>核心场景</strong>：1 mentor（班主任"小诺姐姐"）+ 2 buddies（同学小红 + 阿泽）一起 Socratic 引导孩子讲解错题——孩子不孤单，错题真正消化。
+    </div>
+  </div>
+
+  <!-- Mistake banner -->
+  <div class="mistake-banner">
+    <div>
+      <div class="label">错题</div>
+      <div class="q-text">1/2 + 1/3 = ?</div>
+    </div>
+    <div>
+      <div class="label">你的答案</div>
+      <div class="user-ans">2/5</div>
+    </div>
+    <div>
+      <div class="label">章节</div>
+      <div class="chapter">4-NF-A-2</div>
+    </div>
+  </div>
+
+  <!-- Whiteboard panel -->
+  <div class="whiteboard-panel">
+    <div class="whiteboard-title">
+      <span>🍕</span>
+      <span>小白板 · 小诺姐姐在画图哦</span>
+    </div>
+    <div class="whiteboard-content">
+      <div class="pizza-row">
+        <!-- Pizza 1: 1/2 (2 slices, 1 shaded) -->
+        <div class="pizza">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#f4d03f" stroke="#d4a017" stroke-width="1.5"/>
+            <path d="M 50 50 L 50 5 A 45 45 0 0 1 95 50 Z" fill="#dc2626" opacity="0.75"/>
+            <line x1="50" y1="50" x2="50" y2="5" stroke="#92400e" stroke-width="1"/>
+            <line x1="50" y1="50" x2="95" y2="50" stroke="#92400e" stroke-width="1"/>
+          </svg>
+          <div class="pizza-label">1/2</div>
+        </div>
+
+        <span class="pizza-plus">+</span>
+
+        <!-- Pizza 2: 1/3 (3 slices, 1 shaded) -->
+        <div class="pizza">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#f4d03f" stroke="#d4a017" stroke-width="1.5"/>
+            <path d="M 50 50 L 95 50 A 45 45 0 0 1 27.5 90.7 Z" fill="#dc2626" opacity="0.75"/>
+            <line x1="50" y1="50" x2="95" y2="50" stroke="#92400e" stroke-width="1"/>
+            <line x1="50" y1="50" x2="27.5" y2="90.7" stroke="#92400e" stroke-width="1"/>
+            <line x1="50" y1="50" x2="5" y2="50" stroke="#92400e" stroke-width="1"/>
+          </svg>
+          <div class="pizza-label">1/3</div>
+        </div>
+
+        <span class="pizza-equals">=</span>
+
+        <div style="font-size: 14px; opacity: 0.85; line-height: 1.6;">
+          把不同大小的块<br>
+          变成相同大小<br>
+          才能相加哦
+        </div>
+      </div>
+
+      <div class="wb-hint">💡 小诺姐姐说："看，分母不同就是块大小不同！"</div>
+    </div>
+  </div>
+
+  <!-- Chat panel -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <span style="font-size: 22px;">👩‍🏫</span>
+      <div>
+        <div class="chat-header-title">小诺姐姐 + 2 同学</div>
+        <div class="chat-header-sub">Socratic 引导中</div>
+      </div>
+      <div class="chat-header-badge">第 6 轮</div>
+    </div>
+
+    <div class="chat-messages">
+
+      <!-- mentor 1 -->
+      <div class="msg mentor">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐</div>
+          <div class="bubble">你做错了 <span class="hl">1/2 + 1/3 = 2/5</span>，我们一起看看好不好？</div>
+        </div>
+      </div>
+
+      <!-- hong 1 (故意提问) -->
+      <div class="msg hong">
+        <div class="avatar">👧</div>
+        <div class="body">
+          <div class="name">小红</div>
+          <div class="bubble">我也想问呀！分母是 2 和 3，为什么能直接相加呢？</div>
+        </div>
+      </div>
+
+      <!-- mentor 2 -->
+      <div class="msg mentor">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐</div>
+          <div class="bubble">
+            小红问得好！我们画个披萨看看。
+            <span class="action-tag">🍕 画披萨</span>
+            <span class="action-tag">✨ spotlight</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- aze 1 (故意犯错) -->
+      <div class="msg aze">
+        <div class="avatar">👦</div>
+        <div class="body">
+          <div class="name">阿泽</div>
+          <div class="bubble">我觉得是 2/5 没错呀？2 + 3 = 5 嘛～</div>
+        </div>
+      </div>
+
+      <!-- mentor 3 -->
+      <div class="msg mentor">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐</div>
+          <div class="bubble">
+            阿泽犯了一个常见错误哦。你们看那个披萨——
+            <br><br>把 1 个切 2 块的披萨拿 1 块 + 1 个切 3 块的披萨拿 1 块，能直接说成 5 块里的 2 块吗？
+          </div>
+        </div>
+      </div>
+
+      <!-- hong 2 (恍然大悟) -->
+      <div class="msg hong">
+        <div class="avatar">👧</div>
+        <div class="body">
+          <div class="name">小红</div>
+          <div class="bubble">哦！我懂了！块的大小不一样，不能直接相加！</div>
+        </div>
+      </div>
+
+      <!-- mentor 4 (Socratic 引导继续) -->
+      <div class="msg mentor">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐</div>
+          <div class="bubble">
+            对啦！那我们要先做什么，才能把它们加起来呢？
+            <span class="action-tag">💡 提示</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- me (孩子输入) -->
+      <div class="msg me">
+        <div class="avatar">🧒</div>
+        <div class="body">
+          <div class="name">我</div>
+          <div class="bubble">要先通分！把分母变成一样</div>
+        </div>
+      </div>
+
+      <!-- mentor 5 (肯定) -->
+      <div class="msg mentor">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="name">小诺姐姐</div>
+          <div class="bubble">
+            太棒啦！🎉 你自己想出来了！
+            <br><br>那 1/2 和 1/3 通分后是多少呢？
+          </div>
+        </div>
+      </div>
+
+      <!-- typing indicator -->
+      <div class="msg mentor typing">
+        <div class="avatar">👩‍🏫</div>
+        <div class="body">
+          <div class="bubble">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="input-bar">
+      <input type="text" placeholder="输入你的答案..." value="" />
+      <button class="send-btn" title="发送">↑</button>
+    </div>
+  </div>
+
+  <!-- Bottom actions -->
+  <div class="bottom-actions">
+    <div class="left">
+      🎯 这道题讲完后会进入 <strong>间隔重复队列</strong>（3 天后自动复习）
+    </div>
+    <button class="btn-master" disabled>✅ 已掌握</button>
+  </div>
+
+</div>
+
+</body>
+</html>

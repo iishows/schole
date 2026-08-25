@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 我的数据（PIPL 权利）</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #3b82f6;
+    --info-soft: #dbeafe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back { font-size: 20px; cursor: pointer; }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  /* Main */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  /* Annotation */
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Header card */
+  .header-card {
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-size: 13px;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
+  /* Right card */
+  .right-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .right-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .ri-export { background: var(--info-soft); color: var(--info); }
+  .ri-delete { background: var(--danger-soft); color: var(--danger); }
+  .ri-restrict { background: var(--warn-soft); color: var(--warn); }
+
+  .right-title {
+    font-size: 16px; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .right-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .right-action {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .ra-export {
+    background: var(--info);
+    color: #fff;
+    border: none;
+  }
+  .ra-delete {
+    background: var(--surface);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .ra-restrict {
+    background: var(--surface);
+    color: var(--warn);
+    border: 1px solid var(--warn);
+  }
+
+  /* Modal (delete confirm) */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 100%; max-width: 400px;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 20px 20px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--danger-soft);
+    color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .modal-title {
+    font-size: 17px; font-weight: 700;
+  }
+  .modal-body {
+    padding: 12px 20px 20px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .modal-body strong {
+    color: var(--danger);
+  }
+  .modal-list {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+  }
+  .modal-list-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--fg);
+  }
+  .modal-actions {
+    padding: 12px 20px 20px;
+    display: flex; gap: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .mb-cancel {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .mb-danger {
+    background: var(--danger);
+    color: #fff;
+    border: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">我的数据 · PIPL 权利</span>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Annotation -->
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>PIPL 数据请求 SOP</strong>：家长行使 PIPL 权利——导出（PDF + JSON）/ 删除（30 天宽限期 + 物理删除）/ 限制处理。7 天内完成导出。
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header-card">
+    <div class="header-title">您的数据，您的权利</div>
+    <div class="header-sub">
+      根据 PIPL（个人信息保护法），您可以随时导出、删除或限制处理您孩子的数据。所有操作严格在阿里云 cn-region（中国大陆，不出境）完成。
+    </div>
+  </div>
+
+  <!-- Right 1: Export -->
+  <div class="right-card">
+    <div class="right-icon ri-export">📦</div>
+    <div class="right-title">数据导出</div>
+    <div class="right-desc">
+      导出您孩子的错题记录、学习报告、persona 选择等所有数据。格式：PDF（人类可读）+ JSON（机器可读）。处理时间：7 天内。
+    </div>
+    <button class="right-action ra-export">📦 申请导出</button>
+  </div>
+
+  <!-- Right 2: Delete -->
+  <div class="right-card">
+    <div class="right-icon ri-delete">🗑️</div>
+    <div class="right-title">数据删除</div>
+    <div class="right-desc">
+      删除您孩子的所有数据。30 天宽限期内可联系客服恢复。30 天后物理删除（不仅是标记）。
+    </div>
+    <button class="right-action ra-delete">🗑️ 申请删除</button>
+  </div>
+
+  <!-- Right 3: Restrict -->
+  <div class="right-card">
+    <div class="right-icon ri-restrict">⏸️</div>
+    <div class="right-title">处理限制</div>
+    <div class="right-desc">
+      限制某些数据处理（如 AI 训练、推送）。您的核心功能（错题讲解、学习报告）不受影响。
+    </div>
+    <button class="right-action ra-restrict">⏸️ 限制处理</button>
+  </div>
+
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-mask">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">⚠️</div>
+      <div class="modal-title">确认删除数据</div>
+    </div>
+    <div class="modal-body">
+      此操作<strong>不可逆</strong>。30 天宽限期内可联系客服恢复，30 天后<strong>物理删除</strong>（不仅是标记）。
+      <div class="modal-list">
+        <div class="modal-list-item">📝 删除所有错题记录（含图片）</div>
+        <div class="modal-list-item">📊 删除所有学习报告</div>
+        <div class="modal-list-item">👤 删除 persona 实例与历史</div>
+        <div class="modal-list-item">⚙️ 删除推送设置与订阅记录</div>
+        <div class="modal-list-item">📅 30 天后物理删除（不可恢复）</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn mb-cancel">取消</button>
+      <button class="modal-btn mb-danger">确认删除</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

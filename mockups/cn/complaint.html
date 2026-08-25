@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 投诉建议</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+    --info: #3b82f6;
+    --info-soft: #dbeafe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* SLA Banner */
+  .sla-banner {
+    background: linear-gradient(135deg, var(--info-soft) 0%, #fce7f3 100%);
+    border: 1px solid var(--info);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex; gap: 12px;
+    align-items: center;
+  }
+  .sla-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--info);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .sla-content { flex: 1; }
+  .sla-title { font-size: 14px; font-weight: 600; color: #1e40af; }
+  .sla-desc { font-size: 12px; color: #1e40af; opacity: 0.8; margin-top: 2px; line-height: 1.5; }
+
+  /* Type picker */
+  .type-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .type-title {
+    font-size: 14px; font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .type-option {
+    padding: 12px;
+    background: var(--bg);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+  }
+  .type-option.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 500;
+  }
+  .type-emoji { font-size: 22px; margin-bottom: 4px; }
+
+  /* Form */
+  .form-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .form-row { margin-bottom: 14px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 14.5px;
+    background: var(--bg);
+    outline: none;
+    font-family: inherit;
+  }
+  .form-textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--primary);
+    background: var(--surface);
+  }
+  .form-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    display: flex; justify-content: space-between;
+  }
+  .form-counter { color: var(--primary); }
+
+  /* Upload */
+  .upload-zone {
+    border: 2px dashed var(--line);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .upload-zone:hover { border-color: var(--primary); background: var(--primary-soft); }
+  .upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .upload-text {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Contact */
+  .contact-row {
+    display: flex; gap: 8px;
+  }
+  .contact-row .form-input { flex: 1; }
+  .contact-code {
+    width: 100px;
+    text-align: center;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  .toggle-text { flex: 1; font-size: 13px; }
+  .toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--success); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* Submit */
+  .submit-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    margin-bottom: 80px;
+  }
+  .submit-row {
+    display: flex; gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex; gap: 12px;
+    z-index: 10;
+  }
+  .bottom-text { flex: 1; font-size: 12px; color: var(--muted); }
+  .bottom-text strong { color: var(--fg); }
+  .bottom-btn {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">投诉 / 建议</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>投诉 / 申诉 SOP</strong>：用户行使权利——内容 / 服务 / 计费 / 隐私投诉。SLA 24h / 48h / 72h。
+    </div>
+  </div>
+
+  <!-- SLA Banner -->
+  <div class="sla-banner">
+    <div class="sla-icon">⏱</div>
+    <div class="sla-content">
+      <div class="sla-title">我们的响应承诺</div>
+      <div class="sla-desc">
+        内容 / 隐私问题：<strong>24 小时</strong> 内回复 · 服务问题：48 小时 · 计费问题：72 小时
+      </div>
+    </div>
+  </div>
+
+  <!-- 投诉类型 -->
+  <div class="type-card">
+    <div class="type-title">投诉类型</div>
+    <div class="type-grid">
+      <div class="type-option">
+        <div class="type-emoji">📝</div>
+        内容问题
+      </div>
+      <div class="type-option active">
+        <div class="type-emoji">⚙️</div>
+        服务问题
+      </div>
+      <div class="type-option">
+        <div class="type-emoji">💰</div>
+        计费问题
+      </div>
+      <div class="type-option">
+        <div class="type-emoji">🔒</div>
+        隐私问题
+      </div>
+      <div class="type-option">
+        <div class="type-emoji">💡</div>
+        产品建议
+      </div>
+      <div class="type-option">
+        <div class="type-emoji">📌</div>
+        其他
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情 -->
+  <div class="form-card">
+    <div class="form-row">
+      <label class="form-label">问题描述</label>
+      <textarea class="form-textarea" placeholder="请详细描述您遇到的问题或建议（至少 20 字）...">班主任小诺姐姐在讲解"异分母分数"时，给孩子讲了"盒子里装鸡蛋"的比喻，我觉得太抽象了，孩子听不懂。能否用更生活化的例子？比如切披萨之类的。</textarea>
+      <div class="form-hint">
+        <span>至少 20 字，建议详细描述场景</span>
+        <span class="form-counter">86 / 500</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">截图（可选，最多 5 张）</label>
+      <div class="upload-zone">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text">点击上传截图 · 已上传 1 / 5</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">联系方式</label>
+      <div class="contact-row">
+        <input type="text" class="form-input" placeholder="邮箱" value="mama@example.com" />
+        <input type="text" class="form-input contact-code" placeholder="+86" value="+86" />
+        <input type="text" class="form-input" placeholder="手机号" value="138****1234" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="toggle-row">
+        <div class="toggle-text">需要客服回电（推荐紧急问题勾选）</div>
+        <div class="toggle"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 紧急联系 -->
+  <div class="form-card" style="background: var(--warn-soft); border-color: var(--warn);">
+    <div class="form-row">
+      <div class="form-label" style="color: #92400e;">🚨 紧急投诉？</div>
+      <p style="font-size: 13px; color: #78350f; line-height: 1.7;">
+        如遇<strong>数据泄露</strong>、<strong>未成年违规</strong>、<strong>严重内容违规</strong>等紧急情况，请直接拨打：
+      </p>
+      <div style="padding: 10px; background: var(--surface); border-radius: 8px; font-family: monospace; font-size: 14px; color: var(--danger); font-weight: 600;">
+        📞 400-XXX-XXXX（24h）
+      </div>
+    </div>
+  </div>
+
+  <!-- SLA preview -->
+  <div class="form-card">
+    <div class="type-title">提交后</div>
+    <div style="font-size: 13px; color: var(--muted); line-height: 1.7;">
+      • 自动生成<strong>工单号</strong>，您可在"我的工单"查询进度<br>
+      • 微信公众号推送"已收到"<br>
+      • <strong>服务问题</strong>：48 小时内回复<br>
+      • 您可在 7 天内补充信息<br>
+      • 解决后可评分（影响客服绩效）
+    </div>
+  </div>
+
+  <div class="submit-card">
+    <div class="submit-row">
+      <button class="btn btn-secondary">保存草稿</button>
+      <button class="btn btn-primary">提交投诉</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-text">
+    💬 已有 <strong>2</strong> 个进行中的工单
+  </div>
+  <button class="bottom-btn">查看</button>
+</div>
+
+</body>
+</html>

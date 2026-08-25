@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>推送模板 · 管理后台</title>
+<style>
+  :root { --primary: #3b82f6; --bg: #0f172a; --surface: #1e293b; --surface-2: #334155; --fg: #f1f5f9; --muted: #94a3b8; --line: #334155; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 16px 0; }
+  .sb-logo { padding: 0 16px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .sb-logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sb-logo-title { font-size: 13px; font-weight: 700; }
+  .sb-section { padding: 12px 16px 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sb-item { padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); }
+  .sb-item:hover { background: var(--surface-2); color: var(--fg); }
+  .sb-item.active { background: var(--primary); color: #fff; }
+  .main { padding: 24px; }
+  .anno { background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { padding: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .spacer { flex: 1; }
+  .btn { padding: 8px 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  /* Editor layout */
+  .editor { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+  .editor-main { background: var(--surface); border-radius: 10px; border: 1px solid var(--line); }
+  .editor-side { background: var(--surface); border-radius: 10px; border: 1px solid var(--line); padding: 16px; align-self: start; }
+  .editor-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .editor-toolbar button { padding: 6px 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 11px; cursor: pointer; }
+  .editor-title { font-size: 13px; font-weight: 600; }
+  .editor-area { padding: 16px; min-height: 400px; background: #faf9fe; color: var(--bg); border-radius: 0 0 8px 8px; font-family: -apple-system, system-ui; font-size: 14px; line-height: 1.8; }
+  .editor-area h2 { color: var(--primary); font-size: 18px; margin-bottom: 8px; }
+  .editor-area .meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; padding: 8px 12px; background: rgba(0,0,0,0.04); border-radius: 6px; }
+  .editor-area .card { background: #fff; border-left: 3px solid var(--primary); padding: 12px 14px; border-radius: 0 6px 6px 0; margin: 12px 0; }
+  .editor-area .card-title { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .editor-area .card-num { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .editor-area .card-list { font-size: 13px; color: var(--muted); }
+  .editor-area .action { display: inline-block; padding: 4px 10px; background: var(--primary); color: #fff; border-radius: 999px; font-size: 12px; text-decoration: none; margin-top: 10px; }
+  .editor-area .highlight { background: #fef9e7; padding: 1px 4px; border-radius: 3px; }
+  .var-input { width: 60px; padding: 2px 6px; border: 1px dashed var(--primary); background: rgba(114,46,209,0.05); border-radius: 3px; font-family: monospace; font-size: 11px; color: var(--primary); }
+  .side-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .var-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+  .var-row:last-child { border-bottom: none; }
+  .var-name { font-family: monospace; color: var(--primary); }
+  .preview-box { background: #07c160; color: #fff; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 12px; }
+  .preview-title { font-weight: 600; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-icon">⚙️</div><div class="sb-logo-title">小诺学伴 · 管理后台</div></div>
+    <div class="sb-section">运营</div>
+    <div class="sb-item">📝 内容审核</div>
+    <div class="sb-item">👥 用户管理</div>
+    <div class="sb-item">💬 投诉 / 客服</div>
+    <div class="sb-section">内容</div>
+    <div class="sb-item">🎭 Persona 管理</div>
+    <div class="sb-item">📚 Textbook 管理</div>
+    <div class="sb-item active">📢 推送模板</div>
+    <div class="sb-section">数据</div>
+    <div class="sb-item">📊 数据看板</div>
+    <div class="sb-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main">
+    <div class="anno">📢 O-6 · 推送模板 · 编辑微信公众号模板消息</div>
+
+    <div class="page-title">📢 推送模板</div>
+    <div class="page-sub">编辑周报 / 错题提醒 / 学习建议 模板 · 支持变量插值</div>
+
+    <div class="toolbar">
+      <div class="tab active">周报</div>
+      <div class="tab">错题提醒</div>
+      <div class="tab">学习建议</div>
+      <div class="tab">试用到期</div>
+      <div class="tab">订阅成功</div>
+      <div class="spacer"></div>
+      <button class="btn">📤 测试推送</button>
+      <button class="btn" style="background: var(--success);">💾 保存</button>
+    </div>
+
+    <div class="editor">
+      <div class="editor-main">
+        <div class="editor-toolbar">
+          <span class="editor-title">【小诺学伴】本周学习报告</span>
+          <span style="flex: 1;"></span>
+          <button>📋 复制</button>
+          <button>🔍 预览</button>
+        </div>
+        <div class="editor-area">
+          <h2>📊 <span class="var-input">{kid_name}</span> 本周学习报告</h2>
+          <div class="meta">
+            📅 <span class="var-input">{date_range}</span>（本周）
+          </div>
+
+          <div class="card">
+            <div class="card-title">📊 本周掌握度</div>
+            <div class="card-num">数学 <span class="var-input">{math_pct}</span>% · 语文 <span class="var-input">{chinese_pct}</span>%</div>
+            <div class="card-list">重点：<span class="var-input">{focus_chapter}</span>（<span class="var-input">{focus_pct}</span>%，需复习）</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📝 本周错题 TOP 3</div>
+            <div class="card-list">
+              1. <span class="var-input">{mistake_1}</span>（错 <span class="var-input">{count_1}</span> 次）<br>
+              2. <span class="var-input">{mistake_2}</span>（错 <span class="var-input">{count_2}</span> 次）<br>
+              3. <span class="var-input">{mistake_3}</span>（错 <span class="var-input">{count_3}</span> 次）
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">💡 本周建议</div>
+            <div class="card-list">
+              周末重点复习 <span class="highlight">{suggest_topic}</span>，已自动生成 <span class="var-input">{practice_count}</span> 道专项练习。
+            </div>
+            <a href="#" class="action">📊 查看详情 →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar: variables + preview -->
+      <div class="editor-side">
+        <div class="side-title">📋 可用变量（10 个）</div>
+        <div class="var-row"><span class="var-name">{kid_name}</span><span>孩子名</span></div>
+        <div class="var-row"><span class="var-name">{date_range}</span><span>日期范围</span></div>
+        <div class="var-row"><span class="var-name">{math_pct}</span><span>数学 %</span></div>
+        <div class="var-row"><span class="var-name">{chinese_pct}</span><span>语文 %</span></div>
+        <div class="var-row"><span class="var-name">{focus_chapter}</span><span>重点章节</span></div>
+        <div class="var-row"><span class="var-name">{focus_pct}</span><span>重点 %</span></div>
+        <div class="var-row"><span class="var-name">{mistake_1..3}</span><span>错题 TOP 3</span></div>
+        <div class="var-row"><span class="var-name">{count_1..3}</span><span>错题次数</span></div>
+        <div class="var-row"><span class="var-name">{suggest_topic}</span><span>建议主题</span></div>
+        <div class="var-row"><span class="var-name">{practice_count}</span><span>练习题数</span></div>
+
+        <div class="preview-box">
+          <div class="preview-title">📱 微信预览</div>
+          模板会在周日 19:00 推送给所有付费用户
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 本周学习报告（家长侧）</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --danger: #dc2626;
+    --danger-soft: #fee2e2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  /* Header */
+  .header {
+    position: sticky; top: 0; z-index: 10;
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+    color: #fff;
+    padding: 16px 20px 20px;
+  }
+  .header-top {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .header-back { font-size: 20px; cursor: pointer; }
+  .header-title { font-size: 14px; opacity: 0.9; }
+  .header-kid {
+    font-size: 22px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .header-period {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 999px;
+    font-size: 13px;
+  }
+
+  /* Main */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px 16px;
+  }
+
+  /* Annotation */
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(114, 46, 209, 0.04);
+    border: 1px solid var(--line);
+  }
+  .card-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .card-icon.purple { background: var(--primary-soft); color: var(--primary); }
+  .card-icon.red { background: var(--danger-soft); color: var(--danger); }
+  .card-icon.green { background: var(--success-soft); color: var(--success); }
+  .card-icon.orange { background: var(--warn-soft); color: var(--warn); }
+  .card-title {
+    font-size: 16px; font-weight: 600;
+  }
+
+  /* Card 1 - Mastery */
+  .mastery-row {
+    display: flex; justify-content: space-around;
+    text-align: center;
+    gap: 12px;
+  }
+  .mastery-item {
+    flex: 1;
+    padding: 14px 8px;
+    background: var(--bg);
+    border-radius: 12px;
+  }
+  .mastery-num {
+    font-size: 26px; font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .mastery-num.math { color: var(--primary); }
+  .mastery-num.chinese { color: var(--success); }
+  .mastery-delta {
+    display: inline-block;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .delta-up { background: var(--success-soft); color: var(--success); }
+  .delta-flat { background: var(--line); color: var(--muted); }
+  .mastery-label {
+    font-size: 12px; color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .focus-section {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .focus-icon { font-size: 24px; }
+  .focus-content { flex: 1; }
+  .focus-title {
+    font-size: 13px; color: #92400e;
+    font-weight: 600;
+  }
+  .focus-detail {
+    font-size: 12px;
+    color: #78350f;
+    margin-top: 2px;
+  }
+
+  /* Card 2 - Top mistakes */
+  .mistake-list {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .mistake-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+  .mistake-rank {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: #fef3c7; color: #92400e; }
+  .rank-2 { background: #e5e7eb; color: #374151; }
+  .rank-3 { background: #fed7aa; color: #9a3412; }
+  .mistake-content { flex: 1; }
+  .mistake-text {
+    font-size: 14px; font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .mistake-count {
+    font-size: 12px; color: var(--muted);
+  }
+  .mistake-count strong { color: var(--danger); }
+  .mistake-action {
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* Card 3 - Suggestion */
+  .suggestion-content {
+    font-size: 14px;
+    color: var(--fg);
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+  .suggestion-content strong {
+    color: var(--primary);
+  }
+  .suggestion-action {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Quick action */
+  .quick-actions {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .qa-btn {
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--fg);
+  }
+  .qa-btn-icon { font-size: 22px; margin-bottom: 4px; }
+  .qa-btn-label { font-size: 13px; font-weight: 500; }
+
+  /* Bottom CTA */
+  .bottom-cta {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    z-index: 5;
+  }
+  .bottom-cta-text {
+    flex: 1; font-size: 13px; color: var(--muted);
+  }
+  .bottom-cta-text strong { color: var(--fg); }
+  .btn-share {
+    padding: 8px 16px;
+    background: var(--success);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .btn-share-icon { margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <span class="header-back">←</span>
+    <span class="header-title">学习报告</span>
+  </div>
+  <div class="header-kid">
+    <span>📊</span>
+    <span>大宝本周学习报告</span>
+  </div>
+  <div class="header-period">
+    <span>📅</span>
+    <span>2026-08-18 ~ 2026-08-24（本周）</span>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Annotation -->
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>核心场景</strong>：家长下班 19:00 看 3 卡片——掌握度 / 错题 TOP 3 / 改进建议。从"陪写作业吼叫"变成"30 秒看懂孩子状态"。
+    </div>
+  </div>
+
+  <!-- Card 1: Mastery -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon purple">📊</div>
+      <div class="card-title">本周掌握度</div>
+    </div>
+    <div class="mastery-row">
+      <div class="mastery-item">
+        <div class="mastery-num math">78%</div>
+        <div>
+          <span class="mastery-delta delta-up">↑5%</span>
+        </div>
+        <div class="mastery-label">数学</div>
+      </div>
+      <div class="mastery-item">
+        <div class="mastery-num chinese">92%</div>
+        <div>
+          <span class="mastery-delta delta-flat">→</span>
+        </div>
+        <div class="mastery-label">语文</div>
+      </div>
+    </div>
+    <div class="focus-section">
+      <div class="focus-icon">⚠️</div>
+      <div class="focus-content">
+        <div class="focus-title">重点关注章节</div>
+        <div class="focus-detail">
+          <strong>4-NF-A-2 异分母分数加法</strong> · 掌握度 45%，需重点复习
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Top mistakes -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon red">📝</div>
+      <div class="card-title">本周错题 TOP 3</div>
+    </div>
+    <div class="mistake-list">
+      <div class="mistake-item">
+        <div class="mistake-rank rank-1">1</div>
+        <div class="mistake-content">
+          <div class="mistake-text">异分母分数加法</div>
+          <div class="mistake-count">本周错 <strong>3</strong> 次</div>
+        </div>
+        <button class="mistake-action">📖 讲解</button>
+      </div>
+      <div class="mistake-item">
+        <div class="mistake-rank rank-2">2</div>
+        <div class="mistake-content">
+          <div class="mistake-text">应用题单位换算</div>
+          <div class="mistake-count">本周错 <strong>2</strong> 次</div>
+        </div>
+        <button class="mistake-action">📖 讲解</button>
+      </div>
+      <div class="mistake-item">
+        <div class="mistake-rank rank-3">3</div>
+        <div class="mistake-content">
+          <div class="mistake-text">形近字辨析</div>
+          <div class="mistake-count">本周错 <strong>1</strong> 次</div>
+        </div>
+        <button class="mistake-action">📖 讲解</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Suggestion -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon green">💡</div>
+      <div class="card-title">本周建议</div>
+    </div>
+    <div class="suggestion-content">
+      周末重点复习 <strong>异分母分数加法</strong>，小诺姐姐已经自动生成 <strong>5 道专项练习</strong>。建议你和孩子一起做，做完后错题会自动进入间隔重复队列。
+    </div>
+    <button class="suggestion-action">🎯 开始复习（5 道题）</button>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-actions">
+    <a class="qa-btn" href="#">
+      <div class="qa-btn-icon">📋</div>
+      <div class="qa-btn-label">查看完整错题本</div>
+    </a>
+    <a class="qa-btn" href="#">
+      <div class="qa-btn-icon">👨‍👩‍👧</div>
+      <div class="qa-btn-label">切换孩子</div>
+    </a>
+  </div>
+
+</div>
+
+<!-- Bottom CTA -->
+<div class="bottom-cta">
+  <div class="bottom-cta-text">
+    💬 觉得有用？<strong>分享给配偶</strong>一起看
+  </div>
+  <button class="btn-share">
+    <span class="btn-share-icon">📤</span>
+    分享
+  </button>
+</div>
+
+</body>
+</html>

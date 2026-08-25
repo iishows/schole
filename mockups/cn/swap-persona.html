@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 换班主任</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --nunu: #722ed1;
+    --hong: #ec4899;
+    --aze: #f59e0b;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Current persona */
+  .current-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .current-header {
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .current-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .current-info { flex: 1; }
+  .current-name { font-size: 17px; font-weight: 700; }
+  .current-role {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .lock-badge {
+    padding: 3px 10px;
+    background: var(--warn-soft);
+    color: var(--warn);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .lock-detail {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .lock-progress {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .lock-bar {
+    flex: 1; height: 8px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .lock-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--warn) 0%, #f97316 100%);
+    border-radius: 4px;
+    width: 60%;
+  }
+  .lock-text {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+  .lock-text strong {
+    color: var(--warn);
+  }
+
+  /* Warning */
+  .warn-card {
+    background: linear-gradient(135deg, var(--warn-soft) 0%, #fed7aa 100%);
+    border: 1px solid var(--warn);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .warn-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .warn-list {
+    font-size: 12px;
+    color: #78350f;
+    line-height: 1.7;
+    padding-left: 16px;
+  }
+
+  /* Selectable mentors */
+  .section-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .persona-list {
+    display: flex; flex-direction: column;
+    gap: 10px;
+  }
+  .persona-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    opacity: 0.5;
+  }
+  .persona-card:not(.locked):not(.current) {
+    opacity: 1;
+  }
+  .persona-card.current {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    opacity: 1;
+  }
+  .persona-card.locked {
+    cursor: not-allowed;
+  }
+  .persona-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .pa-mentor { background: var(--primary-soft); color: var(--primary); }
+  .pa-strict { background: #fee2e2; color: #dc2626; }
+  .pa-funny { background: #fef3c7; color: #92400e; }
+  .persona-info { flex: 1; }
+  .persona-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: flex; align-items: center;
+    gap: 6px;
+  }
+  .persona-tag {
+    padding: 1px 6px;
+    background: var(--muted);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .persona-tag.current { background: var(--success); }
+  .persona-tag.locked { background: var(--warn); }
+  .persona-desc {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .persona-radio {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    flex-shrink: 0;
+  }
+  .persona-card.current .persona-radio {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .persona-card.locked .persona-radio {
+    background: var(--line);
+  }
+
+  /* Action */
+  .btn-row {
+    display: flex; gap: 10px;
+    margin-top: 14px;
+  }
+  .btn {
+    flex: 1; padding: 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:disabled {
+    background: var(--line);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">换班主任</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>修改 persona SOP</strong>：班主任锁定到学期末（150 天后解锁），防止频繁切换影响孩子情感连接。
+    </div>
+  </div>
+
+  <!-- Current -->
+  <div class="current-card">
+    <div class="current-header">
+      <div class="current-avatar">👩‍🏫</div>
+      <div class="current-info">
+        <div class="current-name">小诺姐姐</div>
+        <div class="current-role">班主任 · 大宝（4 年级）</div>
+      </div>
+      <div class="lock-badge">🔒 锁定中</div>
+    </div>
+    <div class="lock-detail">
+      <div class="lock-progress">
+        <div class="lock-bar">
+          <div class="lock-bar-fill"></div>
+        </div>
+        <div style="font-size: 13px; font-weight: 600;">60%</div>
+      </div>
+      <div class="lock-text">
+        <span>已锁定 <strong>150 天</strong></span>
+        <span>剩余 <strong>100 天</strong></span>
+      </div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">
+        解锁时间：<strong>2027-01-31</strong>（学期末）
+      </div>
+    </div>
+  </div>
+
+  <!-- Warning -->
+  <div class="warn-card">
+    <div class="warn-title">⚠️ 换班主任会影响</div>
+    <ul class="warn-list">
+      <li>教学风格（prompt 完全替换）</li>
+      <li>错题讲解连续性（之前历史保留但 prompt 不同）</li>
+      <li><strong>孩子情感连接</strong>（小诺姐姐已与孩子建立 150 天关系）</li>
+      <li>可能导致孩子短期不适应</li>
+    </ul>
+  </div>
+
+  <!-- Selectable -->
+  <div class="section-card">
+    <div class="section-title">选择新班主任（解锁后可用）</div>
+    <div class="persona-list">
+
+      <div class="persona-card current">
+        <div class="persona-avatar pa-mentor">👩‍🏫</div>
+        <div class="persona-info">
+          <div class="persona-name">
+            小诺姐姐（温柔）
+            <span class="persona-tag current">当前</span>
+          </div>
+          <div class="persona-desc">温柔的小学老师 · 用生活比喻</div>
+        </div>
+        <div class="persona-radio"></div>
+      </div>
+
+      <div class="persona-card locked">
+        <div class="persona-avatar pa-strict">👩‍🏫</div>
+        <div class="persona-info">
+          <div class="persona-name">
+            严老师（严格）
+            <span class="persona-tag locked">🔒 100 天</span>
+          </div>
+          <div class="persona-desc">严格的数学老师 · 追问"为什么"</div>
+        </div>
+        <div class="persona-radio"></div>
+      </div>
+
+      <div class="persona-card locked">
+        <div class="persona-avatar pa-funny">👨‍🏫</div>
+        <div class="persona-info">
+          <div class="persona-name">
+            天天叔叔（搞笑）
+            <span class="persona-tag locked">🔒 100 天</span>
+          </div>
+          <div class="persona-desc">用段子讲知识 · 适合活泼的孩子</div>
+        </div>
+        <div class="persona-radio"></div>
+      </div>
+
+    </div>
+
+    <p style="font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px;">
+      💡 建议学期末解锁后再换，避免影响孩子学习连续性
+    </p>
+  </div>
+
+  <!-- Action -->
+  <div class="btn-row">
+    <button class="btn btn-secondary">再想想</button>
+    <button class="btn btn-primary" disabled>🔒 100 天后解锁</button>
+  </div>
+
+</div>
+
+</body>
+</html>

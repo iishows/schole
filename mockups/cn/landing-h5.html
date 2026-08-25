@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 让每个孩子都有 AI 班主任</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --nunu: #722ed1;
+    --hong: #ec4899;
+    --aze: #f59e0b;
+    --me: #3b82f6;
+    --success: #10b981;
+    --warn: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #722ed1 0%, #a855f7 50%, #d946ef 100%);
+    color: #fff;
+    padding: 60px 20px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 400px; height: 400px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .hero-logo {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+  .hero-title {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-title .highlight {
+    background: linear-gradient(180deg, transparent 60%, #fbbf24 60%);
+    padding: 0 4px;
+  }
+  .hero-sub {
+    font-size: 15px;
+    opacity: 0.95;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Avatar cluster */
+  .avatar-cluster {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+  }
+  .av {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .av.mentor { background: rgba(114,46,209,0.4); }
+  .av.buddy-h { background: rgba(236,72,153,0.4); }
+  .av.buddy-a { background: rgba(245,158,11,0.4); }
+  .av-label {
+    font-size: 11px;
+    margin-top: 6px;
+    opacity: 0.85;
+  }
+
+  /* Hero CTAs */
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .btn-primary, .btn-secondary {
+    padding: 14px 24px;
+    border: none;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: #fff;
+    color: var(--primary);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* Annotation */
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin: 16px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Section */
+  .section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 20px;
+  }
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  /* Pain cards */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 480px) {
+    .pain-grid { grid-template-columns: 1fr; }
+  }
+  .pain-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid var(--line);
+  }
+  .pain-icon { font-size: 26px; margin-bottom: 8px; }
+  .pain-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .pain-desc {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Sample */
+  .sample-card {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .sample-header {
+    padding: 14px 18px;
+    background: linear-gradient(180deg, var(--surface) 0%, var(--primary-soft) 100%);
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sample-tag {
+    padding: 2px 8px;
+    background: #fef2f2;
+    color: #dc2626;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .sample-title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .sample-body { padding: 16px; }
+  .chat-flow {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .chat-msg {
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 85%;
+  }
+  .chat-msg.mentor {
+    background: var(--primary-soft);
+    color: #4c1d95;
+    align-self: flex-start;
+    border-top-left-radius: 4px;
+  }
+  .chat-msg.hong {
+    background: #fce7f3;
+    color: #831843;
+    align-self: flex-start;
+    border-top-left-radius: 4px;
+  }
+  .chat-msg.aze {
+    background: #fef3c7;
+    color: #78350f;
+    align-self: flex-start;
+    border-top-left-radius: 4px;
+  }
+  .chat-msg.me {
+    background: #dbeafe;
+    color: #1e3a8a;
+    align-self: flex-end;
+    border-top-right-radius: 4px;
+  }
+  .sample-action {
+    padding: 12px;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  .sample-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  /* Feature pillars */
+  .pillar {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .pillar:last-child { border-bottom: none; }
+  .pillar-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .pillar-content { flex: 1; }
+  .pillar-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .pillar-desc { font-size: 13px; color: var(--muted); }
+
+  /* Footer */
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 32px 20px;
+    text-align: center;
+    margin-top: 60px;
+  }
+  .footer-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .footer-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .footer-link {
+    font-size: 13px;
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  /* Floating bottom bar */
+  .float-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    z-index: 10;
+  }
+  .float-text {
+    flex: 1; font-size: 13px; color: var(--muted);
+  }
+  .float-text strong { color: var(--fg); }
+  .float-btn {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- Annotation -->
+<div class="anno">
+  <div class="anno-icon">!</div>
+  <div>
+    <strong>访客 SOP · H5 落地页</strong>：未注册用户从公众号 / 小红书 / 朋友分享首次进入——展示 3 道示例错题 + Socratic 完整流程，让用户 5 分钟内理解产品价值。
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-logo">小诺学伴 · OpenMAIC</div>
+  <h1 class="hero-title">
+    让每个孩子都有<br>
+    <span class="highlight">AI 班主任</span>陪着写作业
+  </h1>
+  <p class="hero-sub">
+    1 个班主任 + 2 个同学 · Socratic 引导 · 公众号周报
+  </p>
+
+  <div class="avatar-cluster">
+    <div>
+      <div class="av mentor">👩‍🏫</div>
+      <div class="av-label">小诺姐姐</div>
+    </div>
+    <div>
+      <div class="av buddy-h">👧</div>
+      <div class="av-label">小红</div>
+    </div>
+    <div>
+      <div class="av buddy-a">👦</div>
+      <div class="av-label">阿泽</div>
+    </div>
+  </div>
+
+  <div class="hero-cta">
+    <a class="btn-primary" href="#">🎯 免费试用 30 天</a>
+    <a class="btn-secondary" href="#">查看 3 道示例 →</a>
+  </div>
+</section>
+
+<!-- Pain -->
+<section class="section">
+  <h2 class="section-title">家长不能辅导的痛</h2>
+  <p class="section-sub">你下班回家，孩子作业还没做完</p>
+
+  <div class="pain-grid">
+    <div class="pain-card">
+      <div class="pain-icon">😩</div>
+      <div class="pain-title">不会辅导</div>
+      <div class="pain-desc">应用题家长也讲不清</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">📚</div>
+      <div class="pain-title">错题积压</div>
+      <div class="pain-desc">错题本抄完没人讲，下次还错</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">😶</div>
+      <div class="pain-title">孩子不敢问</div>
+      <div class="pain-desc">课堂上怕被笑，不敢举手</div>
+    </div>
+    <div class="pain-card">
+      <div class="pain-icon">👶</div>
+      <div class="pain-title">没同伴</div>
+      <div class="pain-desc">一个人写作业，没人讨论</div>
+    </div>
+  </div>
+</section>
+
+<!-- Sample chat -->
+<section class="section">
+  <h2 class="section-title">看看小诺姐姐怎么讲</h2>
+  <p class="section-sub">一道"1/2 + 1/3 = 2/5"的常见错题，完整 Socratic 引导</p>
+
+  <div class="sample-card">
+    <div class="sample-header">
+      <span class="sample-tag">异分母分数加法</span>
+      <span class="sample-title">孩子写的：2/5</span>
+    </div>
+    <div class="sample-body">
+      <div class="chat-flow">
+        <div class="chat-msg mentor">👩‍🏫 你做错了 1/2 + 1/3 = 2/5，我们看看好不好？</div>
+        <div class="chat-msg hong">👧 为什么分母能直接相加呀？</div>
+        <div class="chat-msg mentor">👩‍🏫 小红问得好！我们画个披萨看看 🍕<br>（两个披萨：1 个切 2 块，1 个切 3 块）</div>
+        <div class="chat-msg aze">👦 我觉得是 2/5 没错呀？</div>
+        <div class="chat-msg mentor">👩‍🏫 阿泽说 2/5，你们觉得对吗？<br>块的大小不一样，不能直接相加哦~</div>
+        <div class="chat-msg me">🧒 要先通分！</div>
+        <div class="chat-msg mentor">👩‍🏫 太棒啦！🎉 你自己想出来了！</div>
+      </div>
+    </div>
+    <div class="sample-action">
+      <a class="sample-link" href="#">查看完整流程 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Pillars -->
+<section class="section">
+  <h2 class="section-title">4 大核心功能</h2>
+  <p class="section-sub">不是普通 AI 客服，是虚拟教室</p>
+
+  <div>
+    <div class="pillar">
+      <div class="pillar-num">1</div>
+      <div class="pillar-content">
+        <div class="pillar-title">1 mentor + 2 buddies 实时互动</div>
+        <div class="pillar-desc">孩子不再孤军奋战，有 1 老师 + 2 同学陪着</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">2</div>
+      <div class="pillar-content">
+        <div class="pillar-title">Socratic 引导（不直接给答案）</div>
+        <div class="pillar-desc">8 条严格规则，逼孩子自己想通</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">3</div>
+      <div class="pillar-content">
+        <div class="pillar-title">简化白板（披萨图辅助讲解）</div>
+        <div class="pillar-desc">抽象概念可视化，应用题不再看不懂</div>
+      </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-num">4</div>
+      <div class="pillar-content">
+        <div class="pillar-title">间隔重复 + 公众号周报</div>
+        <div class="pillar-desc">错题不再积压，30 秒看懂孩子状态</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-title">30 天免费试用</div>
+  <div class="footer-sub">¥99/月 · 年付 ¥999（17% off） · 家庭版 ¥199/月 ≤3 孩</div>
+  <a class="footer-link" href="#">📖 查看家长常见问题</a>
+</footer>
+
+<!-- Floating bottom bar -->
+<div class="float-bar">
+  <div class="float-text">
+    🎁 <strong>现在注册</strong>送 30 天免费试用
+  </div>
+  <button class="float-btn">免费试用</button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Persona 管理 · 管理后台</title>
+<style>
+  :root { --primary: #3b82f6; --bg: #0f172a; --surface: #1e293b; --surface-2: #334155; --fg: #f1f5f9; --muted: #94a3b8; --line: #334155; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --nunu: #722ed1; --hong: #ec4899; --aze: #f59e0b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 16px 0; }
+  .sb-logo { padding: 0 16px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .sb-logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sb-logo-title { font-size: 13px; font-weight: 700; }
+  .sb-section { padding: 12px 16px 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sb-item { padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); }
+  .sb-item:hover { background: var(--surface-2); color: var(--fg); }
+  .sb-item.active { background: var(--primary); color: #fff; }
+  .main { padding: 24px; }
+  .anno { background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  /* Toolbar */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab { padding: 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .spacer { flex: 1; }
+  .btn { padding: 8px 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .btn.secondary { background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+  /* Cards */
+  .section { margin-bottom: 24px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .section-count { padding: 1px 8px; background: var(--surface-2); border-radius: 999px; font-size: 11px; color: var(--muted); }
+  .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .persona-card { background: var(--surface); border-radius: 10px; padding: 14px; border: 1px solid var(--line); }
+  .persona-card.mentor { border-left: 3px solid var(--nunu); }
+  .persona-card.buddy { border-left: 3px solid var(--hong); }
+  .persona-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .persona-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .pa-nunu { background: var(--nunu); }
+  .pa-hong { background: var(--hong); }
+  .pa-aze { background: var(--aze); }
+  .persona-name { font-size: 15px; font-weight: 600; }
+  .persona-role { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .persona-stat { font-size: 11px; color: var(--muted); margin-top: 8px; display: flex; justify-content: space-between; }
+  .persona-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .persona-actions button { flex: 1; padding: 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 11px; cursor: pointer; }
+  .persona-actions button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .status-dot.active { background: var(--success); }
+  .status-dot.draft { background: var(--warn); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-icon">⚙️</div><div class="sb-logo-title">小诺学伴 · 管理后台</div></div>
+    <div class="sb-section">运营</div>
+    <div class="sb-item">📝 内容审核</div>
+    <div class="sb-item">👥 用户管理</div>
+    <div class="sb-item">💬 投诉 / 客服</div>
+    <div class="sb-section">内容</div>
+    <div class="sb-item active">🎭 Persona 管理</div>
+    <div class="sb-item">📚 Textbook 管理</div>
+    <div class="sb-item">📢 推送模板</div>
+    <div class="sb-section">数据</div>
+    <div class="sb-item">📊 数据看板</div>
+    <div class="sb-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main">
+    <div class="anno">🎭 O-4 · Persona 管理 · 增删改班主任/同学模板</div>
+
+    <div class="page-title">🎭 Persona 管理</div>
+    <div class="page-sub">运营 CRUD persona 模板 · 用户从模板克隆实例</div>
+
+    <div class="toolbar">
+      <div class="tab active">班主任（5）</div>
+      <div class="tab">同学（4）</div>
+      <div class="tab">家长助手（1）</div>
+      <div class="spacer"></div>
+      <button class="btn">➕ 新建 Persona</button>
+    </div>
+
+    <!-- Mentor -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">👩‍🏫 班主任 · Mentor <span class="section-count">5 个</span></div>
+        <span style="font-size: 11px; color: var(--muted);"><span class="status-dot active"></span>5 个已上线</span>
+      </div>
+      <div class="persona-grid">
+
+        <div class="persona-card mentor">
+          <div class="persona-top">
+            <div class="persona-avatar pa-nunu">👩‍🏫</div>
+            <div>
+              <div class="persona-name">小诺姐姐</div>
+              <div class="persona-role">班主任 · 默认</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">温柔的小学老师 · 用生活比喻（盒子里装鸡蛋 / 切披萨）</div>
+          <div class="persona-stat"><span>👥 使用</span><span>892 / 1247</span></div>
+          <div class="persona-stat"><span>📊 满意度</span><span style="color: var(--success);">4.6 / 5.0</span></div>
+          <div class="persona-actions">
+            <button class="primary">编辑</button>
+            <button>克隆</button>
+            <button>停用</button>
+          </div>
+        </div>
+
+        <div class="persona-card mentor">
+          <div class="persona-top">
+            <div class="persona-avatar" style="background: #dc2626;">👩‍🏫</div>
+            <div>
+              <div class="persona-name">严老师</div>
+              <div class="persona-role">班主任 · 严格</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">严格的数学老师 · 喜欢追问"为什么"，要求步骤清楚</div>
+          <div class="persona-stat"><span>👥 使用</span><span>187 / 1247</span></div>
+          <div class="persona-stat"><span>📊 满意度</span><span style="color: var(--success);">4.3 / 5.0</span></div>
+          <div class="persona-actions">
+            <button class="primary">编辑</button>
+            <button>克隆</button>
+            <button>停用</button>
+          </div>
+        </div>
+
+        <div class="persona-card mentor">
+          <div class="persona-top">
+            <div class="persona-avatar" style="background: #f59e0b;">👨‍🏫</div>
+            <div>
+              <div class="persona-name">天天叔叔</div>
+              <div class="persona-role">班主任 · 搞笑</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">用段子讲知识 · 适合活泼的孩子</div>
+          <div class="persona-stat"><span>👥 使用</span><span>98 / 1247</span></div>
+          <div class="persona-stat"><span>📊 满意度</span><span style="color: var(--success);">4.4 / 5.0</span></div>
+          <div class="persona-actions">
+            <button class="primary">编辑</button>
+            <button>克隆</button>
+            <button>停用</button>
+          </div>
+        </div>
+
+        <div class="persona-card mentor">
+          <div class="persona-top">
+            <div class="persona-avatar" style="background: #0e7490;">👨‍🏫</div>
+            <div>
+              <div class="persona-name">书先生</div>
+              <div class="persona-role">班主任 · 文学</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">文学老师 · 喜欢讲历史故事 · 语文好</div>
+          <div class="persona-stat"><span>👥 使用</span><span>52 / 1247</span></div>
+          <div class="persona-stat"><span>📊 满意度</span><span style="color: var(--warn);">4.1 / 5.0</span></div>
+          <div class="persona-actions">
+            <button class="primary">编辑</button>
+            <button>克隆</button>
+            <button>停用</button>
+          </div>
+        </div>
+
+        <div class="persona-card mentor">
+          <div class="persona-top">
+            <div class="persona-avatar" style="background: #ec4899;">👩‍🏫</div>
+            <div>
+              <div class="persona-name">可可姐姐</div>
+              <div class="persona-role">班主任 · 英语</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.5;">英语老师 · 发音标准 · 活泼</div>
+          <div class="persona-stat"><span>👥 使用</span><span>18 / 1247</span></div>
+          <div class="persona-stat"><span>📊 满意度</span><span style="color: var(--warn);">3.9 / 5.0</span></div>
+          <div class="persona-actions">
+            <button class="primary">编辑</button>
+            <button>克隆</button>
+            <button>停用</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

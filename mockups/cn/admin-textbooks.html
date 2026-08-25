@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Textbook 管理 · 管理后台</title>
+<style>
+  :root { --primary: #3b82f6; --bg: #0f172a; --surface: #1e293b; --surface-2: #334155; --fg: #f1f5f9; --muted: #94a3b8; --line: #334155; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 16px 0; }
+  .sb-logo { padding: 0 16px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .sb-logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sb-logo-title { font-size: 13px; font-weight: 700; }
+  .sb-section { padding: 12px 16px 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sb-item { padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); }
+  .sb-item:hover { background: var(--surface-2); color: var(--fg); }
+  .sb-item.active { background: var(--primary); color: #fff; }
+  .main { padding: 24px; }
+  .anno { background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .search { flex: 1; padding: 9px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font-size: 13px; }
+  .btn { padding: 9px 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .btn.secondary { background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+  .upload-zone { background: var(--surface); border: 2px dashed var(--line); border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 16px; cursor: pointer; }
+  .upload-zone:hover { border-color: var(--primary); background: rgba(59,130,246,0.05); }
+  .upload-icon { font-size: 28px; margin-bottom: 4px; }
+  .upload-text { font-size: 12px; color: var(--muted); }
+  /* Table */
+  .table-wrap { background: var(--surface); border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: var(--surface-2); font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: rgba(59,130,246,0.05); }
+  .textbook-name { display: flex; align-items: center; gap: 8px; }
+  .tb-icon { width: 32px; height: 32px; border-radius: 6px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .status { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .status.active { background: #d1fae5; color: #065f46; }
+  .status.parsing { background: var(--warn); color: #000; }
+  .status.draft { background: var(--line); color: var(--muted); }
+  .chapter-num { font-family: monospace; font-size: 11px; padding: 1px 6px; background: var(--surface-2); border-radius: 4px; }
+  .action-link { color: var(--primary); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-icon">⚙️</div><div class="sb-logo-title">小诺学伴 · 管理后台</div></div>
+    <div class="sb-section">运营</div>
+    <div class="sb-item">📝 内容审核</div>
+    <div class="sb-item">👥 用户管理</div>
+    <div class="sb-item">💬 投诉 / 客服</div>
+    <div class="sb-section">内容</div>
+    <div class="sb-item">🎭 Persona 管理</div>
+    <div class="sb-item active">📚 Textbook 管理</div>
+    <div class="sb-item">📢 推送模板</div>
+    <div class="sb-section">数据</div>
+    <div class="sb-item">📊 数据看板</div>
+    <div class="sb-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main">
+    <div class="anno">📚 O-5 · Textbook 管理 · 上传教材 → PDF 解析 → 章节结构</div>
+
+    <div class="page-title">📚 Textbook 管理</div>
+    <div class="page-sub">上传 PDF → 自动解析章节结构 → 用户可选用</div>
+
+    <div class="toolbar">
+      <input class="search" placeholder="🔍 搜索教材名 / ISBN" />
+      <select class="search" style="max-width: 140px;"><option>全部学科</option><option>数学</option><option>语文</option><option>英语</option></select>
+      <select class="search" style="max-width: 140px;"><option>全部年级</option><option>1 年级</option><option>2 年级</option><option>3 年级</option><option>4 年级</option></select>
+      <button class="btn">➕ 上传 PDF</button>
+    </div>
+
+    <div class="upload-zone">
+      <div class="upload-icon">📤</div>
+      <div class="upload-text">拖拽 PDF 到此处，或点击选择 · 自动解析章节</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>教材</th><th>学科</th><th>年级</th><th>章节数</th><th>状态</th><th>用户数</th><th>上传时间</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><div class="textbook-name"><div class="tb-icon">📕</div><div>人教版 4 年级数学（上）</div></div></td>
+            <td>数学</td>
+            <td>4 年级</td>
+            <td><span class="chapter-num">8 章</span> · 32 小节</td>
+            <td><span class="status active">✅ 已上线</span></td>
+            <td>892</td>
+            <td>2026-08-15</td>
+            <td><span class="action-link">编辑</span> · <span class="action-link">查看</span> · <span class="action-link" style="color: var(--danger);">下架</span></td>
+          </tr>
+          <tr>
+            <td><div class="textbook-name"><div class="tb-icon">📗</div><div>人教版 4 年级数学（下）</div></div></td>
+            <td>数学</td>
+            <td>4 年级</td>
+            <td><span class="chapter-num">9 章</span> · 36 小节</td>
+            <td><span class="status active">✅ 已上线</span></td>
+            <td>872</td>
+            <td>2026-08-15</td>
+            <td><span class="action-link">编辑</span> · <span class="action-link">查看</span> · <span class="action-link" style="color: var(--danger);">下架</span></td>
+          </tr>
+          <tr>
+            <td><div class="textbook-name"><div class="tb-icon">📘</div><div>人教版 4 年级语文（上）</div></div></td>
+            <td>语文</td>
+            <td>4 年级</td>
+            <td><span class="chapter-num">8 单元</span> · 32 课文</td>
+            <td><span class="status active">✅ 已上线</span></td>
+            <td>665</td>
+            <td>2026-08-18</td>
+            <td><span class="action-link">编辑</span> · <span class="action-link">查看</span></td>
+          </tr>
+          <tr>
+            <td><div class="textbook-name"><div class="tb-icon">📙</div><div>苏教版 4 年级语文（上）</div></div></td>
+            <td>语文</td>
+            <td>4 年级</td>
+            <td><span class="chapter-num">8 单元</span> · 32 课文</td>
+            <td><span class="status active">✅ 已上线</span></td>
+            <td>187</td>
+            <td>2026-08-22</td>
+            <td><span class="action-link">编辑</span> · <span class="action-link">查看</span></td>
+          </tr>
+          <tr>
+            <td><div class="textbook-name"><div class="tb-icon">📓</div><div>北师大版 3 年级数学（上）</div></div></td>
+            <td>数学</td>
+            <td>3 年级</td>
+            <td><span class="chapter-num">8 章</span> · 28 小节</td>
+            <td><span class="status parsing">⏳ 解析中</span></td>
+            <td>—</td>
+            <td>2026-08-25</td>
+            <td><span class="action-link">查看进度</span> · <span class="action-link" style="color: var(--danger);">取消</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

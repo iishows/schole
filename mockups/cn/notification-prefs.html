@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 推送设置</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: var(--surface);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .back { font-size: 20px; cursor: pointer; color: var(--muted); }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .section {
+    background: var(--surface);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-icon {
+    font-size: 16px;
+  }
+  .section-row {
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-row:last-child { border-bottom: none; }
+  .row-content { flex: 1; }
+  .row-title { font-size: 15px; font-weight: 500; }
+  .row-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .row-arrow { color: var(--muted); font-size: 18px; }
+
+  /* Toggle */
+  .toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--success); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 21px; }
+
+  /* Time picker */
+  .time-display {
+    padding: 4px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    font-family: monospace;
+  }
+
+  /* Frequency chips */
+  .freq-row {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .freq-row:last-child { border-bottom: none; }
+  .freq-label {
+    font-size: 15px; font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .freq-chips {
+    display: flex; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .freq-chip {
+    padding: 6px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .freq-chip.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Channel picker */
+  .channel-picker {
+    display: flex; gap: 6px;
+  }
+  .channel-chip {
+    padding: 6px 10px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .channel-chip.active {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* Master switch */
+  .master-switch {
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .master-icon { font-size: 24px; }
+  .master-content { flex: 1; }
+  .master-title { font-size: 15px; font-weight: 600; }
+  .master-desc { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .master-toggle {
+    width: 44px; height: 26px;
+    border-radius: 13px;
+    background: rgba(255,255,255,0.3);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .master-toggle.on { background: rgba(255,255,255,0.9); }
+  .master-toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+  }
+  .master-toggle.on::after {
+    left: 21px;
+    background: var(--primary);
+  }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+  .btn {
+    flex: 1; padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">推送设置</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>推送设置 SOP</strong>：家长调整公众号推送偏好——频率（每天/每周/关闭）/ 时间（拖动时间选择器）/ 方式（微信/邮箱/关闭）。
+    </div>
+  </div>
+
+  <!-- 总开关 -->
+  <div class="master-switch">
+    <div class="master-icon">🔔</div>
+    <div class="master-content">
+      <div class="master-title">推送总开关</div>
+      <div class="master-desc">关闭后所有推送停止（错题提醒 + 周报 + 学习建议）</div>
+    </div>
+    <div class="master-toggle on"></div>
+  </div>
+
+  <!-- 周报推送 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">📅</span>
+      周报推送
+    </div>
+
+    <div class="freq-row">
+      <div class="freq-label">频率</div>
+      <div class="freq-chips">
+        <div class="freq-chip">每天</div>
+        <div class="freq-chip active">每周日</div>
+        <div class="freq-chip">每月</div>
+        <div class="freq-chip">关闭</div>
+      </div>
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">推送时间</div>
+        <div class="row-desc">当地时间</div>
+      </div>
+      <div class="time-display">19:00</div>
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">推送方式</div>
+        <div class="row-desc">可多选</div>
+      </div>
+      <div class="channel-picker">
+        <div class="channel-chip active">📱 微信</div>
+        <div class="channel-chip active">📧 邮箱</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错题提醒 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🚨</span>
+      错题提醒
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">错题 ≥ N 道时提醒</div>
+        <div class="row-desc">避免每天打扰，只在错题积累时推送</div>
+      </div>
+      <div class="toggle on"></div>
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">阈值</div>
+        <div class="row-desc">当天错题 ≥ 3 道时提醒</div>
+      </div>
+      <span class="row-arrow">›</span>
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">推送时间</div>
+        <div class="row-desc">每天晚上</div>
+      </div>
+      <div class="time-display">20:00</div>
+    </div>
+  </div>
+
+  <!-- 学习建议 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">💡</span>
+      学习建议
+    </div>
+
+    <div class="freq-row">
+      <div class="freq-label">频率</div>
+      <div class="freq-chips">
+        <div class="freq-chip">每天</div>
+        <div class="freq-chip active">每周六</div>
+        <div class="freq-chip">每月</div>
+        <div class="freq-chip">关闭</div>
+      </div>
+    </div>
+
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">推送时间</div>
+        <div class="row-desc">周末提醒家长陪孩子复习</div>
+      </div>
+      <div class="time-display">10:00</div>
+    </div>
+  </div>
+
+  <!-- 静默时段 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🌙</span>
+      静默时段
+    </div>
+    <div class="section-row">
+      <div class="row-content">
+        <div class="row-title">夜间不打扰</div>
+        <div class="row-desc">21:00-次日 9:00 不推送</div>
+      </div>
+      <div class="toggle on"></div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-top: 8px;">
+    <button class="btn btn-primary">保存设置</button>
+  </div>
+
+</div>
+
+</body>
+</html>

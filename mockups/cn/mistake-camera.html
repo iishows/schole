@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 拍照错题</title>
+<style>
+  :root {
+    --primary: #722ed1; --primary-soft: #f3ebfd;
+    --bg: #000; --surface: #1a1535; --surface-2: #221a3f;
+    --fg: #f5f3ff; --muted: #a39fc0; --line: #2d2454;
+    --success: #10b981; --warn: #f59e0b; --danger: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow: hidden; }
+  .anno { background: #fef3c7; border: 1px dashed #facc15; border-radius: 8px; padding: 8px 12px; margin: 12px; font-size: 11px; color: #854d0e; position: absolute; top: 0; left: 0; right: 0; z-index: 100; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+  .topbar-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .flash { background: #fef3c7; color: #92400e; }
+
+  /* Camera viewfinder */
+  .viewfinder { position: relative; height: 60vh; margin: 0 16px; border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); }
+  .vf-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #1a1535 0%, #2d2454 100%); }
+  .vf-paper { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 70%; background: #f5f3ff; border-radius: 8px; padding: 20px; color: #1f1d2e; font-family: 'Georgia', serif; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .vf-paper h3 { font-size: 14px; margin-bottom: 8px; color: #6b6884; }
+  .vf-paper .q { font-size: 18px; line-height: 1.6; margin-bottom: 12px; }
+  .vf-paper .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+  .vf-paper .fraction .num { border-bottom: 1px solid #1f1d2e; padding: 0 4px; font-weight: 700; }
+  .vf-paper .fraction .den { padding: 0 4px; }
+  .vf-paper .wrong { color: #dc2626; text-decoration: line-through; font-weight: 700; }
+  .vf-paper .right { color: #10b981; font-weight: 700; }
+  .vf-paper .arrow { color: var(--primary); font-weight: 700; }
+  /* Detection frame */
+  .vf-frame { position: absolute; border: 2px dashed #fbbf24; border-radius: 8px; top: 25%; left: 20%; right: 20%; bottom: 25%; animation: scan 2s ease-in-out infinite; }
+  @keyframes scan { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .vf-corner { position: absolute; width: 24px; height: 24px; border: 3px solid var(--primary); }
+  .vf-corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+  .vf-corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+  .vf-corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+  .vf-corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+  .vf-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); padding: 4px 12px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 999px; font-size: 12px; }
+
+  /* Controls */
+  .controls { padding: 20px 16px; text-align: center; }
+  .capture-btn { width: 76px; height: 76px; border-radius: 50%; background: #fff; border: 4px solid var(--primary); cursor: pointer; margin: 0 auto; display: block; position: relative; }
+  .capture-btn::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--primary); }
+  .capture-label { margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.85); }
+  .row { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
+  .row-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 12px; cursor: pointer; }
+
+  /* OCR processing overlay */
+  .processing { display: none; position: fixed; inset: 0; background: rgba(15,10,31,0.92); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+  .processing.show { display: flex; }
+  .proc-spinner { width: 56px; height: 56px; border: 3px solid rgba(255,255,255,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .proc-title { font-size: 18px; font-weight: 700; }
+  .proc-desc { font-size: 13px; color: rgba(255,255,255,0.7); }
+</style>
+</head>
+<body>
+<div class="anno">📷 K-3 · M6 拍照 OCR · MiniMax multimodal vision</div>
+
+<div class="topbar">
+  <button class="topbar-btn">✕</button>
+  <button class="topbar-btn flash">⚡</button>
+  <button class="topbar-btn">🖼️</button>
+</div>
+
+<div class="viewfinder">
+  <div class="vf-bg"></div>
+  <div class="vf-hint">📐 将错题框入黄框内</div>
+
+  <div class="vf-paper">
+    <h3>四、应用题</h3>
+    <div class="q">
+      小明有 <span class="fraction"><span class="num">1</span><span class="den">2</span></span> 个苹果，
+      又买了 <span class="fraction"><span class="num">1</span><span class="den">3</span></span> 个，
+      一共有多少个？
+    </div>
+    <div>
+      答：<span class="fraction"><span class="num">2</span><span class="den">5</span></span> <span class="wrong">❌ 错误</span>
+      <br><br>
+      正确答案：<span class="fraction"><span class="num">5</span><span class="den">6</span></span> <span class="right">✅</span>
+    </div>
+  </div>
+
+  <div class="vf-frame"></div>
+  <div class="vf-corner tl"></div>
+  <div class="vf-corner tr"></div>
+  <div class="vf-corner bl"></div>
+  <div class="vf-corner br"></div>
+</div>
+
+<div class="controls">
+  <button class="capture-btn" onclick="document.querySelector('.processing').classList.add('show')"></button>
+  <div class="capture-label">点击拍照 · 自动识别错题</div>
+  <div class="row">
+    <button class="row-btn">🖼️ 从相册</button>
+    <button class="row-btn">📚 错题本</button>
+    <button class="row-btn">⚙️ 设置</button>
+  </div>
+</div>
+
+<!-- OCR processing -->
+<div class="processing">
+  <div class="proc-spinner"></div>
+  <div class="proc-title">小诺姐姐正在识别错题…</div>
+  <div class="proc-desc">MiniMax multimodal vision · p95 ≤ 8s</div>
+</div>
+
+</body>
+</html>

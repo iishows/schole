@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 家长端 SOP 演示</title>
+<style>
+  :root {
+    --role: #722ed1;
+    --role-soft: #f3ebfd;
+    --bg: #0f0a1f;
+    --surface: #1a1535;
+    --surface-2: #221a3f;
+    --fg: #f5f3ff;
+    --muted: #a39fc0;
+    --line: #2d2454;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --danger: #dc2626;
+    --hong: #ec4899;
+    --aze: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app { display: grid; grid-template-columns: 320px 1fr; grid-template-rows: 60px 1fr 60px; height: 100vh; }
+
+  .header {
+    grid-column: 1 / -1;
+    background: linear-gradient(90deg, var(--role) 0%, #a855f7 100%);
+    padding: 0 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-sub { font-size: 12px; opacity: 0.85; }
+  .header-spacer { flex: 1; }
+  .header-meta {
+    font-size: 12px;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px; border-radius: 999px; font-weight: 600;
+  }
+
+  .sidebar {
+    background: var(--surface); border-right: 1px solid var(--line);
+    overflow-y: auto; padding: 16px 12px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px; padding: 0 4px;
+  }
+  .sop-group { margin-bottom: 14px; }
+  .sop-group-title {
+    font-size: 11px; font-weight: 700; color: var(--role);
+    padding: 6px 8px; margin-bottom: 4px;
+    border-left: 2px solid var(--role);
+  }
+  .sop-list { display: flex; flex-direction: column; gap: 4px; }
+  .sop-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s; color: var(--fg);
+    border: 1px solid transparent; font-size: 12px;
+  }
+  .sop-item:hover { background: var(--surface-2); }
+  .sop-item.active {
+    background: linear-gradient(135deg, var(--role) 0%, #a855f7 100%);
+    color: #fff; border-color: rgba(255,255,255,0.2);
+  }
+  .sop-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .sop-item.active .sop-num { background: rgba(255,255,255,0.3); }
+  .sop-item.done .sop-num { background: var(--success); color: #fff; }
+  .sop-info { flex: 1; min-width: 0; }
+  .sop-name {
+    font-size: 12px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sop-desc {
+    font-size: 10px; opacity: 0.7; margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .main { background: #fff; position: relative; overflow: hidden; }
+  .iframe-frame { width: 100%; height: 100%; border: none; background: #fff; }
+  .iframe-overlay {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(15,10,31,0.85);
+    backdrop-filter: blur(10px);
+    color: #fff; padding: 6px 14px;
+    border-radius: 999px; font-size: 12px; font-weight: 600;
+    pointer-events: none; z-index: 10;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .overlay-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--danger); animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .controls {
+    grid-column: 1 / -1;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 0 20px; display: flex; align-items: center; gap: 12px;
+  }
+  .ctrl-btn {
+    padding: 8px 14px; background: var(--surface-2); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .ctrl-btn-primary { background: var(--role); color: #fff; border-color: var(--role); }
+  .ctrl-progress { flex: 1; display: flex; align-items: center; gap: 12px; }
+  .ctrl-progress-bar { flex: 1; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+  .ctrl-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--role) 0%, #a855f7 100%);
+    transition: width 0.3s;
+  }
+  .ctrl-progress-text {
+    font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .ctrl-time {
+    font-size: 12px; color: var(--muted); font-family: monospace;
+    font-variant-numeric: tabular-nums; min-width: 60px;
+  }
+  .role-pill {
+    padding: 4px 12px;
+    background: linear-gradient(135deg, var(--role) 0%, #a855f7 100%);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <span class="role-pill">👨‍👩‍👧 家长端</span>
+    <div class="header-title">家长 SOP 完整流程演示</div>
+    <div class="header-sub">14 mockup · 8 SOP · 自动播放</div>
+    <div class="header-spacer"></div>
+    <div class="header-meta" id="autoBadge">▶ 自动播放</div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-title">家长 SOP 流程</div>
+    <div id="sopList"></div>
+  </div>
+
+  <div class="main">
+    <div class="iframe-overlay">
+      <span class="overlay-dot"></span>
+      <span id="overlayText">录制中 · 家长端</span>
+    </div>
+    <iframe class="iframe-frame" id="frame" src=""></iframe>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="prevBtn">← 上一步</button>
+    <button class="ctrl-btn ctrl-btn-primary" id="playBtn">⏸ 暂停</button>
+    <button class="ctrl-btn" id="nextBtn">下一步 →</button>
+    <div class="ctrl-progress">
+      <div class="ctrl-progress-bar">
+        <div class="ctrl-progress-fill" id="progressFill" style="width: 0%;"></div>
+      </div>
+      <div class="ctrl-progress-text" id="progressText">1 / 14</div>
+    </div>
+    <div class="ctrl-time" id="timeText">00:00</div>
+  </div>
+
+</div>
+
+<script>
+// 家长端 14 步 SOP 流程
+const flow = [
+  { id: 1, sop: 'SOP 1 访客', group: '触达 · 首次进入', file: 'landing-h5.html', name: '访客 H5 落地页', desc: '未注册首次进入' },
+  { id: 2, sop: 'M1 PWA 安装', group: '触达 · 首次进入', file: 'pwa-install.html', name: 'PWA 安装提示', desc: '添加到主屏幕' },
+  { id: 3, sop: 'M2 注册登录', group: '触达 · 首次进入', file: 'register-login.html', name: '注册登录', desc: '手机号 + 微信' },
+  { id: 4, sop: 'M12 PIPL 同意', group: '触达 · 首次进入', file: 'pipl-consent.html', name: 'PIPL 4 项同意', desc: '必勾选 + 未成年独立' },
+  { id: 5, sop: 'P-2 多孩选择', group: '触达 · 首次进入', file: 'kids-select.html', name: '孩子选择', desc: '添加孩子 + persona' },
+  { id: 6, sop: 'SOP 2 多孩管理', group: '孩子管理', file: 'add-kid.html', name: '添加第 2 个孩子', desc: '套餐检查 + 表单' },
+  { id: 7, sop: 'SOP 3 升级家庭版', group: '孩子管理', file: 'upgrade-family.html', name: '升级家庭版', desc: '差价计算' },
+  { id: 8, sop: 'M11 支付成功', group: '孩子管理', file: 'payment-success.html', name: '支付成功', desc: '微信支付 V3' },
+  { id: 9, sop: 'P-3 周报', group: '查看报告', file: 'learning-report.html', name: '本周学习报告', desc: '3 卡片周报' },
+  { id: 10, sop: 'SOP 7 修改 persona', group: '个人设置', file: 'swap-persona.html', name: '换班主任', desc: '锁定 100 天' },
+  { id: 11, sop: 'SOP 5 账号安全', group: '个人设置', file: 'account-security.html', name: '账号安全', desc: '密码 + 2FA' },
+  { id: 12, sop: 'SOP 6 推送设置', group: '个人设置', file: 'notification-prefs.html', name: '推送设置', desc: '静默时段' },
+  { id: 13, sop: 'SOP 8 PIPL 数据', group: '个人设置', file: 'pipl-data.html', name: 'PIPL 数据权利', desc: '导出 / 删除' },
+  { id: 14, sop: 'SOP 4 退订', group: '退订管理', file: 'subscription-cancel.html', name: '取消订阅', desc: '30 天宽限' },
+];
+
+const STEP_DUR = 5000;
+let currentStep = 0;
+let playing = true;
+let stepStartTime = 0;
+let stepTimer = null;
+
+function groupFlow(flow) {
+  const groups = {};
+  flow.forEach((item, idx) => {
+    const g = item.group || '其他';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push({ ...item, flowIdx: idx });
+  });
+  return groups;
+}
+
+function renderSidebar() {
+  const container = document.getElementById('sopList');
+  const groups = groupFlow(flow);
+  let html = '';
+  Object.entries(groups).forEach(([groupName, items]) => {
+    html += `<div class="sop-group">`;
+    html += `<div class="sop-group-title">${groupName}</div>`;
+    html += `<div class="sop-list">`;
+    items.forEach(item => {
+      const idx = item.flowIdx;
+      const activeClass = idx === currentStep ? 'active' : '';
+      const doneClass = idx < currentStep ? 'done' : '';
+      html += `
+        <div class="sop-item ${activeClass} ${doneClass}" data-idx="${idx}">
+          <div class="sop-num">${item.id}</div>
+          <div class="sop-info">
+            <div class="sop-name">${item.name}</div>
+            <div class="sop-desc">${item.sop}</div>
+          </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.sop-item').forEach(el => {
+    el.addEventListener('click', () => goTo(parseInt(el.dataset.idx)));
+  });
+}
+
+function loadStep(idx) {
+  currentStep = idx;
+  const item = flow[idx];
+  document.getElementById('frame').src = item.file;
+  document.getElementById('overlayText').textContent = `录制中 · ${item.sop}`;
+  document.getElementById('progressFill').style.width = `${((idx + 1) / flow.length) * 100}%`;
+  document.getElementById('progressText').textContent = `${idx + 1} / ${flow.length}`;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === flow.length - 1;
+  renderSidebar();
+  stepStartTime = Date.now();
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= flow.length) return;
+  loadStep(idx);
+  startStepTimer();
+}
+
+function next() {
+  if (currentStep < flow.length - 1) {
+    loadStep(currentStep + 1);
+    startStepTimer();
+  } else {
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶ 播放';
+  }
+}
+
+function prev() {
+  if (currentStep > 0) {
+    loadStep(currentStep - 1);
+    startStepTimer();
+  }
+}
+
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '⏸ 暂停' : '▶ 播放';
+  document.getElementById('autoBadge').textContent = playing ? '▶ 自动播放' : '⏸ 已暂停';
+  if (playing) startStepTimer(); else clearTimeout(stepTimer);
+}
+
+function startStepTimer() {
+  clearTimeout(stepTimer);
+  if (!playing) return;
+  stepTimer = setTimeout(() => next(), STEP_DUR);
+}
+
+setInterval(() => {
+  if (playing) {
+    const remaining = Math.max(0, STEP_DUR - (Date.now() - stepStartTime));
+    document.getElementById('timeText').textContent = `00:${String(Math.floor(remaining / 1000)).padStart(2, '0')}`;
+  }
+}, 100);
+
+document.getElementById('prevBtn').addEventListener('click', prev);
+document.getElementById('nextBtn').addEventListener('click', next);
+document.getElementById('playBtn').addEventListener('click', togglePlay);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') next();
+  else if (e.key === 'ArrowLeft') prev();
+  else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+});
+
+loadStep(0);
+startStepTimer();
+</script>
+
+</body>
+</html>

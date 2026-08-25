@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>数据看板 · 管理后台</title>
+<style>
+  :root { --primary: #3b82f6; --bg: #0f172a; --surface: #1e293b; --surface-2: #334155; --fg: #f1f5f9; --muted: #94a3b8; --line: #334155; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --up: #10b981; --down: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 16px 0; }
+  .sb-logo { padding: 0 16px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .sb-logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sb-logo-title { font-size: 13px; font-weight: 700; }
+  .sb-section { padding: 12px 16px 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sb-item { padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); }
+  .sb-item:hover { background: var(--surface-2); color: var(--fg); }
+  .sb-item.active { background: var(--primary); color: #fff; }
+  .main { padding: 24px; }
+  .anno { background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
+  .page-title .date-picker { padding: 6px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; color: var(--muted); }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  /* KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: var(--surface); border-radius: 10px; padding: 16px; border: 1px solid var(--line); }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .kpi-value { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .kpi-trend { font-size: 12px; }
+  .kpi-trend.up { color: var(--up); }
+  .kpi-trend.down { color: var(--down); }
+  /* Charts */
+  .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .chart-card { background: var(--surface); border-radius: 10px; padding: 16px; border: 1px solid var(--line); }
+  .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+  /* Bar chart */
+  .bar-chart { height: 180px; display: flex; align-items: flex-end; gap: 8px; padding: 0 4px; }
+  .bar { flex: 1; background: linear-gradient(180deg, var(--primary) 0%, #1e40af 100%); border-radius: 4px 4px 0 0; position: relative; }
+  .bar-label { font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; }
+  .bar-value { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--fg); font-weight: 600; }
+  /* Donut */
+  .donut { display: flex; gap: 16px; align-items: center; }
+  .donut-chart { width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(var(--primary) 0% 65%, var(--success) 65% 85%, var(--warn) 85% 95%, var(--danger) 95% 100%); position: relative; }
+  .donut-chart::after { content: ''; position: absolute; inset: 25%; background: var(--surface); border-radius: 50%; }
+  .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); z-index: 2; }
+  .donut-center strong { font-size: 22px; color: var(--fg); }
+  .donut-legend { flex: 1; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .ld-primary { background: var(--primary); }
+  .ld-success { background: var(--success); }
+  .ld-warn { background: var(--warn); }
+  .ld-danger { background: var(--danger); }
+  /* Table */
+  .table-card { background: var(--surface); border-radius: 10px; padding: 16px; border: 1px solid var(--line); margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  tr:last-child td { border-bottom: none; }
+  .progress-bar { width: 100%; height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .progress-fill { height: 100%; background: var(--primary); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-icon">⚙️</div><div class="sb-logo-title">小诺学伴 · 管理后台</div></div>
+    <div class="sb-section">运营</div>
+    <div class="sb-item">📝 内容审核</div>
+    <div class="sb-item">👥 用户管理</div>
+    <div class="sb-item">💬 投诉 / 客服</div>
+    <div class="sb-section">内容</div>
+    <div class="sb-item">🎭 Persona 管理</div>
+    <div class="sb-item">📚 Textbook 管理</div>
+    <div class="sb-item">📢 推送模板</div>
+    <div class="sb-section">数据</div>
+    <div class="sb-item active">📊 数据看板</div>
+    <div class="sb-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main">
+    <div class="anno">📊 O-7 · 数据看板 · KPI / 趋势 / 转化漏斗 / 错题类型</div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <div>
+        <div class="page-title">📊 数据看板</div>
+        <div class="page-sub">本周（2026-08-18 ~ 2026-08-24）· 每日 03:00 更新</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="date-picker">📅 本周</span>
+        <span class="date-picker">⏰ 03:00 更新</span>
+        <button style="padding: 6px 12px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">📤 导出报告</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">💰 MRR（月经常性收入）</div>
+        <div class="kpi-value" style="color: var(--success);">¥98.4k</div>
+        <div class="kpi-trend up">↑ 12.5% vs 上周</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">👥 付费用户</div>
+        <div class="kpi-value">892</div>
+        <div class="kpi-trend up">↑ 8.3% vs 上周</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">📊 D7 留存</div>
+        <div class="kpi-value">23.4%</div>
+        <div class="kpi-trend up">↑ 2.1pp vs 上周</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">🎯 错题讲解完成率</div>
+        <div class="kpi-value">68.2%</div>
+        <div class="kpi-trend down">↓ 1.4pp vs 上周</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-row">
+      <!-- Bar chart: 7-day signup trend -->
+      <div class="chart-card">
+        <div class="chart-title">📈 7 日新用户 + 付费转化</div>
+        <div class="bar-chart">
+          <div class="bar" style="height: 65%;"><span class="bar-value">23</span></div>
+          <div class="bar" style="height: 78%;"><span class="bar-value">31</span></div>
+          <div class="bar" style="height: 92%;"><span class="bar-value">42</span></div>
+          <div class="bar" style="height: 60%;"><span class="bar-value">25</span></div>
+          <div class="bar" style="height: 85%;"><span class="bar-value">38</span></div>
+          <div class="bar" style="height: 100%;"><span class="bar-value">48</span></div>
+          <div class="bar" style="height: 72%; background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);"><span class="bar-value">35</span></div>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--muted);">
+          <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: var(--primary); border-radius: 2px;"></span>新用户</span>
+          <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: #f59e0b; border-radius: 2px;"></span>今日（周日）</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px;">
+          <span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>周日</span>
+        </div>
+      </div>
+
+      <!-- Donut: 订阅类型 -->
+      <div class="chart-card">
+        <div class="chart-title">🥧 订阅分布</div>
+        <div class="donut">
+          <div style="position: relative; width: 110px; height: 110px;">
+            <div class="donut-chart"></div>
+            <div class="donut-center"><span>892</span><span style="margin-top: 2px;">总用户</span></div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item"><span class="legend-dot ld-primary"></span>单孩 ¥99（65%）</div>
+            <div class="legend-item"><span class="legend-dot ld-success"></span>家庭 ¥199（20%）</div>
+            <div class="legend-item"><span class="legend-dot ld-warn"></span>试用（10%）</div>
+            <div class="legend-item"><span class="legend-dot ld-danger"></span>已取消（5%）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table: 章节错题分布 -->
+    <div class="table-card">
+      <div class="chart-title">📚 章节错题分布 TOP 5</div>
+      <table>
+        <thead><tr><th>章节</th><th>教材</th><th>错题数</th><th>占比</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>4-NF-A-2 异分母分数加法</td><td>人教版 4 年级数学</td><td>187</td><td><div class="progress-bar"><div class="progress-fill" style="width: 85%; background: var(--danger);"></div></div></td><td style="color: var(--danger);">需重点关注</td></tr>
+          <tr><td>4-MD-A-1 单位换算</td><td>人教版 4 年级数学</td><td>142</td><td><div class="progress-bar"><div class="progress-fill" style="width: 65%; background: var(--warn);"></div></div></td><td>复习中</td></tr>
+          <tr><td>形近字辨析</td><td>人教版 4 年级语文</td><td>98</td><td><div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div></td><td>复习中</td></tr>
+          <tr><td>4-NF-B-3 分数加减法</td><td>人教版 4 年级数学</td><td>76</td><td><div class="progress-bar"><div class="progress-fill" style="width: 35%;"></div></div></td><td>已改善</td></tr>
+          <tr><td>应用题单位换算</td><td>人教版 4 年级数学</td><td>54</td><td><div class="progress-bar"><div class="progress-fill" style="width: 25%; background: var(--success);"></div></div></td><td>已掌握</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>页面找不到了 · 404</title>
+<style>
+  :root {
+    --primary: #722ed1; --primary-soft: #f3ebfd;
+    --bg: #faf9fe; --surface: #fff;
+    --fg: #1f1d2e; --muted: #6b6884; --line: #ece9f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .wrap { max-width: 380px; width: 100%; text-align: center; }
+  .anno { background: #fef3c7; border: 1px dashed #facc15; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .card { background: var(--surface); border-radius: 18px; padding: 36px 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+  .num { font-size: 96px; font-weight: 700; line-height: 1; background: linear-gradient(135deg, var(--primary) 0%, #d946ef 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .sub { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .sub code { padding: 2px 6px; background: var(--bg); border-radius: 4px; font-family: monospace; font-size: 12px; color: var(--primary); }
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  .btn { padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary { background: var(--bg); color: var(--muted); }
+  .footer { margin-top: 16px; font-size: 12px; color: var(--muted); }
+  .footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="anno">🚧 404 · 通用错误页</div>
+  <div class="card">
+    <div class="num">404</div>
+    <h1>页面找不到了</h1>
+    <p class="sub">你访问的地址 <code>/classroom/invalid-id-123</code> 不存在，可能链接已过期。</p>
+    <div class="actions">
+      <button class="btn btn-primary">🏠 回主页</button>
+      <button class="btn btn-secondary">📊 错题本</button>
+      <button class="btn btn-secondary">📞 联系客服</button>
+    </div>
+    <div class="footer">© 2026 小诺学伴 · <a href="#">客服</a> · <a href="#">帮助</a></div>
+  </div>
+</div>
+</body>
+</html>

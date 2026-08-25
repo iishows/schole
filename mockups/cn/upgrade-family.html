@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小诺学伴 · 升级家庭版</title>
+<style>
+  :root {
+    --primary: #722ed1;
+    --primary-soft: #f3ebfd;
+    --bg: #faf9fe;
+    --surface: #ffffff;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #ece9f5;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --success: #10b981;
+    --success-soft: #d1fae5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .topbar {
+    background: linear-gradient(135deg, var(--warn) 0%, #f97316 100%);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back { font-size: 20px; cursor: pointer; }
+  .topbar-title { font-size: 16px; font-weight: 600; }
+
+  .main { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+  .anno {
+    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    border: 1px dashed #facc15;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #854d0e;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .anno-icon {
+    width: 22px; height: 22px;
+    background: #facc15; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Hero upgrade banner */
+  .upgrade-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #a855f7 50%, #d946ef 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .upgrade-hero::before {
+    content: '👨‍👩‍👧‍👦';
+    position: absolute;
+    top: -10px; right: -10px;
+    font-size: 90px;
+    opacity: 0.15;
+    transform: rotate(15deg);
+  }
+  .upgrade-hero h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .upgrade-hero p {
+    font-size: 14px;
+    opacity: 0.9;
+    position: relative;
+  }
+  .upgrade-save {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+  }
+
+  /* Comparison */
+  .compare-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .compare-row {
+    display: flex; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .compare-old {
+    width: 80px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .compare-new {
+    width: 80px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .compare-header {
+    display: flex; align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--line);
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .compare-header .compare-old { font-weight: 600; }
+  .compare-header .compare-new { color: var(--primary); }
+
+  /* Pricing options */
+  .pricing-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 2px solid var(--line);
+  }
+  .pricing-card.recommended {
+    border-color: var(--primary);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--primary-soft) 100%);
+  }
+  .pricing-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--warn);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .pricing-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .pricing-price {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .pricing-price .unit {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .pricing-old {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: line-through;
+    margin-bottom: 12px;
+  }
+  .pricing-features {
+    list-style: none;
+    padding: 0;
+  }
+  .pricing-features li {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    padding: 4px 0;
+    color: var(--fg);
+  }
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  /* Diff calc */
+  .diff-card {
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .diff-row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    font-size: 14px;
+  }
+  .diff-row strong {
+    color: #92400e;
+  }
+  .diff-divider {
+    border-top: 1px dashed var(--warn);
+    margin: 10px 0;
+  }
+  .diff-total {
+    font-size: 18px;
+    font-weight: 700;
+    color: #92400e;
+  }
+
+  /* Action buttons */
+  .btn-row {
+    display: flex; gap: 10px;
+  }
+  .btn {
+    flex: 1; padding: 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .btn-row.mt { margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="back">←</span>
+  <span class="topbar-title">升级家庭版</span>
+</div>
+
+<div class="main">
+
+  <div class="anno">
+    <div class="anno-icon">!</div>
+    <div>
+      <strong>升级家庭版 SOP</strong>：单孩套餐升级家庭版——按剩余天数比例抵扣差价。7 天内添加新孩子。
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="upgrade-hero">
+    <h1>升级到家庭版</h1>
+    <p>≤3 孩 · K12 + 学前混合 · 30 秒看懂孩子</p>
+    <div class="upgrade-save">🎁 比单孩便宜 ¥100/月</div>
+  </div>
+
+  <!-- 对比 -->
+  <div class="compare-card">
+    <div class="compare-header">
+      <div class="compare-label">权益</div>
+      <div class="compare-old">¥99 单孩</div>
+      <div class="compare-new">¥199 家庭</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">孩子数量</div>
+      <div class="compare-old">1</div>
+      <div class="compare-new">≤3</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">K12 模式</div>
+      <div class="compare-old">✅</div>
+      <div class="compare-new">✅</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">学前模式</div>
+      <div class="compare-old">❌</div>
+      <div class="compare-new">✅</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">错题讲解</div>
+      <div class="compare-old">无限</div>
+      <div class="compare-new">无限</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">公众号周报</div>
+      <div class="compare-old">✅</div>
+      <div class="compare-new">✅（多孩）</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">家长群</div>
+      <div class="compare-old">❌</div>
+      <div class="compare-new">✅</div>
+    </div>
+  </div>
+
+  <!-- Pricing options -->
+  <div class="pricing-card">
+    <div class="pricing-title">月付</div>
+    <div class="pricing-price">¥199<span class="unit">/月</span></div>
+    <div class="pricing-old">原 ¥99/月 · 单孩</div>
+    <ul class="pricing-features">
+      <li>≤3 孩 · K12 + 学前混合</li>
+      <li>随时取消 · 当月不退</li>
+    </ul>
+  </div>
+
+  <div class="pricing-card recommended">
+    <div class="pricing-badge">推荐 · 省 ¥299/年</div>
+    <div class="pricing-title">年付</div>
+    <div class="pricing-price">¥1999<span class="unit">/年</span></div>
+    <div class="pricing-old">原 ¥2388/年 · 月付合计</div>
+    <ul class="pricing-features">
+      <li>≤3 孩 · K12 + 学前混合</li>
+      <li>7 天无理由退款</li>
+      <li>赠送 1 个月（仅年付）</li>
+    </ul>
+  </div>
+
+  <!-- 差价计算 -->
+  <div class="diff-card">
+    <div class="diff-row">
+      <span>当前单孩套餐</span>
+      <strong>¥99/月</strong>
+    </div>
+    <div class="diff-row">
+      <span>家庭版年付</span>
+      <strong>¥1999/年</strong>
+    </div>
+    <div class="diff-row">
+      <span>已付 ¥99 单孩（剩余 18 天）</span>
+      <strong>- ¥59</strong>
+    </div>
+    <div class="diff-divider"></div>
+    <div class="diff-row diff-total">
+      <span>本次需支付</span>
+      <span>¥1940</span>
+    </div>
+    <div style="font-size: 12px; color: #78350f; margin-top: 6px;">
+      * 按剩余天数比例抵扣（已付 ¥99 单孩剩余 18/30 = -¥59）
+    </div>
+  </div>
+
+  <!-- 支付方式 -->
+  <div style="font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 14px;">
+    选择支付方式：微信支付 · 支付宝
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary">再想想</button>
+    <button class="btn btn-primary">💳 支付 ¥1940</button>
+  </div>
+
+  <p style="font-size: 12px; color: var(--muted); text-align: center; margin-top: 14px;">
+    7 天内可添加第 2/3 个孩子，超时套餐保留但不退
+  </p>
+
+</div>
+
+</body>
+</html>

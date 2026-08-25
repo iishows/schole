@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>用户管理 · 管理后台</title>
+<style>
+  :root { --primary: #3b82f6; --bg: #0f172a; --surface: #1e293b; --surface-2: #334155; --fg: #f1f5f9; --muted: #94a3b8; --line: #334155; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 16px 0; }
+  .sb-logo { padding: 0 16px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .sb-logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sb-logo-title { font-size: 13px; font-weight: 700; }
+  .sb-section { padding: 12px 16px 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .sb-item { padding: 10px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--muted); }
+  .sb-item:hover { background: var(--surface-2); color: var(--fg); }
+  .sb-item.active { background: var(--primary); color: #fff; }
+  .sb-item .badge { margin-left: auto; padding: 1px 6px; background: var(--danger); color: #fff; border-radius: 999px; font-size: 10px; font-weight: 700; }
+  .main { padding: 24px; }
+  .anno { background: #fef3c7; border: 1px dashed #f59e0b; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; font-size: 11px; color: #854d0e; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border-radius: 8px; padding: 14px; border: 1px solid var(--line); }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  /* Toolbar */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .search { flex: 1; min-width: 200px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; color: var(--fg); font-size: 13px; }
+  .btn { padding: 8px 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .btn.secondary { background: var(--surface); border: 1px solid var(--line); color: var(--fg); }
+  /* Table */
+  .table-wrap { background: var(--surface); border-radius: 8px; border: 1px solid var(--line); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: var(--surface-2); font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: rgba(59,130,246,0.05); }
+  .user-cell { display: flex; align-items: center; gap: 8px; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; }
+  .plan-badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .plan-solo { background: #dbeafe; color: #1e40af; }
+  .plan-family { background: #fce7f3; color: #831843; }
+  .plan-trial { background: var(--warn); color: #000; }
+  .status { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+  .status.active { background: #d1fae5; color: #065f46; }
+  .status.trial { background: var(--warn); color: #000; }
+  .status.canceled { background: var(--line); color: var(--muted); }
+  .action-link { color: var(--primary); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-logo"><div class="sb-logo-icon">⚙️</div><div class="sb-logo-title">小诺学伴 · 管理后台</div></div>
+    <div class="sb-section">运营</div>
+    <div class="sb-item">📝 内容审核</div>
+    <div class="sb-item active">👥 用户管理 <span class="badge">3</span></div>
+    <div class="sb-item">💬 投诉 / 客服</div>
+    <div class="sb-section">内容</div>
+    <div class="sb-item">🎭 Persona 管理</div>
+    <div class="sb-item">📚 Textbook 管理</div>
+    <div class="sb-item">📢 推送模板</div>
+    <div class="sb-section">数据</div>
+    <div class="sb-item">📊 数据看板</div>
+    <div class="sb-item">⚙️ 系统设置</div>
+  </div>
+
+  <div class="main">
+    <div class="anno">👥 O-3 · 用户管理 · 查询 / 停用 / 退款</div>
+
+    <div class="page-title">👥 用户管理</div>
+    <div class="page-sub">查询用户、查看订阅、停用账号、退款处理</div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num">1,247</div><div class="stat-label">总用户数</div></div>
+      <div class="stat"><div class="stat-num" style="color: var(--success);">892</div><div class="stat-label">付费用户</div></div>
+      <div class="stat"><div class="stat-num" style="color: var(--warn);">187</div><div class="stat-label">试用中</div></div>
+      <div class="stat"><div class="stat-num" style="color: var(--danger);">3</div><div class="stat-label">投诉处理中</div></div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search" placeholder="🔍 搜索手机号 / 用户名 / 用户 ID" />
+      <select class="search" style="max-width: 140px;">
+        <option>全部套餐</option>
+        <option>单孩 ¥99</option>
+        <option>家庭 ¥199</option>
+      </select>
+      <select class="search" style="max-width: 140px;">
+        <option>全部状态</option>
+        <option>活跃</option>
+        <option>试用</option>
+        <option>已取消</option>
+      </select>
+      <button class="btn">📤 导出 CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>用户</th><th>手机号</th><th>套餐</th><th>状态</th><th>孩子</th><th>订阅时间</th><th>累计支付</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar">妈</div><div>小诺妈妈</div></div></td>
+            <td style="font-family: monospace;">138****1234</td>
+            <td><span class="plan-badge plan-family">家庭 ¥199</span></td>
+            <td><span class="status active">活跃</span></td>
+            <td>2（4 年级 + 学前）</td>
+            <td>2026-08-25 ~ 2027-08-25</td>
+            <td>¥1,999</td>
+            <td>
+              <span class="action-link">详情</span> ·
+              <span class="action-link">停用</span> ·
+              <span class="action-link" style="color: var(--danger);">退款</span>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar">爸</div><div>小明爸爸</div></div></td>
+            <td style="font-family: monospace;">139****5678</td>
+            <td><span class="plan-badge plan-solo">单孩 ¥99</span></td>
+            <td><span class="status trial">试用 7 天</span></td>
+            <td>1（3 年级）</td>
+            <td>2026-08-20 ~</td>
+            <td>¥0</td>
+            <td>
+              <span class="action-link">详情</span> ·
+              <span class="action-link">升级提醒</span>
+            </td>
+          </tr>
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar" style="background: var(--danger);">退</div><div>小红家长</div></div></td>
+            <td style="font-family: monospace;">137****9012</td>
+            <td><span class="plan-badge plan-solo">单孩 ¥99</span></td>
+            <td><span class="status canceled">已取消</span></td>
+            <td>1（5 年级）</td>
+            <td>2026-08-15 ~ 2026-09-15</td>
+            <td>¥99</td>
+            <td>
+              <span class="action-link">详情</span> ·
+              <span class="action-link" style="color: var(--warn);">恢复</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>
