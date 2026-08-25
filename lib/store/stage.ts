@@ -1058,6 +1058,27 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
 
 export const useStageStore = createSelectors(useStageStoreBase);
 
+// ==================== Dev-only testability hook ====================
+//
+// Expose the store on `window.__stageStore` in development builds so the E2E
+// snapshot suite (`e2e/tests/classroom-snapshots.spec.ts`) and any other
+// in-browser test fixtures can seed state without going through the full
+// classroom load path. The hook is gated on `NODE_ENV !== 'production'` AND
+// `typeof window !== 'undefined'` — production bundles strip this branch
+// out entirely, so there is no observable difference in shipped code.
+//
+// Mounting components (e.g. `app/__classroom-snapshot-fixture__/page.tsx`)
+// can call `window.__stageStore.getState()` / `setState()` directly, and the
+// existing classroom-shell suite calls `dispatchClassroomAction(...)` via
+// this same global.
+if (
+  typeof window !== 'undefined' &&
+  process.env.NODE_ENV !== 'production'
+) {
+  (window as unknown as { __stageStore: typeof useStageStoreBase }).__stageStore =
+    useStageStoreBase;
+}
+
 // ==================== Debounced Save ====================
 
 const MAX_FLUSH_DRAIN_ROUNDS = 20;

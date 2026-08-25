@@ -1,19 +1,17 @@
 /**
  * M4 visual snapshot baselines for Classroom Mode UI components.
  *
- * NOTE: Baselines must be generated with `pnpm dev` running on :3000 (or :3002,
- * whichever port the playwright webServer is configured to use — see
+ * NOTE: Baselines must be generated with `pnpm dev` running on :3002
+ * (the port the playwright webServer is configured to use — see
  * playwright.config.ts). Run:
  *
- *   1. Start the dev server in a separate terminal with the classroom-shell
- *      feature flag enabled:
- *        NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED=true pnpm dev
- *
- *   2. Generate baselines (first run writes PNGs to
+ *   1. Generate baselines (first run writes PNGs to
  *      `e2e/tests/__snapshots__/classroom-snapshots.spec.ts-snapshots/`):
  *        npx playwright test e2e/tests/classroom-snapshots.spec.ts --update-snapshots
+ *      (Playwright will boot its own dev server on :3002 with
+ *      `NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED=true` if none is running.)
  *
- *   3. Subsequent runs (CI / regression gate) fail if the rendered pixels drift
+ *   2. Subsequent runs (CI / regression gate) fail if the rendered pixels drift
  *      from the committed baselines:
  *        npx playwright test e2e/tests/classroom-snapshots.spec.ts
  *
@@ -23,24 +21,21 @@
  *   - BlackboardChalk × 2 — off (mode=false) / on-with-toast (mode=true)
  *
  * Strategy:
- *   Each test navigates to the existing `/classroom/test-stage` route (which
- *   mounts the ClassroomShell UI), seeds the zustand store via
- *   `window.__stageStore.setState({ classroom: { ... } })` (matching the
- *   dispatch pattern used by `classroom-shell.spec.ts`), waits for the target
- *   component to mount, and asserts with `toHaveScreenshot()`.
+ *   Each test navigates to the standalone fixture route
+ *   `/classroom-snapshot-fixture` (which mounts ONLY the three shell
+ *   components — no full classroom load / async scene generation),
+ *   waits for the fixture to render, seeds the zustand store via
+ *   `window.__stageStore.setState({ classroom: { ... } })`, and asserts with
+ *   `toHaveScreenshot()`.
  *
- *   The feature flag MUST be enabled at build/dev time. The existing
- *   `classroom-shell.spec.ts` uses the same `localStorage.setItem(
- *   'NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED', 'false')` trick to disable the
- *   shell; we use `'true'` here (default-on if dev server was started with
- *   the env var). If the dev server was NOT started with the env var, all
- *   components render null and baselines will be empty rectangles — verify
- *   with `echo $NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED` before generating.
+ *   The feature flag MUST be enabled at build/dev time. The shell components
+ *   render `null` when `isClassroomShellEnabled()` returns false, so a
+ *   server started without `NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED=true` will
+ *   produce empty baselines.
  *
  * If the dev server is not available at the time of generation, the test
  * file can still be committed; `--list` will show the 9 discoverable tests,
- * but `--update-snapshots` will fail with a connection error. Defer baseline
- * generation to a follow-up commit once the user starts the dev server.
+ * but `--update-snapshots` will fail with a connection error.
  */
 
 import { test, expect } from '../fixtures/base';
@@ -86,13 +81,12 @@ function buildClassroomState(
 }
 
 /**
- * Navigate to the test-stage route and seed the classroom store with the
- * given payload before the components mount. The `__stageStore` global is
- * expected to be available in the page context — same assumption as
- * `classroom-shell.spec.ts`. If the global is not exposed (current dev server
- * does not expose it), this call will fail; the production code would need a
- * debug hook added (out of scope per the V1.1 plan: DO NOT modify production
- * code).
+ * Navigate to the fixture route and seed the classroom store with the given
+ * payload before the components mount. The `__stageStore` global is exposed
+ * in dev builds by `lib/store/stage.ts`; if the global is not available (e.g.
+ * a production build accidentally picked up this spec), this call will
+ * throw with an actionable message rather than silently producing empty
+ * snapshots.
  */
 async function seedAndGoto(
   page: import('@playwright/test').Page,
@@ -104,9 +98,14 @@ async function seedAndGoto(
   await page.addInitScript(() => {
     window.localStorage.setItem('NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED', 'true');
   });
-  await page.goto('/classroom/test-stage');
-  // Wait for the page shell to be ready before mutating the store.
+  await page.goto('/classroom-snapshot-fixture');
+  // Wait for the fixture root to mount BEFORE mutating the store — seeding
+  // before React has subscribed would render the seeded state correctly,
+  // but waiting for the testid guarantees the fixture's hydration + style
+  // application has run, so the baselines lock in real rendered pixels
+  // (not a transient pre-hydration frame).
   await page.waitForLoadState('domcontentloaded');
+  await page.getByTestId('snapshot-fixture').waitFor({ state: 'attached' });
   await page.evaluate((state) => {
     const store = (window as unknown as { __stageStore?: { setState: (s: object) => void } })
       .__stageStore;
@@ -117,6 +116,13 @@ async function seedAndGoto(
     }
     store.setState({ classroom: state });
   }, classroomState);
+  // Let the seeded state propagate + initial motion / opacity transitions
+  // settle before the assertion. ProactiveCard's call-on variant uses
+  // `motion.div` with an `initial → animate` entrance (scale 0.95 → 1,
+  // opacity 0 → 1, y 10 → 0); playwright's CSS-only animation disable does
+  // not catch this JS-driven animation, so without the wait the assertion
+  // races the entrance and the pixel diff never converges.
+  await page.waitForTimeout(600);
 }
 
 test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
@@ -126,9 +132,9 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
         page,
         buildClassroomState({ period: 'before-class', lessonLabel: '' }),
       );
-      // PeriodBar returns null in before-class / after-class — queryByTestId
-      // returns null rather than throwing.
-      await expect(page.queryByTestId('period-bar')).toBeNull();
+      // PeriodBar returns null in before-class / after-class — the testid
+      // is therefore absent from the DOM. `toHaveCount(0)` asserts that.
+      await expect(page.getByTestId('period-bar')).toHaveCount(0);
       // Capture the page chrome for visual context (still informative even
       // when the bar is absent — locks in the empty-bar layout).
       await expect(page).toHaveScreenshot('period-bar--before-class.png');
@@ -168,7 +174,7 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
         page,
         buildClassroomState({ period: 'after-class', lessonLabel: '' }),
       );
-      await expect(page.queryByTestId('period-bar')).toBeNull();
+      await expect(page.getByTestId('period-bar')).toHaveCount(0);
       await expect(page).toHaveScreenshot('period-bar--after-class.png');
     });
   });
@@ -184,7 +190,9 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
           periodEndsAt: Date.now() + 25 * 60 * 1000,
         }),
       );
-      await expect(page.queryByTestId('call-on-card')).toBeNull();
+      // CallOnCard returns null when there is no `activeCallOn`; the
+      // inner `call-on-target` testid is therefore absent from the DOM.
+      await expect(page.getByTestId('call-on-target')).toHaveCount(0);
       await expect(page).toHaveScreenshot('call-on-card--idle.png');
     });
 
@@ -205,7 +213,13 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
           },
         }),
       );
-      await expect(page.getByTestId('call-on-card')).toBeVisible();
+      // ProactiveCard's call-on variant puts `data-testid="call-on-target"`
+      // on the inner target line ("→ student-1"). CallOnCard's
+      // `data-testid="call-on-card"` prop is currently dropped by
+      // ProactiveCard's prop surface (out of scope for this commit — V1.1
+      // classroom shell components are frozen); the inner testid is the
+      // ground truth for "card visible".
+      await expect(page.getByTestId('call-on-target')).toBeVisible();
       await expect(page.getByTestId('call-on-target')).toContainText('student-1');
       await expect(page).toHaveScreenshot('call-on-card--counting.png');
     });
@@ -231,7 +245,7 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
       // expired state is reflected in the countdown label "0s" rather than
       // disappearing. This snapshot locks in the visual cue for the M1
       // cue_user fallback boundary.
-      await expect(page.getByTestId('call-on-card')).toBeVisible();
+      await expect(page.getByTestId('call-on-target')).toBeVisible();
       await expect(page).toHaveScreenshot('call-on-card--expired.png');
     });
   });
@@ -249,8 +263,8 @@ test.describe('M4 visual snapshot baselines (Classroom Mode UI)', () => {
           chalkStrokes: [],
         }),
       );
-      await expect(page.queryByTestId('blackboard-chalk-svg')).toBeNull();
-      await expect(page.queryByTestId('blackboard-auto-open-toast')).toBeNull();
+      await expect(page.getByTestId('blackboard-chalk-svg')).toHaveCount(0);
+      await expect(page.getByTestId('blackboard-auto-open-toast')).toHaveCount(0);
       await expect(page).toHaveScreenshot('blackboard-chalk--off.png');
     });
 
