@@ -12,6 +12,7 @@ import type { CanvasToolbarProps } from '@/components/canvas/canvas-toolbar';
 import type { Scene, StageMode } from '@/lib/types/stage';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { ClassroomCompletePageConnected } from '@/components/scene-renderers/classroom-complete';
+import { BlackboardToggle, BlackboardChalkLayer } from '@/components/classroom-shell/blackboard-chalk-layer';
 
 interface CanvasAreaProps extends CanvasToolbarProps {
   readonly currentScene: Scene | null;
@@ -87,6 +88,8 @@ export function CanvasArea({
 
   return (
     <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-gray-900 group/canvas">
+      {/* Classroom shell — chalk tab bar (Task 11) */}
+      <BlackboardToggle />
       {/* Slide area — takes remaining space */}
       <div
         className={cn(
@@ -112,6 +115,9 @@ export function CanvasArea({
               <Whiteboard isOpen={whiteboardOpen} onClose={onWhiteboardClose} />
             </SceneProvider>
           </div>
+
+          {/* Blackboard chalk layer (Task 11) — overlays slide when blackboardMode=true */}
+          <BlackboardChalkLayer />
 
           {/* Scene Content */}
           {currentScene && !whiteboardOpen && (
