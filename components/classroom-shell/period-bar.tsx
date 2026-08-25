@@ -47,14 +47,34 @@ export function PeriodBar() {
   if (classroom.period === 'before-class' || classroom.period === 'after-class') return null;
 
   const remaining = classroom.periodEndsAt ? classroom.periodEndsAt - Date.now() : 0;
+  const labelText =
+    classroom.period === 'break'
+      ? '🔔 课间'
+      : `🔔 第 ${classroom.lessonLabel.match(/\d+/)?.[0] ?? ''} 节 · ${classroom.lessonLabel.replace(/^Lesson-\d+\s*/, '')}`;
+  // L4 responsive collapse (CSS-only):
+  //   - Default (≥641px): only `.period-bar-full` is visible (44px, with
+  //     countdown). `.period-bar-mobile` is `display: none`.
+  //   - `@media (max-width: 640px)` in app/globals.css flips them: only
+  //     `.period-bar-mobile` (36px mini bar, bell + label only) shows.
+  // Both subtrees are always in the DOM so SSR markup matches the first
+  // client render — no hydration flicker at the 640px boundary. The
+  // visibility swap is purely a CSS media-query concern.
   return (
     <div className={`period-bar period-bar--${classroom.period}`} data-testid="period-bar">
-      <span className="period-bar__label">
-        {classroom.period === 'break'
-          ? '🔔 课间'
-          : `🔔 第 ${classroom.lessonLabel.match(/\d+/)?.[0] ?? ''} 节 · ${classroom.lessonLabel.replace(/^Lesson-\d+\s*/, '')}`}
-      </span>
-      <span className="period-bar__countdown">{formatCountdown(remaining)}</span>
+      <div
+        className="period-bar-mobile"
+        data-testid="period-bar-mobile"
+        aria-hidden="true"
+      >
+        <span className="period-bar__label">{labelText}</span>
+      </div>
+      <div
+        className="period-bar-full"
+        data-testid="period-bar-full"
+      >
+        <span className="period-bar__label">{labelText}</span>
+        <span className="period-bar__countdown">{formatCountdown(remaining)}</span>
+      </div>
     </div>
   );
 }

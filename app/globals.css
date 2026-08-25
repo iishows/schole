@@ -573,3 +573,52 @@ body[data-maic-editor='true'] .editable-element-text li,
     -webkit-text-fill-color: var(--muted-foreground);
   }
 }
+
+/* Classroom Mode — PeriodBar (L4 responsive collapse)
+   --------------------------------------------------------------------------
+   The PeriodBar component renders TWO sibling subtrees (see
+   components/classroom-shell/period-bar.tsx):
+     - `.period-bar-mobile`  : 36px mini bar (bell + label only)
+     - `.period-bar-full`    : 44px full bar (bell + label + countdown)
+   CSS swaps which one is visible via the 640px breakpoint — JS never reads
+   `window.innerWidth`, so this is purely declarative. Both subtrees stay in
+   the DOM to keep SSR markup byte-identical to the first client render
+   (no hydration flicker across the breakpoint).
+*/
+.period-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.period-bar-full {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.period-bar-mobile {
+  display: none;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 640px) {
+  .period-bar-full {
+    display: none;
+  }
+  .period-bar-mobile {
+    display: flex;
+  }
+}
