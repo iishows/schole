@@ -2,7 +2,7 @@
 
 **Deployment**: Independent (apps/cn)
 **Region**: cn
-**Shared architecture spec**: [`../../specs/companion.md`](../../specs/companion.md)
+**Shared architecture spec**: [`../../specs/cn/companion.md.bak`](../../specs/cn/companion.md.bak)
 
 ---
 
@@ -77,5 +77,5 @@
 ## 8. 配置位置
 
 - 部署配置：`./config.json`（运营可编辑）
-- 共享架构：`../../specs/companion.md`
+- 共享架构：`../../specs/cn/companion.md.bak`
 - Mockups：`../../mockups/`

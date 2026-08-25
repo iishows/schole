@@ -2,9 +2,9 @@
 
 **Date**: 2026-08-25
 **Status**: ✅ 30 个 mockup / 18 个 SOP / ~8300 行
-**对应产品**：[cn-product.md](../../specs/cn-product.md)
-**对应 MVP**：[cn-companion-mvp-plan.md](../../specs/cn-companion-mvp-plan.md)
-**对应 SOP**：[cn-companion-sop.md](../../specs/cn-companion-sop.md)
+**对应产品**：[cn-product.md](../../specs/cn/cn-product.md)
+**对应 MVP**：[cn-companion-mvp-plan.md](../../specs/cn/cn-companion-mvp-plan.md)
+**对应 SOP**：[cn-companion-sop.md](../../specs/cn/cn-companion-sop.md)
 
 > **本文档是 30 个 CN 伴读系统 mockup 的索引**——按角色（家长/孩子/Onboarding/管理员）和 SOP 节点组织，每个 mockup 含用途、UI 元素、设计原则。
 
@@ -84,7 +84,7 @@
 
 ### 1.9 Classroom Mode V1（5 + 1 主视图 · CM1-CM5，新增）
 
-依据 [`classroom-mode-design.md`](../../specs/classroom-mode-design.md) · CW1-CW5 与 W1-W5 **并行**（D-1 决策）。
+依据 [`classroom-mode-design.md`](../../specs/shared/classroom-mode-design.md) · CW1-CW5 与 W1-W5 **并行**（D-1 决策）。
 
 | # | Mockup | 对应 W | 用途 |
 |---|---|---|---|
