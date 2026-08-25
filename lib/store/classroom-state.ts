@@ -32,6 +32,31 @@ export interface BellEvent {
   scheduled_at: number;
 }
 
+/**
+ * Transient in-flight paper note (Task 10). The reducer keeps `pass_note`
+ * as a no-op (semantic guard lives in the service / component), so the
+ * component layer is responsible for setting `activeNote` via
+ * `useStageStore.setState`. Kept optional + nullable so the slice stays
+ * additive for the existing reducer + persistence tests.
+ */
+export interface ActiveNote {
+  from_seat: string;
+  to_seat: string;
+  content: string;
+  animation: 'fly';
+}
+
+/**
+ * Blackboard chalk stroke buffer (Task 11). Also reducer-inert: the
+ * blackboard_annotate reducer case only flips `blackboardMode`, so the
+ * component layer is responsible for accumulating strokes here.
+ */
+export interface ChalkStroke {
+  path: Array<{ x: number; y: number }>;
+  color?: string;
+  width?: number;
+}
+
 export type ClassroomPeriod = 'before-class' | 'lesson' | 'break' | 'after-class';
 
 export interface ClassroomState {
@@ -45,6 +70,10 @@ export interface ClassroomState {
   seatLayout: SeatConfig[];
   bellQueue: BellEvent[];
   lastError: string | null;
+  /** Transient in-flight paper note (Task 10). Reducer-inert. */
+  activeNote?: ActiveNote | null;
+  /** Blackboard stroke buffer (Task 11). Reducer-inert. */
+  chalkStrokes?: ChalkStroke[];
 }
 
 export function initialClassroomState(): ClassroomState {
@@ -59,6 +88,8 @@ export function initialClassroomState(): ClassroomState {
     seatLayout: [],
     bellQueue: [],
     lastError: null,
+    activeNote: null,
+    chalkStrokes: [],
   };
 }
 
