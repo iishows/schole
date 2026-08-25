@@ -388,8 +388,8 @@ C 架构为 B 演化做了哪些预留：
 ## 12. References
 
 - Brainstorm session（2026-08-25）：OpenMAIC 「更像教室」改造 → 选定 C
-- `specs/shared-architecture.md` §1（monorepo structure）
-- `specs/cn-companion-mvp-plan.md`（W1-W7 主计划，C 在 W6+ 后插入或 V1.1）
+- `specs/shared/shared-architecture.md` §1（monorepo structure）
+- `specs/cn/cn-companion-mvp-plan.md`（W1-W7 主计划，C 在 W6+ 后插入或 V1.1）
 - `components/roundtable/index.tsx`（现状 2141 行）
 - `mockups/classroom-layout-c3.html`（已有的 C3 探索）
 - `e2e/tests/classroom-interaction.spec.ts`（现有 spec 基础）

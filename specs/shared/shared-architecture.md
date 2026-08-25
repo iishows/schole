@@ -37,11 +37,11 @@ D:/projects/openmaic/
 ├── apps/
 │   ├── cn/                         ← CN runtime（独立部署：阿里云）
 │   │   ├── README.md
-│   │   ├── SPEC.md                 ← → specs/cn-product.md
+│   │   ├── SPEC.md                 ← → specs/cn/cn-product.md
 │   │   └── src/                    ← CN 业务代码（微信/支付宝/PIPL guard）
 │   └── intl/                       ← INTL runtime（独立部署：AWS）
 │       ├── README.md
-│       ├── SPEC.md                 ← → specs/intl-product.md
+│       ├── SPEC.md                 ← → specs/intl/intl-product.md
 │       └── src/                    ← INTL 业务代码（Email/WhatsApp/Stripe）
 ├── specs/
 │   ├── shared-architecture.md      ← 本文件

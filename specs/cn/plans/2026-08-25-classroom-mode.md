@@ -2,8 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans.
 >
-> **Source spec:** [`specs/classroom-mode-design.md`](../classroom-mode-design.md) (user-approved 2026-08-25)
-> **Parent plan:** [`specs/cn-companion-mvp-plan.md`](../cn-companion-mvp-plan.md) §8.6 (CM1-CM6 lane, 兼职 0.5 工时)
+> **Source spec:** [`specs/shared/classroom-mode-design.md`](../shared/classroom-mode-design.md) (user-approved 2026-08-25)
+> **Parent plan:** [`specs/cn/cn-companion-mvp-plan.md`](../cn-companion-mvp-plan.md) §8.6 (CM1-CM6 lane, 兼职 0.5 工时)
 
 **Goal:** 给 OpenMAIC 引擎加一层 Classroom Shell —— period 铃 + 举手 + 叫答 + 同桌传纸条 + 黑板 — 让"AI 聊天"变"真实教室"。
 
@@ -1989,7 +1989,7 @@ git commit -m "feat(i18n+e2e): classroom shell CN/INTL bundles + full-period E2E
 ---
 
 **Plan 完成于**: 2026-08-25
-**Spec 来源**: specs/classroom-mode-design.md (user-approved)
+**Spec 来源**: specs/shared/classroom-mode-design.md (user-approved)
 **Plan 作者**: Claude (MiniMax-M3)
 **Task 总数**: 12 (≤ 12 阈值 ✓)
 **预估工时**: 兼职 13d / 5 周（CM 通道，不影响 M 主路径 50 工作日）

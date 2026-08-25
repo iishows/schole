@@ -2,7 +2,7 @@
 
 **审计时间**：2026-08-25
 **审计人**：Claude（MiniMax-M3）
-**审计范围**：`specs/cn-companion-mvp-plan.md` (1039 → 1050 行) + `specs/cn-companion-mvp-tasks.md` (625 → 670 行)
+**审计范围**：`specs/cn/cn-companion-mvp-plan.md` (1039 → 1050 行) + `specs/cn/cn-companion-mvp-tasks.md` (625 → 670 行)
 **审计性质**：C-classroom 集成后的 cross-doc 一致性 + 实现可行性
 
 ---
