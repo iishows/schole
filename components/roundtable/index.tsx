@@ -26,6 +26,7 @@ import { useSettingsStore, PLAYBACK_SPEEDS } from '@/lib/store/settings';
 import { ProactiveCard } from '@/components/chat/proactive-card';
 import { PeriodBar } from '@/components/classroom-shell/period-bar';
 import { HandRaiseButton } from '@/components/classroom-shell/hand-raise-button';
+import { PassNoteOverlay } from '@/components/classroom-shell/pass-note';
 import { PresentationSpeechOverlay } from '@/components/roundtable/presentation-speech-overlay';
 import { AvatarDisplay } from '@/components/ui/avatar-display';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
@@ -1095,6 +1096,7 @@ export function Roundtable({
     <>
       <PeriodBar />
       <HandRaiseButton />
+      <PassNoteOverlay />
       <div
         className={cn(
           'h-[192px] w-full flex flex-col relative z-10 transition-all duration-300',
