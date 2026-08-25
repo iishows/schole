@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { useStageStore } from '@/lib/store';
 import { buildLectureNotes } from '@/lib/chat/lecture-notes';
-import { PanelRightClose, BookOpen, MessageSquare } from 'lucide-react';
+import { PanelRightClose, BookOpen, MessageSquare, Mic, MicOff, Send } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   useChatSessions,
@@ -152,6 +152,64 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
     const isDraggingRef = useRef(false);
     const [isDragging, setIsDragging] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+
+    // V1.1 L3 (Task 4) — input priority mutex. Spec §7 promises
+    // text > voice > raise_hand. raise_hand is "meta" and lives in
+    // classroom-shell; the ChatArea UI is responsible for blocking
+    // voice (mic) when text is being typed. The reducer only writes
+    // this field on `raise_hand` (raise_hand is observed but never
+    // blocks text/voice); text/voice writes happen here via direct
+    // setState so the field reflects the active channel without
+    // needing new ClassroomAction union members (DO NOT: no DSL changes).
+    const lastInputChannel = useStageStore((s) => s.classroom.lastInputChannel);
+    const [priorityText, setPriorityText] = useState('');
+    const priorityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const micBlockedByText = lastInputChannel === 'text';
+
+    const setLastInputChannel = useCallback(
+      (channel: 'text' | 'voice' | 'raise_hand' | null) => {
+        useStageStore.setState((s) => ({
+          classroom: { ...s.classroom, lastInputChannel: channel },
+        }));
+      },
+      [],
+    );
+
+    // Voice (mic) click: gated by the L3 mutex. When text is active
+    // (lastInputChannel === 'text'), mic is a no-op so the user has
+    // to finish typing before switching to voice input. Otherwise we
+    // record the channel as 'voice' and dispatch the start-speech
+    // effect (in production this would route through the engine; the
+    // ChatArea-side UI mutex is what the audit cares about).
+    const handleMicClick = useCallback(() => {
+      if (lastInputChannel === 'text') return;
+      setLastInputChannel('voice');
+      if (priorityTimerRef.current) {
+        clearTimeout(priorityTimerRef.current);
+        priorityTimerRef.current = null;
+      }
+    }, [lastInputChannel, setLastInputChannel]);
+
+    // Text submit: claim the 'text' channel for 5s so a follow-up
+    // voice click is blocked while the user is mid-typing. Cleared
+    // either by the 5s debounce or by a successful voice start.
+    const handlePriorityTextSubmit = useCallback(() => {
+      const value = priorityText.trim();
+      if (!value) return;
+      setLastInputChannel('text');
+      setPriorityText('');
+      if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
+      priorityTimerRef.current = setTimeout(() => {
+        setLastInputChannel(null);
+        priorityTimerRef.current = null;
+      }, 5_000);
+    }, [priorityText, setLastInputChannel]);
+
+    useEffect(() => {
+      return () => {
+        if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
+      };
+    }, []);
 
     // Derive lecture notes directly from scenes — updates reactively as scenes stream in.
     const lectureNotes = useMemo(() => buildLectureNotes(scenes), [scenes]);
@@ -362,6 +420,60 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                     <div ref={bottomRef} />
                   </>
                 )}
+              </div>
+
+              {/* V1.1 L3 (Task 4) — Chat input priority mutex UI.
+                  text > voice > raise_hand (raise_hand is meta and bypasses).
+                  The mic button is gated on `lastInputChannel !== 'text'` so
+                  the user has to finish typing before switching to voice. */}
+              <div
+                className="shrink-0 border-t border-gray-100 dark:border-gray-800 p-2 flex items-center gap-2"
+                data-testid="chat-input-priority"
+              >
+                <input
+                  type="text"
+                  value={priorityText}
+                  onChange={(e) => setPriorityText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      handlePriorityTextSubmit();
+                    }
+                  }}
+                  placeholder={t('chat.priorityInputPlaceholder') ?? '输入文字…'}
+                  className="flex-1 min-w-0 px-2 py-1.5 text-xs rounded border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 focus:outline-none focus:border-purple-400"
+                  data-testid="priority-text-input"
+                />
+                <button
+                  onClick={handlePriorityTextSubmit}
+                  disabled={!priorityText.trim()}
+                  className={cn(
+                    'w-7 h-7 shrink-0 rounded-lg flex items-center justify-center transition-all',
+                    priorityText.trim()
+                      ? 'bg-purple-600 text-white hover:bg-purple-700'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed',
+                  )}
+                  aria-label={t('chat.send') ?? 'send'}
+                  data-testid="priority-text-submit"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={handleMicClick}
+                  disabled={micBlockedByText}
+                  aria-label={micBlockedByText ? (t('chat.micBlockedByText') ?? 'mic blocked while typing') : (t('chat.startVoice') ?? 'start voice')}
+                  title={micBlockedByText ? (t('chat.micBlockedByText') ?? 'mic blocked while typing') : undefined}
+                  data-testid="mic-button"
+                  data-blocked={micBlockedByText ? 'true' : 'false'}
+                  className={cn(
+                    'w-7 h-7 shrink-0 rounded-lg flex items-center justify-center transition-all',
+                    micBlockedByText
+                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95',
+                  )}
+                >
+                  {micBlockedByText ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </button>
               </div>
             </TabsContent>
           </Tabs>

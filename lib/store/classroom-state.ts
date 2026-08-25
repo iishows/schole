@@ -76,6 +76,16 @@ export interface ClassroomState {
   activeNote?: ActiveNote | null;
   /** Blackboard stroke buffer (Task 11). Reducer-inert. */
   chalkStrokes?: ChalkStroke[];
+  /**
+   * V1.1 L3 — last input channel used by the user. Drives the input
+   * priority mutex at the ChatArea UI layer (spec §7): text > voice >
+   * raise_hand. raise_hand is "meta" so it never blocks text/voice and
+   * is only observed (for telemetry). The reducer only writes this
+   * field on `case 'raise_hand'`; the ChatArea UI updates it via direct
+   * `useStageStore.setState` for text/voice so the mutex reflects the
+   * current channel without needing new ClassroomAction union members.
+   */
+  lastInputChannel: 'text' | 'voice' | 'raise_hand' | null;
 }
 
 export function initialClassroomState(): ClassroomState {
@@ -92,6 +102,7 @@ export function initialClassroomState(): ClassroomState {
     lastError: null,
     activeNote: null,
     chalkStrokes: [],
+    lastInputChannel: null,
   };
 }
 
@@ -153,12 +164,16 @@ export function classroomReducer(state: ClassroomState, action: ClassroomAction)
       };
       // V1.1 L1 — sort by [zone, seatIndex, raised_at] after every append
       // so the queue invariant holds for the next consumer (Director call_on).
+      // V1.1 L3 — also record the input channel as 'raise_hand' for the
+      // priority mutex. raise_hand is "meta" (spec §7) so it never blocks
+      // text/voice; we just expose it for observers.
       return {
         ...next,
         handRaiseQueue: ClassroomLayoutService.sortHandQueue(
           next.handRaiseQueue,
           state.seatLayout,
         ),
+        lastInputChannel: 'raise_hand',
       };
     }
     case 'call_on': {
