@@ -287,11 +287,14 @@
 }
 
 /* Reduced-motion fallback (constraint 22) — disables every animation in this
-   module so prefers-reduced-motion users see a static classroom. */
+   module so prefers-reduced-motion users see a static classroom. The
+   `*` / `*::before` / `*::after` selectors are NOT local to this module, so
+   they have to be wrapped in `:global(...)` to satisfy CSS Modules' "pure
+   selectors must contain at least one local class or id" rule. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  :global(*),
+  :global(*::before),
+  :global(*::after) {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

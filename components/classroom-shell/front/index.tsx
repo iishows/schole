@@ -23,6 +23,7 @@ import { isClassroomFrontEnabled } from '@/lib/config/feature-flags';
 import { FrontBlackboard } from './blackboard';
 import { TeacherStage } from './teacher-stage';
 import { Desks } from './desks';
+import { WhisperLine } from './whisper-line';
 import styles from './classroom-front.module.css';
 
 export function ClassroomFront() {
@@ -35,10 +36,10 @@ export function ClassroomFront() {
 
   return (
     <div className={styles.classroom} data-testid="classroom-front">
+      <WhisperLine />
       <FrontBlackboard lessonLabel={lessonLabel} />
       <TeacherStage />
       <Desks />
-      {/* Whisper line (B.1 Task 3) mounts here */}
     </div>
   );
 }

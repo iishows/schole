@@ -143,4 +143,27 @@ describe('ClassroomFront (B.1)', () => {
     expect(container.querySelector('[data-testid="teacher-stage"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="front-blackboard"]')).toBeNull();
   });
+
+  it('mounts the whisper-line SVG and only draws a path when activeNote is present', async () => {
+    // Without activeNote the SVG is empty (no path child).
+    await act(async () => {
+      root.render(<ClassroomFront />);
+    });
+    const whisperSvg = container.querySelector('[data-testid="whisper-line"]');
+    expect(whisperSvg).toBeTruthy();
+    expect(container.querySelector('[data-testid="whisper-line-path"]')).toBeNull();
+
+    // With activeNote the path is rendered.
+    useStageStore.setState((s) => ({
+      ...s,
+      classroom: {
+        ...s.classroom,
+        activeNote: { from_seat: 'A1', to_seat: 'A2', content: 'test', animation: 'fly' },
+      },
+    }));
+    await act(async () => {
+      root.render(<ClassroomFront />);
+    });
+    expect(container.querySelector('[data-testid="whisper-line-path"]')).toBeTruthy();
+  });
 });
