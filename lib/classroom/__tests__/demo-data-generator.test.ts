@@ -188,5 +188,27 @@ describe('demo-data-generator (B.1.2)', () => {
       expect(typeof a.seed).toBe('number');
       expect(typeof b.seed).toBe('number');
     });
+
+    it('exposes displayNameByAgentId with agent_id → Chinese name mapping for every seat', () => {
+      // The `/classroom-demo` page forwards `displayNameByAgentId` to
+      // `<ClassroomFront />` so desks render the Chinese name instead
+      // of the raw `agent_id` string (e.g. `"小红"` not `"agent-0-👵"`).
+      // Every seat must therefore be in the map and every value must
+      // be one of the curated Chinese names.
+      for (let i = 0; i < 25; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        const agentIds = gen.classroom.seatLayout.map((s) => s.agent_id);
+        expect(Object.keys(gen.displayNameByAgentId).sort()).toEqual(
+          agentIds.slice().sort(),
+        );
+        for (const agentId of agentIds) {
+          const name = gen.displayNameByAgentId[agentId];
+          expect(DEMO_NAMES).toContain(name);
+        }
+        // Determinism: same seed → same mapping.
+        const gen2 = generateDemoClassroomState(i);
+        expect(gen2.displayNameByAgentId).toEqual(gen.displayNameByAgentId);
+      }
+    });
   });
 });

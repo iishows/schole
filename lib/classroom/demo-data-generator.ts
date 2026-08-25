@@ -170,6 +170,12 @@ export interface DemoDynamicContent {
 export interface DemoGeneration {
   classroom: ClassroomState;
   dynamic: DemoDynamicContent;
+  /** Map from `agent_id` (e.g. `"agent-0-👵"`) to the display name the
+   *  page should render on the desk label (e.g. `"小红"`). The agent_id
+   *  encoding keeps `ClassroomState.seatLayout.agent_id` unique and
+   *  emoji-seedable, while this map keeps the human-readable name
+   *  available without extending `ClassroomState`. */
+  displayNameByAgentId: Record<string, string>;
   /** Seed that produced this generation — echoed back so the page can
    *  surface it (e.g. in a hidden DOM attribute for visual snapshots). */
   seed: number;
@@ -362,5 +368,5 @@ export function generateDemoClassroomState(seed?: number): DemoGeneration {
     activeNote,
   };
 
-  return { classroom, dynamic, seed: effectiveSeed };
+  return { classroom, dynamic, displayNameByAgentId: idByAgent, seed: effectiveSeed };
 }

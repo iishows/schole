@@ -20,13 +20,12 @@
  *      so we don't have to extend `ClassroomState`.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ClassroomFront } from '@/components/classroom-shell/front';
 import { isClassroomFrontEnabled } from '@/lib/config/feature-flags';
 import { useStageStore } from '@/lib/store/stage';
 import {
   generateDemoClassroomState,
-  type DemoDynamicContent,
 } from '@/lib/classroom/demo-data-generator';
 
 export default function ClassroomDemoPage() {
@@ -35,15 +34,26 @@ export default function ClassroomDemoPage() {
   // Bump a render key on every mount to guarantee a fresh seed even
   // when StrictMode double-invokes effects.
   const [renderKey, setRenderKey] = useState(0);
-  const [seed, setSeed] = useState<number | null>(null);
-  const [dynamic, setDynamic] = useState<DemoDynamicContent | null>(null);
+
+  // Generate fresh data on every (re)mount. Keeping this in `useMemo`
+  // (not `useEffect`) means `displayNameByAgentId` is available to
+  // `<ClassroomFront />` on the same render that mounts the page —
+  // before, the page rendered once with `displayNameByAgentId ===
+  // undefined` and only caught up after `setDynamic(...)`, which
+  // surfaced as desks falling back to the `agent_id` string
+  // (e.g. "agent-0-👵") instead of the Chinese name (e.g. "小红").
+  const generation = useMemo(() => {
+    const gen = generateDemoClassroomState();
+    return {
+      classroom: gen.classroom,
+      dynamic: gen.dynamic,
+      displayNameByAgentId: gen.displayNameByAgentId,
+      seed: gen.seed,
+    };
+  }, [renderKey]);
+  const { classroom, dynamic, displayNameByAgentId, seed } = generation;
 
   useEffect(() => {
-    // Generate fresh data on every mount.
-    const gen = generateDemoClassroomState();
-    setSeed(gen.seed);
-    setDynamic(gen.dynamic);
-
     if (!enabled) return;
 
     // Seed the store. We intentionally bypass the persistence-marking
@@ -51,9 +61,9 @@ export default function ClassroomDemoPage() {
     // want every refresh to schedule an IndexedDB write. The same
     // pattern is used by the snapshot fixture route.
     useStageStore.setState({
-      classroom: gen.classroom,
+      classroom,
     });
-  }, [renderKey, enabled]);
+  }, [classroom, enabled]);
 
   // Re-generate on demand (manual refresh button).
   const handleRefresh = () => {
@@ -81,7 +91,7 @@ export default function ClassroomDemoPage() {
   return (
     <div
       data-testid="classroom-demo"
-      data-demo-seed={seed ?? 'pending'}
+      data-demo-seed={seed}
       style={{
         position: 'relative',
         width: 1280,
@@ -91,24 +101,21 @@ export default function ClassroomDemoPage() {
       }}
     >
       <ClassroomFront
-        teacherBubbleContent={dynamic?.teacherBubble}
-        deskBubbleContents={dynamic?.deskByAgentId
-          ? Object.fromEntries(
-              Object.entries(dynamic.deskByAgentId).map(([agentId, v]) => [
-                agentId,
-                v.bubbleContent ?? '',
-              ]),
-            )
-          : undefined}
-        deskHandRaised={dynamic?.deskByAgentId
-          ? Object.fromEntries(
-              Object.entries(dynamic.deskByAgentId).map(([agentId, v]) => [
-                agentId,
-                v.handRaised,
-              ]),
-            )
-          : undefined}
-        activeCallOnAgentId={dynamic?.activeCallOnAgentId ?? null}
+        teacherBubbleContent={dynamic.teacherBubble}
+        deskBubbleContents={Object.fromEntries(
+          Object.entries(dynamic.deskByAgentId).map(([agentId, v]) => [
+            agentId,
+            v.bubbleContent ?? '',
+          ]),
+        )}
+        deskDisplayNames={displayNameByAgentId}
+        deskHandRaised={Object.fromEntries(
+          Object.entries(dynamic.deskByAgentId).map(([agentId, v]) => [
+            agentId,
+            v.handRaised,
+          ]),
+        )}
+        activeCallOnAgentId={dynamic.activeCallOnAgentId}
       />
       <button
         type="button"
