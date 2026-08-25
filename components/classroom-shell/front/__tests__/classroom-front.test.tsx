@@ -119,9 +119,15 @@ describe('ClassroomFront (B.1)', () => {
     await act(async () => {
       root.render(<ClassroomFront />);
     });
-    expect(container.querySelectorAll('[data-testid^="desk-"]').length).toBe(2);
+    // B.1.2 — exact-match the desk ids rather than relying on the
+    // `[data-testid^="desk-"]` prefix selector, which also matches
+    // the `desk-bubble-${name}` testids rendered inside each seat
+    // once the B.1.1 bubble content wiring lands.
     expect(container.querySelector('[data-testid="desk-A1"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="desk-A2"]')).toBeTruthy();
+    // Exactly two seats => exactly two `desk-X` elements (no
+    // over-/under-count from the bubble sub-testids).
+    expect(container.querySelectorAll('[data-testid^="desk-"]:not([data-testid*="desk-bubble"])').length).toBe(2);
     // Each desk should render its student avatar with the seat's agent id
     // baked into the testid so e2e snapshots / future state-based selectors
     // can locate a specific seat without relying on positional queries.

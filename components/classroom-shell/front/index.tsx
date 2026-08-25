@@ -26,7 +26,18 @@ import { Desks } from './desks';
 import { WhisperLine } from './whisper-line';
 import styles from './classroom-front.module.css';
 
-export function ClassroomFront() {
+/** B.1.2 — optional demo props forwarded from `/classroom-demo`.
+ *  When any of these are supplied the B.1 default mockup-faithful
+ *  content is overridden. */
+export interface ClassroomFrontDemoProps {
+  teacherBubbleContent?: string;
+  deskBubbleContents?: Record<string, string>;
+  deskDisplayNames?: Record<string, string>;
+  deskHandRaised?: Record<string, boolean>;
+  activeCallOnAgentId?: string | null;
+}
+
+export function ClassroomFront(demo: ClassroomFrontDemoProps = {}) {
   const enabled = isClassroomFrontEnabled();
   const period = useStageStore((s) => s.classroom.period);
   const lessonLabel = useStageStore((s) => s.classroom.lessonLabel);
@@ -38,8 +49,13 @@ export function ClassroomFront() {
     <div className={styles.classroom} data-testid="classroom-front">
       <WhisperLine />
       <FrontBlackboard lessonLabel={lessonLabel} />
-      <TeacherStage />
-      <Desks />
+      <TeacherStage bubbleContent={demo.teacherBubbleContent} />
+      <Desks
+        deskBubbleContents={demo.deskBubbleContents}
+        deskDisplayNames={demo.deskDisplayNames}
+        deskHandRaised={demo.deskHandRaised}
+        activeCallOnAgentId={demo.activeCallOnAgentId}
+      />
     </div>
   );
 }

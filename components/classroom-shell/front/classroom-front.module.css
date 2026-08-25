@@ -103,6 +103,13 @@
   position: relative;
 }
 
+/* B.1.1 — `.speaking` class wires the mockup's speaking-pulse animation onto the
+ * teacher avatar during the lesson period, and onto the active hand-raise desk
+ * while they are at the front of the queue. */
+.teacherAvatar.speaking {
+  animation: speaking-pulse 1.5s ease-in-out infinite;
+}
+
 /* Mic badge — mockup shows 🎤 in bottom-right of teacher avatar */
 .teacherAvatar::after {
   content: '🎤';
@@ -181,6 +188,21 @@
   position: relative;
 }
 
+/* B.1.1 — the first hand-raise entry in `handRaiseQueue` is treated as the
+ * active speaker; the seat's avatar gets `.speaking` so the mockup's
+ * speaking-pulse animation drives a soft ring around them. */
+.studentAvatar.speaking {
+  animation: speaking-pulse 1.5s ease-in-out infinite;
+}
+
+/* B.1.2 — wave animation on hand-raised seats. Applied to the avatar
+ * via the `data-hand` attribute set by StudentAvatar when its `hand`
+ * prop is true. Uses the `wave` keyframes defined below. */
+.studentAvatar.hand {
+  animation: wave 1s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
 .student1 {
   background: var(--student-1);
 }
@@ -212,9 +234,69 @@
   z-index: 2;
 }
 
+/* B.1.1 — 4 colour variants matching the mockup (pink / green / amber / blue). The
+ * class names are derived from `getStudentColor(seatIndex)` so seat 0 is pink,
+ * seat 1 is green, seat 2 is amber, seat 3 is blue. The colour drives only the
+ * accent border + corner tail; the body background stays the warm
+ * #fffbeb for readability against the classroom gradient. */
+.deskBubble.pink {
+  border-color: #f9a8d4;
+  background: linear-gradient(135deg, #fffbeb 0%, #fce7f3 100%);
+}
+
+.deskBubble.green {
+  border-color: #6ee7b7;
+  background: linear-gradient(135deg, #fffbeb 0%, #d1fae5 100%);
+}
+
+.deskBubble.amber {
+  border-color: #fcd34d;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.deskBubble.blue {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #fffbeb 0%, #dbeafe 100%);
+}
+
+.deskBubble::before {
+  content: attr(data-name);
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted, #6b6884);
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
 .thinking {
   font-style: italic;
   opacity: 0.7;
+}
+
+/* ============== Teacher bubble (B.1.1) ============== */
+
+.teacherBubble {
+  background: #fffbeb;
+  border: 1.5px solid #c4b5fd;
+  border-radius: 12px 12px 12px 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 320px;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+  position: relative;
+}
+
+.teacherBubble::before {
+  content: '小诺姐姐';
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--teacher);
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
 }
 
 /* ============== Whisper line ============== */
