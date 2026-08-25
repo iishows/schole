@@ -12,6 +12,11 @@
  * because no `<path>` child is rendered. This keeps the parent layout
  * stable across active/inactive states (no layout flicker when a note
  * starts or finishes flying).
+ *
+ * B.1.1: the SVG carries explicit inline `style="position:absolute;
+ * inset:0; pointer-events:none; z-index:0;"` matching the mockup
+ * HTML so the overlay container is layout-identical even if the parent
+ * CSS module's class names ever change.
  */
 
 import { useStageStore } from '@/lib/store/stage';
@@ -23,6 +28,7 @@ export function WhisperLine() {
     <svg
       className={styles.whisperSvg}
       data-testid="whisper-line"
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
       aria-hidden="true"

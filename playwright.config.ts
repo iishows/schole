@@ -29,15 +29,18 @@ export default defineConfig({
     url: 'http://localhost:3002',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    // Enable the MAIC Editor (Pro mode) so editor e2e can reach it, and the
+    // Enable the MAIC Editor (Pro mode) so editor e2e can reach it, the
     // classroom shell so the M4 snapshot suite (`classroom-snapshots.spec.ts`)
-    // renders PeriodBar / CallOnCard / BlackboardChalkLayer instead of `null`.
-    // Both are build-time NEXT_PUBLIC_* flags: in CI they must be set on the
-    // dedicated `pnpm build` step; locally `pnpm dev` reads them here.
+    // renders PeriodBar / CallOnCard / BlackboardChalkLayer instead of `null`,
+    // and the classroom front view so the B.1 snapshot suite
+    // (`classroom-front-snapshots.spec.ts`) renders `<ClassroomFront />`.
+    // All three are build-time NEXT_PUBLIC_* flags: in CI they must be set
+    // on the dedicated `pnpm build` step; locally `pnpm dev` reads them here.
     env: {
       PORT: '3002',
       NEXT_PUBLIC_MAIC_EDITOR_ENABLED: 'true',
       NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED: 'true',
+      NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED: 'true',
     },
   },
 });
