@@ -11,7 +11,12 @@
 
 import type { StageStore } from '@/lib/api/stage-api';
 import { createStageAPI } from '@/lib/api/stage-api';
+import {
+  isClassroomShellEnabled,
+  isClassroomShellInjected,
+} from '@/lib/config/feature-flags';
 import { useCanvasStore } from '@/lib/store/canvas';
+import { useStageStore } from '@/lib/store/stage';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
 import { useMediaGenerationStore, type MediaTask } from '@/lib/store/media-generation';
 import type { AudioPlayer } from '@/lib/utils/audio-player';
@@ -36,7 +41,7 @@ import type {
   WidgetAnnotationAction,
   WidgetRevealAction,
 } from '@/lib/types/action';
-import type { CodeLine, PPTVideoElement } from '@openmaic/dsl';
+import type { ClassroomAction, CodeLine, PPTVideoElement } from '@openmaic/dsl';
 import {
   resolveVideoMediaForElement,
   type VideoMediaTaskResolution,
@@ -198,8 +203,17 @@ export class ActionEngine {
    * Execute a single action.
    * Fire-and-forget actions return immediately.
    * Synchronous actions return a Promise that resolves when the action is complete.
+   *
+   * The `Action | ClassroomAction` union widens the entry point to include
+   * the 7 classroom shell actions (period_start/end/bell, raise_hand,
+   * call_on, pass_note, blackboard_annotate) without expanding the
+   * discriminated switch above; classroom types fall through to the
+   * guarded dispatch block at the bottom of this method.
    */
-  async execute(action: Action, options: ActionExecutionOptions = {}): Promise<void> {
+  async execute(
+    action: Action | ClassroomAction,
+    options: ActionExecutionOptions = {},
+  ): Promise<void> {
     if (options.silent) {
       if (action.type === 'speech' || action.type === 'spotlight' || action.type === 'laser') {
         return;
@@ -270,6 +284,38 @@ export class ActionEngine {
       case 'widget_reveal':
         return this.executeWidgetReveal(action as WidgetRevealAction);
     }
+
+    // === Classroom shell (period / hand-raise / call-on / pass-note / blackboard_annotate) ===
+    // Reached only when `action.type` is one of the 7 classroom discriminants —
+    // the standard 22 actions all return from a `case` above. The two flag
+    // gates below mirror the feature-flag contract: the shell must be both
+    // *enabled* and *injected* (i.e. the Pi runtime that powers the dispatch
+    // is also on). When either gate fails we drop the action with a warn so
+    // observability surfaces the misconfig without breaking the playback
+    // pipeline.
+    if (!isClassroomShellEnabled()) {
+      log.warn(`classroom action dropped: flag disabled (${(action as { type: string }).type})`);
+      return;
+    }
+    if (
+      !isClassroomShellInjected() &&
+      [
+        'period_start',
+        'period_end',
+        'period_bell',
+        'raise_hand',
+        'call_on',
+        'pass_note',
+        'blackboard_annotate',
+      ].includes((action as { type: string }).type)
+    ) {
+      log.warn(
+        `classroom action not injected: runtime not enabled (${(action as { type: string }).type})`,
+      );
+      return;
+    }
+    useStageStore.getState().dispatchClassroomAction(action as ClassroomAction);
+    return;
   }
 
   /** Clear all active visual effects */
