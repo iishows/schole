@@ -108,6 +108,18 @@ interface RegionConfig {
   defaultLocale: string;       // "zh-CN" | "en-US" | "en-AU" | ...
   supportedLocales: string[];  // ["zh-CN"] | ["en-US", "es-US"] | ...
 
+  // i18n (region-specific; operator-curated)
+  defaultLanguage: string;     // "zh-CN" — initial picker choice
+  supportedLanguages: string[]; // operator-enabled locales this region exposes to users
+  rtlLanguages?: string[];     // for future Arabic/Hebrew support
+
+  // Theme (region + per-user override)
+  theme: {
+    default: ThemeId;          // "lavender" (CN) | "warm-wood" (INTL) | "ocean" (EU) | "light" | "dark"
+    available: ThemeId[];      // what users can pick in this region
+    highContrastRequired?: boolean;  // for accessibility (EU often)
+  };
+
   // Personas (operator-uploaded templates)
   personas: {
     mentors: PersonaTemplate[];

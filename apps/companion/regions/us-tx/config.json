@@ -3,6 +3,13 @@
   "displayName": "United States (Texas)",
   "defaultLocale": "en-US",
   "supportedLocales": ["en-US", "es-US"],
+  "defaultLanguage": "en-US",
+  "supportedLanguages": ["en-US", "es-US"],
+  "theme": {
+    "default": "warm-wood",
+    "available": ["warm-wood", "light", "dark"],
+    "highContrastRequired": false
+  },
   "personas": {
     "mentors": [
       {

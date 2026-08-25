@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenMAIC · Admin · i18n + Theme Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f7;
+    --fg: #1f1d2e;
+    --muted: #6b6884;
+    --line: #e2dff0;
+    --primary: #722ed1;
+    --primary-soft: #efe6fb;
+    --primary-dark: #5b21b6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --sidebar-w: 240px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+  /* Sidebar (same as admin-region-config) */
+  .sidebar {
+    background: #1a1825;
+    color: #d4d0e0;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand {
+    padding: 0 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+  .brand .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--primary) 0%, #ec4899 100%);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: #fff;
+  }
+  .brand .name { color: #fff; font-weight: 700; font-size: 14px; }
+  .brand .sub { font-size: 10px; color: #8b889d; }
+  .nav-section { padding: 12px 20px 4px; font-size: 10px; color: #6b6884; text-transform: uppercase; letter-spacing: 0.1em; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: #fff; }
+  .nav-item.active { background: rgba(114,46,209,0.15); color: #fff; border-left-color: var(--primary); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .main { padding: 24px 32px; overflow-y: auto; }
+
+  /* Topbar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title h1 { font-size: 22px; font-weight: 700; }
+  .page-title .crumb { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+  /* Region picker */
+  .region-tabs {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .region-tab {
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+  }
+  .region-tab.active { background: var(--primary); color: #fff; }
+  .region-tab:hover:not(.active) { color: var(--fg); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+  }
+
+  /* Editor card */
+  .editor {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 24px;
+    border: 1px solid var(--line);
+  }
+  .editor h2 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Section */
+  .section {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .section-head {
+    background: #f9f8fc;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-head .label {
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-head .count {
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .section-body { padding: 14px; background: #fff; }
+
+  /* Language chips */
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .lang-card {
+    background: #f9f8fc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .lang-card.enabled {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+  }
+  .lang-card .flag {
+    font-size: 22px;
+  }
+  .lang-card .info { flex: 1; }
+  .lang-card .code {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .lang-card .name {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .lang-card .toggle {
+    width: 32px; height: 18px;
+    border-radius: 999px;
+    background: var(--line);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .lang-card .toggle.on { background: var(--success); }
+  .lang-card .toggle::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: 0.2s;
+  }
+  .lang-card .toggle.on::after { left: 17px; }
+  .lang-card .default-pill {
+    background: var(--primary);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* String editor */
+  .string-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .string-key {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: #f9f8fc;
+    padding: 6px 10px;
+    border-radius: 6px;
+  }
+  .string-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .string-input:focus { border-color: var(--primary); outline: none; }
+  .translation-progress {
+    background: #f9f8fc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%);
+    border-radius: 999px;
+  }
+  .progress-pct {
+    font-weight: 700;
+    color: var(--fg);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* Theme gallery */
+  .theme-gallery {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .theme-tile {
+    background: #f9f8fc;
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .theme-tile.active { border-color: var(--primary); }
+  .theme-tile.active::after {
+    content: '✓';
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .theme-preview {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .theme-name {
+    padding: 6px;
+    font-size: 10px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .theme-tile.active .theme-name { color: var(--primary); }
+
+  /* Theme-specific previews */
+  .theme-tile[data-theme="lavender"] .theme-preview { background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 100%); color: #5b21b6; }
+  .theme-tile[data-theme="warm-wood"] .theme-preview { background: linear-gradient(135deg, #fde68a 0%, #b8763e 100%); color: #8d5829; }
+  .theme-tile[data-theme="ocean"] .theme-preview { background: linear-gradient(135deg, #cffafe 0%, #0e7490 100%); color: #fff; }
+  .theme-tile[data-theme="light"] .theme-preview { background: #fff; color: #1f1d2e; border-bottom: 1px solid #f0eef8; }
+  .theme-tile[data-theme="dark"] .theme-preview { background: #0f0a1f; color: #fff; }
+
+  /* Right side: Preview */
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--line);
+  }
+  .panel h3 {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .preview-window {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .pw-bar {
+    background: #f3f4f6;
+    padding: 4px 8px;
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pw-bar .dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; }
+  .pw-content {
+    padding: 16px;
+    background: var(--preview-bg, #fff);
+    color: var(--preview-fg, #1f1d2e);
+    min-height: 220px;
+  }
+  .pw-content .greeting {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--preview-primary, #722ed1);
+    margin-bottom: 6px;
+  }
+  .pw-content .body {
+    font-size: 12px;
+    color: var(--preview-muted, #6b6884);
+    margin-bottom: 12px;
+  }
+  .pw-content .cta {
+    background: var(--preview-primary, #722ed1);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .high-contrast {
+    border: 2px dashed var(--warning);
+    background: #fef7e8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #92400e;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <div class="name">OpenMAIC</div>
+        <div class="sub">Admin Console</div>
+      </div>
+    </div>
+
+    <div class="nav-section">概览</div>
+    <div class="nav-item"><span class="icon">📊</span> 仪表盘</div>
+
+    <div class="nav-section">Region</div>
+    <div class="nav-item"><span class="icon">🌐</span> Region Config</div>
+    <div class="nav-item"><span class="icon">📚</span> Textbooks</div>
+    <div class="nav-item"><span class="icon">🎭</span> Persona Templates</div>
+    <div class="nav-item active"><span class="icon">🗣️</span> i18n + Themes</div>
+
+    <div class="nav-section">People</div>
+    <div class="nav-item"><span class="icon">👨‍👩‍👧‍👦</span> Students</div>
+    <div class="nav-item"><span class="icon">📈</span> Analytics</div>
+
+    <div class="nav-section">Compliance</div>
+    <div class="nav-item"><span class="icon">🔒</span> Audit Logs</div>
+    <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="page-title">
+        <div class="crumb">Region / i18n + Themes</div>
+        <h1>🗣️ Languages + 🎨 Themes</h1>
+      </div>
+      <div class="region-tabs">
+        <button class="region-tab active">🇨🇳 CN · v3</button>
+        <button class="region-tab">🇺🇸 US-TX · v2</button>
+        <button class="region-tab">🇦🇺 AU · v1</button>
+        <button class="region-tab">🇸🇬 SG · v1</button>
+        <button class="region-tab">🇩🇪 EU-DE · v1</button>
+      </div>
+    </div>
+
+    <div class="layout">
+
+      <!-- Left: Editor -->
+      <div class="editor">
+        <h2>🇨🇳 China (中国大陆) · 语言 + 主题配置</h2>
+
+        <!-- Languages section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              🗣️ Enabled Languages
+              <span class="count">2 of 4</span>
+            </div>
+            <button style="background: var(--primary-soft); color: var(--primary); border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">+ Add language</button>
+          </div>
+          <div class="section-body">
+            <div class="lang-grid">
+              <div class="lang-card enabled">
+                <div class="flag">🇨🇳</div>
+                <div class="info">
+                  <div class="code">zh-CN <span class="default-pill">DEFAULT</span></div>
+                  <div class="name">简体中文</div>
+                </div>
+                <div class="toggle on"></div>
+              </div>
+              <div class="lang-card enabled">
+                <div class="flag">🇬🇧</div>
+                <div class="info">
+                  <div class="code">en-CN</div>
+                  <div class="name">English (for expats)</div>
+                </div>
+                <div class="toggle on"></div>
+              </div>
+              <div class="lang-card">
+                <div class="flag">🇯🇵</div>
+                <div class="info">
+                  <div class="code">ja-JP</div>
+                  <div class="name">日本語 (not enabled)</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+              <div class="lang-card">
+                <div class="flag">🇰🇷</div>
+                <div class="info">
+                  <div class="code">ko-KR</div>
+                  <div class="name">한국어 (not enabled)</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Themes section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              🎨 Themes
+              <span class="count">5 available</span>
+            </div>
+            <span style="font-size: 11px; color: var(--muted);">Default: <strong>Lavender</strong></span>
+          </div>
+          <div class="section-body">
+            <div class="theme-gallery">
+              <div class="theme-tile active" data-theme="lavender">
+                <div class="theme-preview">Aa</div>
+                <div class="theme-name">💜 Lavender</div>
+              </div>
+              <div class="theme-tile" data-theme="warm-wood">
+                <div class="theme-preview">Aa</div>
+                <div class="theme-name">🌳 Warm-wood</div>
+              </div>
+              <div class="theme-tile" data-theme="ocean">
+                <div class="theme-preview">Aa</div>
+                <div class="theme-name">🌊 Ocean</div>
+              </div>
+              <div class="theme-tile" data-theme="light">
+                <div class="theme-preview">Aa</div>
+                <div class="theme-name">☀️ Light</div>
+              </div>
+              <div class="theme-tile" data-theme="dark">
+                <div class="theme-preview">Aa</div>
+                <div class="theme-name">🌙 Dark</div>
+              </div>
+            </div>
+            <div class="high-contrast">
+              ⚠️ <strong>EU-DE requires high-contrast</strong> for accessibility (WCAG 2.1 AA). "Light" + "Dark" auto-enable high-contrast variants for EU-DE region.
+            </div>
+          </div>
+        </div>
+
+        <!-- i18n strings section -->
+        <div class="section">
+          <div class="section-head">
+            <div class="label">
+              📝 UI Strings (zh-CN bundle)
+              <span class="count">142 / 160</span>
+            </div>
+            <button style="background: transparent; border: none; color: var(--primary); font-size: 11px; cursor: pointer;">Import / Export →</button>
+          </div>
+          <div class="section-body">
+            <div class="translation-progress">
+              <span>Translation progress:</span>
+              <div class="progress-bar"><div class="progress-fill" style="width: 89%;"></div></div>
+              <span class="progress-pct">89%</span>
+            </div>
+
+            <div class="string-row">
+              <div class="string-key">home.hero.title</div>
+              <input class="string-input" value="今天继续学习吧！">
+            </div>
+            <div class="string-row">
+              <div class="string-key">classroom.continue_btn</div>
+              <input class="string-input" value="进入教室">
+            </div>
+            <div class="string-row">
+              <div class="string-key">mentor.greeting</div>
+              <input class="string-input" value="小诺姐姐在这里等你哦 ✨">
+            </div>
+            <div class="string-row">
+              <div class="string-key">buddy.hand_raised</div>
+              <input class="string-input" value="小红举手了">
+            </div>
+            <div class="string-row">
+              <div class="string-key">error.no_answer</div>
+              <input class="string-input" value="还没答案，先想想？">
+            </div>
+            <div style="text-align: center; margin-top: 8px; font-size: 11px;">
+              <a style="color: var(--primary); cursor: pointer;">View all 160 strings →</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: Live Preview -->
+      <div class="side">
+
+        <div class="panel">
+          <h3>👁 Live Preview · zh-CN + Lavender</h3>
+          <div class="preview-window">
+            <div class="pw-bar">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+            <div class="pw-content" style="--preview-bg: #faf9fe; --preview-primary: #722ed1; --preview-fg: #1f1d2e; --preview-muted: #6b6884;">
+              <div class="greeting">👋 你好，小明</div>
+              <div class="body">今天继续学习吧！我们先从昨天的分数加法开始。</div>
+              <div class="cta">▶ 进入教室</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>🌍 Locale Switcher (parent's view)</h3>
+          <div style="font-size: 11px; color: var(--muted); margin-bottom: 10px;">
+            家长在 dashboard 看到的语言切换器：
+          </div>
+          <div style="background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px;">
+            <select style="width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 12px;">
+              <option>🇨🇳 简体中文</option>
+              <option>🇬🇧 English</option>
+            </select>
+          </div>
+          <div style="font-size: 10px; color: var(--muted); margin-top: 8px;">
+            💡 用户切换语言会立即生效，无需重新登录
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>📊 Translation status</h3>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>🇨🇳 zh-CN</span>
+              <strong>142 / 160 (89%)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🇬🇧 en-CN</span>
+              <strong style="color: var(--warning);">98 / 160 (61%)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🤖 Auto-translate</span>
+              <button style="background: var(--primary-soft); color: var(--primary); border: none; padding: 3px 10px; border-radius: 4px; font-size: 10px; cursor: pointer;">Fill missing →</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

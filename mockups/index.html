@@ -21,6 +21,80 @@
     --intl: #b8763e;
     --admin: #475569;
   }
+
+  /* Theme: warm-wood (INTL) */
+  [data-theme="warm-wood"] {
+    --bg: #fdf9f3;
+    --bg-2: #f5e8c8;
+    --primary: #b8763e;
+    --primary-soft: #f4e3cf;
+    --primary-dark: #8d5829;
+  }
+
+  /* Theme: ocean (EU) */
+  [data-theme="ocean"] {
+    --bg: #f0f9ff;
+    --bg-2: #dbeafe;
+    --primary: #0e7490;
+    --primary-soft: #cffafe;
+    --primary-dark: #155e75;
+  }
+
+  /* Theme: dark (system-wide) */
+  [data-theme="dark"] {
+    --bg: #0f0a1f;
+    --bg-2: #1a1825;
+    --fg: #f3f1f9;
+    --muted: #a09cb5;
+    --line: #2a2738;
+    --primary: #a78bfa;
+    --primary-soft: #2e1f4a;
+    --primary-dark: #c4b5fd;
+  }
+  [data-theme="dark"] .hero { background: linear-gradient(135deg, #1a1825 0%, #0f0a1f 100%); }
+  [data-theme="dark"] .hero .logo-text { background: linear-gradient(135deg, #a78bfa 0%, #f59e0b 100%); -webkit-background-clip: text; background-clip: text; }
+  [data-theme="dark"] .hero h1 { background: linear-gradient(135deg, #fff 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; }
+  [data-theme="dark"] .mockup-card { background: #1a1825; border-color: #2a2738; }
+  [data-theme="dark"] .filter-bar { background: #1a1825; border-color: #2a2738; }
+  [data-theme="dark"] .filter-btn { color: #a09cb5; }
+  [data-theme="dark"] .filter-btn.active { background: var(--primary); color: #fff; }
+  [data-theme="dark"] .section-head { border-bottom-color: #2a2738; }
+  [data-theme="dark"] .hero { border-color: #2a2738; }
+  [data-theme="dark"] .hero-meta span { background: rgba(255,255,255,0.05); border-color: #2a2738; }
+  [data-theme="dark"] .info-box { background: linear-gradient(135deg, #1a1825 0%, #2a2738 100%); border-color: #2a2738; color: #a09cb5; }
+  [data-theme="dark"] .mockup-thumb[data-region="cn"] { background: linear-gradient(135deg, #2e1f4a 0%, #1a1825 100%); }
+  [data-theme="dark"] .mockup-thumb[data-region="intl"] { background: linear-gradient(135deg, #3d2a1a 0%, #1a1825 100%); }
+  [data-theme="dark"] .mockup-thumb[data-region="admin"] { background: linear-gradient(135deg, #2a2738 0%, #1a1825 100%); }
+  [data-theme="dark"] .mockup-thumb[data-region="region"] { background: linear-gradient(135deg, #0e7490 0%, #1a1825 100%); }
+  [data-theme="dark"] .mockup-thumb .badge { background: rgba(0,0,0,0.5); color: #fff; }
+  [data-theme="dark"] .footer { border-top-color: #2a2738; }
+
+  /* Theme picker */
+  .theme-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-2);
+    padding: 4px;
+    border-radius: 8px;
+    margin-top: 16px;
+    display: inline-flex;
+  }
+  .theme-btn {
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .theme-btn.active { background: var(--bg); color: var(--fg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .theme-btn:hover:not(.active) { color: var(--fg); }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
@@ -30,6 +104,7 @@
     font-size: 14px;
     line-height: 1.5;
     min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
   }
   .container { max-width: 1280px; margin: 0 auto; padding: 32px 24px 80px; }
 
@@ -38,9 +113,10 @@
     text-align: center;
     margin-bottom: 48px;
     padding: 48px 24px;
-    background: linear-gradient(135deg, #ede9fe 0%, #fef7e8 100%);
+    background: linear-gradient(135deg, var(--primary-soft) 0%, var(--bg-2) 100%);
     border-radius: 20px;
     border: 1px solid var(--line);
+    transition: background 0.3s;
   }
   .hero .logo {
     display: inline-flex;
@@ -50,7 +126,7 @@
   }
   .hero .logo-icon {
     width: 48px; height: 48px;
-    background: linear-gradient(135deg, #722ed1 0%, #b8763e 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -58,12 +134,12 @@
     color: #fff;
     font-weight: 800;
     font-size: 24px;
-    box-shadow: 0 8px 20px rgba(114, 46, 209, 0.25);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
   }
   .hero .logo-text {
     font-size: 28px;
     font-weight: 800;
-    background: linear-gradient(135deg, #722ed1 0%, #b8763e 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -72,7 +148,7 @@
     font-size: 36px;
     font-weight: 800;
     margin-bottom: 12px;
-    background: linear-gradient(135deg, #1f1d2e 0%, #5b21b6 100%);
+    background: linear-gradient(135deg, var(--fg) 0%, var(--primary) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -97,12 +173,40 @@
     border-radius: 999px;
     border: 1px solid var(--line);
   }
+  .hero-controls {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .ctrl-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lang-select {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--fg);
+    cursor: pointer;
+  }
 
   /* Filter tabs */
   .filter-bar {
     display: flex;
     gap: 4px;
-    background: #fff;
+    background: var(--bg);
     padding: 4px;
     border-radius: 10px;
     border: 1px solid var(--line);
@@ -381,6 +485,28 @@
       <span>👤 4 角色视角</span>
       <span>📄 12 演示页面</span>
       <span>📐 单 spec + region config 架构</span>
+      <span>🗣 多语言 (operator 配)</span>
+      <span>🎨 多主题 (5 个)</span>
+    </div>
+
+    <!-- i18n + theme controls -->
+    <div class="hero-controls">
+      <span class="ctrl-label">🗣️ Language:</span>
+      <select id="lang-select" class="lang-select" data-i18n="label.lang">
+        <option value="zh-CN">中文 (zh-CN)</option>
+        <option value="en-US">English (en-US)</option>
+        <option value="de-DE">Deutsch (de-DE)</option>
+        <option value="es-US">Español (es-US)</option>
+      </select>
+
+      <span class="ctrl-label">🎨 Theme:</span>
+      <div class="theme-bar">
+        <button class="theme-btn" data-theme-value="lavender">💜 Lavender</button>
+        <button class="theme-btn" data-theme-value="warm-wood">🌳 Warm-wood</button>
+        <button class="theme-btn" data-theme-value="ocean">🌊 Ocean</button>
+        <button class="theme-btn" data-theme-value="light">☀️ Light</button>
+        <button class="theme-btn" data-theme-value="dark">🌙 Dark</button>
+      </div>
     </div>
   </div>
 
@@ -739,7 +865,181 @@
 </div>
 
 <script>
-  // Filter
+  // ===== Theme switcher =====
+  const themeBtns = document.querySelectorAll('.theme-btn');
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeBtns.forEach(b => {
+      b.classList.toggle('active', b.dataset.themeValue === theme);
+    });
+    try { localStorage.setItem('demo-theme', theme); } catch (e) {}
+  }
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => applyTheme(btn.dataset.themeValue));
+  });
+  // Restore saved theme
+  try {
+    const saved = localStorage.getItem('demo-theme');
+    if (saved) applyTheme(saved);
+  } catch (e) {}
+
+  // ===== Language switcher (demo site UI only) =====
+  const langSelect = document.getElementById('lang-select');
+  const i18n = {
+    'zh-CN': {
+      'title.tagline': 'Demo Site · 12 演示页面',
+      'title.desc': 'OpenMAIC Companion（region-driven 单产品）的所有 UI 演示。从学生教室到家长 dashboard，从 admin 后台到 region 配置——一个站点看完所有场景。',
+      'title.meta.0': '🌐 5 region 示例',
+      'title.meta.1': '👤 4 角色视角',
+      'title.meta.2': '📄 12 演示页面',
+      'title.meta.3': '📐 单 spec + region config 架构',
+      'title.meta.4': '🗣 多语言 (operator 配)',
+      'title.meta.5': '🎨 多主题 (5 个)',
+      'label.lang': '🗣️ Language:',
+      'label.theme': '🎨 Theme:',
+      'filter.all': '全部 12',
+      'filter.student': '🏠 学生侧',
+      'filter.parentCn': '👨‍👩‍👧 家长 CN',
+      'filter.parentIntl': '👨‍👩‍👧 家长 INTL',
+      'filter.admin': '🛠 管理员',
+      'filter.region': '🌐 Region 配置',
+      'section.student': '学生侧（universal）',
+      'section.studentSub': '所有 region 共用 UI，persona 跟 textbook 按 region 配置切换',
+      'section.parentCn': '家长侧 · 中国（region=cn · 紫色）',
+      'section.parentCnSub': '微信小程序推送 + 课堂录制（CN 独有 feature）+ 朋友圈分享',
+      'section.parentIntl': '家长侧 · 国际（region=us-tx/au/sg · 暖木色）',
+      'section.parentIntlSub': 'Web dashboard + Email digest + WhatsApp opt-in + MAP test prep',
+      'section.admin': '管理员（operator / admin）',
+      'section.adminSub': 'PC Web 后台 · 学生管理 + 内容生成 + 运营',
+      'section.region': 'Region 配置（单产品多 region 架构）',
+      'section.regionSub': '运营配置 personas / channels / compliance / pricing',
+      'info.title': 'ℹ️ 关于本演示站点',
+      'info.body': '这是 specs/companion.md 设计的产品 UI 演示。所有 mockup 是静态 HTML，没有真实后端。架构是单产品 + region 配置驱动（5 个示例 region: cn / us-tx / au-nsw / sg / eu-de）。语言 + 主题由 region config 控制，运营可在 admin 后台编辑。',
+      'preview': '▶ Preview',
+      'open': '↗ Open',
+      'fullscreen': '⛶ Fullscreen',
+      'newWindow': '↗ New window',
+      'close': '✕ Close'
+    },
+    'en-US': {
+      'title.tagline': 'Demo Site · 12 demo pages',
+      'title.desc': 'All UI demos for OpenMAIC Companion (region-driven single product). From student classroom to parent dashboard, admin to region config — every scenario in one site.',
+      'title.meta.0': '🌐 5 region examples',
+      'title.meta.1': '👤 4 role perspectives',
+      'title.meta.2': '📄 12 demo pages',
+      'title.meta.3': '📐 Single spec + region config',
+      'title.meta.4': '🗣 Multi-language (operator-set)',
+      'title.meta.5': '🎨 Multi-theme (5)',
+      'label.lang': '🗣️ Language:',
+      'label.theme': '🎨 Theme:',
+      'filter.all': 'All 12',
+      'filter.student': '🏠 Student',
+      'filter.parentCn': '👨‍👩‍👧 Parent CN',
+      'filter.parentIntl': '👨‍👩‍👧 Parent INTL',
+      'filter.admin': '🛠 Admin',
+      'filter.region': '🌐 Region config',
+      'section.student': 'Student (universal)',
+      'section.studentSub': 'All regions share UI; persona + textbook swap per region config',
+      'section.parentCn': 'Parent · China (region=cn · lavender)',
+      'section.parentCnSub': 'WeChat mini-program push + classroom recording (CN-only) + moments share',
+      'section.parentIntl': 'Parent · International (region=us-tx/au/sg · warm-wood)',
+      'section.parentIntlSub': 'Web dashboard + Email digest + WhatsApp opt-in + MAP test prep',
+      'section.admin': 'Admin (operator / admin)',
+      'section.adminSub': 'PC Web backend · student mgmt + content generation + ops',
+      'section.region': 'Region config (single-product multi-region architecture)',
+      'section.regionSub': 'Operator configures personas / channels / compliance / pricing',
+      'info.title': 'ℹ️ About this demo site',
+      'info.body': 'These are static HTML demos for the product design in specs/companion.md. No real backend. Architecture is single-product + region-config-driven (5 sample regions: cn / us-tx / au-nsw / sg / eu-de). Language + theme controlled by region config, operator-editable in admin.',
+      'preview': '▶ Preview',
+      'open': '↗ Open',
+      'fullscreen': '⛶ Fullscreen',
+      'newWindow': '↗ New window',
+      'close': '✕ Close'
+    },
+    'de-DE': {
+      'title.tagline': 'Demo-Site · 12 Demos',
+      'title.desc': 'Alle UI-Demos für OpenMAIC Companion (region-driven Einzelprodukt).',
+      'filter.all': 'Alle 12',
+      'filter.student': '🏠 Schüler',
+      'filter.parentCn': '👨‍👩‍👧 Eltern CN',
+      'filter.parentIntl': '👨‍👩‍👧 Eltern INTL',
+      'filter.admin': '🛠 Admin',
+      'filter.region': '🌐 Region',
+      'section.student': 'Schüler-Seite (universal)',
+      'section.parentCn': 'Eltern · China (Region=cn · Lavendel)',
+      'section.parentIntl': 'Eltern · International (Region=us-tx/au/sg)',
+      'section.admin': 'Admin (Operator)',
+      'section.region': 'Region-Konfiguration',
+      'info.title': 'ℹ️ Über diese Demo',
+      'info.body': 'Statische HTML-Demos für specs/companion.md. Kein echtes Backend.',
+      'preview': '▶ Vorschau',
+      'open': '↗ Öffnen'
+    },
+    'es-US': {
+      'title.tagline': 'Sitio demo · 12 páginas',
+      'title.desc': 'Todas las demos UI de OpenMAIC Companion (producto único region-driven).',
+      'filter.all': 'Todas 12',
+      'filter.student': '🏠 Estudiante',
+      'filter.parentCn': '👨‍👩‍👧 Padres CN',
+      'filter.parentIntl': '👨‍👩‍👧 Padres INTL',
+      'filter.admin': '🛠 Admin',
+      'filter.region': '🌐 Config región',
+      'section.student': 'Estudiante (universal)',
+      'section.parentCn': 'Padres · China (región=cn)',
+      'section.parentIntl': 'Padres · Internacional',
+      'section.admin': 'Admin (operador)',
+      'section.region': 'Configuración de región',
+      'info.title': 'ℹ️ Sobre este sitio',
+      'info.body': 'Demos HTML estáticas para specs/companion.md.',
+      'preview': '▶ Vista previa',
+      'open': '↗ Abrir'
+    }
+  };
+
+  function applyLanguage(lang) {
+    const dict = i18n[lang] || i18n['en-US'];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (dict[key]) el.textContent = dict[key];
+    });
+    // Section titles via data-i18n-section
+    document.querySelectorAll('[data-i18n-section]').forEach(el => {
+      const key = el.dataset.i18nSection;
+      if (dict[key]) el.textContent = dict[key];
+    });
+    // Filter buttons
+    document.querySelectorAll('[data-i18n-filter]').forEach(btn => {
+      const key = btn.dataset.i18nFilter;
+      if (dict[key]) btn.textContent = dict[key];
+    });
+    try { localStorage.setItem('demo-lang', lang); } catch (e) {}
+  }
+
+  langSelect.addEventListener('change', (e) => applyLanguage(e.target.value));
+  try {
+    const saved = localStorage.getItem('demo-lang');
+    if (saved && i18n[saved]) {
+      langSelect.value = saved;
+      applyLanguage(saved);
+    }
+  } catch (e) {}
+
+  // Add i18n attributes to existing elements (simplified — would normally be in HTML)
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    const filter = btn.dataset.filter;
+    btn.setAttribute('data-i18n-filter', `filter.${filter.replace(/-/g, '')}`);
+  });
+  document.querySelectorAll('.section-head').forEach((el, idx) => {
+    const filterToSection = { student: 'student', 'parent-cn': 'parentCn', 'parent-intl': 'parentIntl', admin: 'admin', region: 'region' };
+    const sections = el.closest('.section');
+    if (sections) {
+      const key = sections.dataset.section.replace(/-/g, '');
+      el.querySelector('.section-title').setAttribute('data-i18n-section', `section.${key}`);
+    }
+  });
+
+  // ===== Filter =====
   const filterBtns = document.querySelectorAll('.filter-btn');
   const sections = document.querySelectorAll('.section');
   filterBtns.forEach(btn => {
@@ -757,7 +1057,7 @@
     });
   });
 
-  // Modal preview
+  // ===== Modal preview =====
   const modal = document.getElementById('modal');
   const modalTitle = document.getElementById('modal-title');
   const modalFrame = document.getElementById('modal-frame');

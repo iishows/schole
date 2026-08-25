@@ -3,6 +3,13 @@
   "displayName": "中国大陆",
   "defaultLocale": "zh-CN",
   "supportedLocales": ["zh-CN"],
+  "defaultLanguage": "zh-CN",
+  "supportedLanguages": ["zh-CN", "en-CN"],
+  "theme": {
+    "default": "lavender",
+    "available": ["lavender", "light", "dark"],
+    "highContrastRequired": false
+  },
   "personas": {
     "mentors": [
       {

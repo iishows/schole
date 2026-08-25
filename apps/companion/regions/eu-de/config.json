@@ -3,6 +3,13 @@
   "displayName": "Deutschland (GDPR-K)",
   "defaultLocale": "de-DE",
   "supportedLocales": ["de-DE", "en-DE"],
+  "defaultLanguage": "de-DE",
+  "supportedLanguages": ["de-DE", "en-DE"],
+  "theme": {
+    "default": "ocean",
+    "available": ["ocean", "light", "dark", "high-contrast"],
+    "highContrastRequired": true
+  },
   "personas": {
     "mentors": [
       {
