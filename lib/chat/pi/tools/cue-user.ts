@@ -80,3 +80,31 @@ export function buildCueUserTool(opts: {
     },
   };
 }
+
+/**
+ * Construct a `cue_user` StatelessEvent-shaped event.
+ *
+ * Used by non-Director callers (e.g. `CallOnCard` countdown expiry fallback,
+ * per spec §7 failure handling table) that need to surface a `cue_user`
+ * event without going through the Director agent-loop's internal `cueUser`
+ * callback. The returned event is the same shape the Director emits via
+ * `opts.send`, so downstream consumers (chat-area `onCueUser`, agent-loop
+ * `cue_user` outcome, etc.) handle it uniformly.
+ *
+ * NOTE: This helper does NOT call any internal `cueUser` callback or
+ * dispatch side-effect — it only constructs the event object so the caller
+ * can route it through whichever transport (Stage store, ActionEngine,
+ * SSE writer) it owns.
+ */
+export function cuesTo(
+  targetAgentId?: string,
+  prompt?: string,
+): Extract<StatelessEvent, { type: 'cue_user' }> {
+  return {
+    type: 'cue_user',
+    data: {
+      fromAgentId: targetAgentId,
+      prompt,
+    },
+  };
+}
