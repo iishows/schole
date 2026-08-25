@@ -105,6 +105,30 @@ describe('ClassroomFront (B.1)', () => {
     );
   });
 
+  it('renders a Desk per seatLayout entry (4-column grid driven by store)', async () => {
+    useStageStore.setState((s) => ({
+      ...s,
+      classroom: {
+        ...s.classroom,
+        seatLayout: [
+          { seat_id: 'A1', agent_id: 'alice', deskmates: [], zone: 'front' },
+          { seat_id: 'A2', agent_id: 'bob', deskmates: [], zone: 'front' },
+        ],
+      },
+    }));
+    await act(async () => {
+      root.render(<ClassroomFront />);
+    });
+    expect(container.querySelectorAll('[data-testid^="desk-"]').length).toBe(2);
+    expect(container.querySelector('[data-testid="desk-A1"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="desk-A2"]')).toBeTruthy();
+    // Each desk should render its student avatar with the seat's agent id
+    // baked into the testid so e2e snapshots / future state-based selectors
+    // can locate a specific seat without relying on positional queries.
+    expect(container.querySelector('[data-testid="student-avatar-alice"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="student-avatar-bob"]')).toBeTruthy();
+  });
+
   it('hides the blackboard subtree when blackboardMode is false', async () => {
     useStageStore.setState((s) => ({
       ...s,

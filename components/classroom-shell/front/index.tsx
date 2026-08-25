@@ -22,6 +22,7 @@ import { useStageStore } from '@/lib/store/stage';
 import { isClassroomFrontEnabled } from '@/lib/config/feature-flags';
 import { FrontBlackboard } from './blackboard';
 import { TeacherStage } from './teacher-stage';
+import { Desks } from './desks';
 import styles from './classroom-front.module.css';
 
 export function ClassroomFront() {
@@ -36,7 +37,8 @@ export function ClassroomFront() {
     <div className={styles.classroom} data-testid="classroom-front">
       <FrontBlackboard lessonLabel={lessonLabel} />
       <TeacherStage />
-      {/* Desks grid (B.1 Task 2) + whisper line (B.1 Task 3) mount here */}
+      <Desks />
+      {/* Whisper line (B.1 Task 3) mounts here */}
     </div>
   );
 }
