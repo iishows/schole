@@ -29,8 +29,12 @@ export default defineConfig({
     include: [
       'lib/**/__tests__/**/*.test.ts',
       'lib/**/*.test.ts',
+      'lib/**/__tests__/**/*.test.tsx',
+      'lib/**/*.test.tsx',
       'components/**/__tests__/**/*.test.ts',
       'components/**/*.test.ts',
+      'components/**/__tests__/**/*.test.tsx',
+      'components/**/*.test.tsx',
     ],
     exclude: [
       '**/node_modules/**',
