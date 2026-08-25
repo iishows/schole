@@ -1,4 +1,5 @@
 import type { ClassroomAction } from '@openmaic/dsl';
+import { ClassroomLayoutService } from '@/lib/services/classroom-layout-service';
 
 // Plan §4.1 — state sub-shapes. The DSL only ships the action union
 // and the wire-format action interfaces; the reducer-internal views
@@ -131,7 +132,7 @@ export function classroomReducer(state: ClassroomState, action: ClassroomAction)
     }
     case 'raise_hand': {
       if (state.handRaiseQueue.find(h => h.agent_id === action.agent_id)) return state;
-      return {
+      const next = {
         ...state,
         handRaiseQueue: [
           ...state.handRaiseQueue,
@@ -143,6 +144,15 @@ export function classroomReducer(state: ClassroomState, action: ClassroomAction)
             origin: action.origin,
           },
         ],
+      };
+      // V1.1 L1 — sort by [zone, seatIndex, raised_at] after every append
+      // so the queue invariant holds for the next consumer (Director call_on).
+      return {
+        ...next,
+        handRaiseQueue: ClassroomLayoutService.sortHandQueue(
+          next.handRaiseQueue,
+          state.seatLayout,
+        ),
       };
     }
     case 'call_on': {

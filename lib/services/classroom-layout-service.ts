@@ -1,4 +1,4 @@
-import type { SeatConfig } from '@/lib/store/classroom-state';
+import type { HandRaise, SeatConfig } from '@/lib/store/classroom-state';
 
 function parseRow(seatId: string): string {
   return seatId.match(/^[A-Z]+/)?.[0] ?? '';
@@ -6,6 +6,14 @@ function parseRow(seatId: string): string {
 function parseCol(seatId: string): number {
   return parseInt(seatId.match(/\d+$/)?.[0] ?? '0', 10);
 }
+
+// V1.1 plan §15 (global constraint 15) — L1 sort key is a pure function
+// exported independently for testability + future i18n re-ordering.
+const ZONE_PRIORITY: Record<SeatConfig['zone'], number> = {
+  front: 0,
+  middle: 1,
+  back: 2,
+};
 
 /**
  * Default layout generator: 邻座=同桌 (D-2 decision).
@@ -69,5 +77,36 @@ export const ClassroomLayoutService = {
 
   resolveSeat(layout: SeatConfig[], seatId: string): SeatConfig | null {
     return layout.find(s => s.seat_id === seatId) ?? null;
+  },
+
+  /**
+   * V1.1 L1 — composite sort key [zone, seatIndex, raised_at].
+   * Returns a single numeric score so callers can use Array#sort directly.
+   * Unknown agent → Infinity (defensive: pushed to end of queue).
+   * Pure function: no side effects, depends only on inputs.
+   */
+  resolveSortKey(layout: SeatConfig[], agentId: string): number {
+    const seat = layout.find(s => s.agent_id === agentId);
+    if (!seat) return Infinity;
+    // Column dominant within zone; row letter breaks column ties
+    // (parseRow letter codes are stable because layout seats are pre-sorted).
+    const zoneScore = ZONE_PRIORITY[seat.zone] * 10_000;
+    const colScore = parseCol(seat.seat_id) * 100;
+    const rowScore = parseRow(seat.seat_id).charCodeAt(0) * 10;
+    return zoneScore + colScore + rowScore;
+  },
+
+  /**
+   * V1.1 L1 — sort hand-raise queue by [zone, seatIndex, raised_at].
+   * Always re-sorts (per plan §"raise_hand" note: even for single-append
+   * queue) so the queue invariant holds across re-orderings.
+   */
+  sortHandQueue(raises: HandRaise[], layout: SeatConfig[]): HandRaise[] {
+    return [...raises].sort((a, b) => {
+      const ka = this.resolveSortKey(layout, a.agent_id);
+      const kb = this.resolveSortKey(layout, b.agent_id);
+      if (ka !== kb) return ka - kb;
+      return a.raised_at - b.raised_at;
+    });
   },
 };
