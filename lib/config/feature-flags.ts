@@ -99,3 +99,19 @@ export function isVideoExportEnabled(): boolean {
 export function isPptxImportEnabled(): boolean {
   return readBoolean(process.env.NEXT_PUBLIC_ENABLE_PPTX_IMPORT);
 }
+
+/**
+ * Classroom shell (period bar / hand-raise / call-on / pass-note / blackboard).
+ * Default OFF so existing RoundTable playback is unaffected until we ship W1+.
+ */
+export function isClassroomShellEnabled(): boolean {
+  return readBoolean(process.env.NEXT_PUBLIC_CLASSROOM_SHELL_ENABLED);
+}
+
+/**
+ * Whether the classroom shell is actively injected into the runtime (gate
+ * flag + the underlying chat runtime that powers the action dispatch).
+ */
+export function isClassroomShellInjected(): boolean {
+  return isClassroomShellEnabled() && isPiChatEnabled();
+}
