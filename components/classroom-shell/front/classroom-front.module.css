@@ -1,0 +1,299 @@
+/*
+ * Classroom Mode B.1 — front-view classroom (mockup-faithful).
+ *
+ * Tokens (`--teacher / --student-1/2/3 / --me / --blackboard / --blackboard-text`)
+ * are defined via `:global(:root)` so the surrounding CSS Modules hash does NOT
+ * scope them — the goal is for downstream CSS in app/globals.css that ALSO
+ * references the same tokens to keep working, and to keep the dev's mental
+ * model identical to the mockup HTML at mockups/cn/classroom-overview.html.
+ *
+ * Layout classes (`.classroom / .blackboard / .teacherStage / ...`) ARE scoped
+ * (default CSS Modules behaviour) — that is the whole point of a module. The
+ * component files import the module object and pass `styles.foo` to the
+ * `className` prop.
+ */
+
+:global(:root) {
+  --teacher: #8b5cf6;
+  --student-1: #ec4899;
+  --student-2: #10b981;
+  --student-3: #f59e0b;
+  --me: #3b82f6;
+  --blackboard: #2d4a3a;
+  --blackboard-text: #fef9e7;
+  --whisper: #fffbeb;
+}
+
+/* ============== Main container ============== */
+
+.classroom {
+  background: linear-gradient(180deg, #fef9e7 0%, #fdf3d8 100%);
+  padding: 24px 32px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+/* ============== Blackboard ============== */
+
+.blackboard {
+  background: var(--blackboard);
+  color: var(--blackboard-text);
+  border: 8px solid #5d3a1f;
+  border-radius: 6px;
+  padding: 28px 36px;
+  min-height: 180px;
+  position: relative;
+}
+
+.boardStep {
+  display: inline-block;
+  border-bottom: 2px solid rgba(254, 249, 231, 0.4);
+  padding: 2px 6px;
+  margin-right: 14px;
+  font-size: 13px;
+}
+
+.boardStepActive {
+  background: rgba(254, 249, 231, 0.08);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.boardSvg {
+  position: absolute;
+  inset: 16px;
+  pointer-events: none;
+  width: calc(100% - 32px);
+  height: calc(100% - 32px);
+}
+
+/* ============== Teacher stage ============== */
+
+.teacherStage {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+.podium {
+  background: #8b6f47;
+  border-radius: 4px 4px 0 0;
+  padding: 4px 12px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.teacherAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--teacher);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  position: relative;
+}
+
+/* Mic badge — mockup shows 🎤 in bottom-right of teacher avatar */
+.teacherAvatar::after {
+  content: '🎤';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.teacherAvatarName {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--blackboard);
+  white-space: nowrap;
+}
+
+/* ============== Desks grid (4 columns) ============== */
+
+.desks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: auto;
+  position: relative;
+}
+
+.desk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  padding-top: 80px;
+}
+
+.studentName {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f1d2e;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.deskTable {
+  width: 80px;
+  height: 22px;
+  background: linear-gradient(180deg, #d4a373 0%, #a47148 100%);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* ============== Student avatar ============== */
+
+.studentAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.student1 {
+  background: var(--student-1);
+}
+.student2 {
+  background: var(--student-2);
+}
+.student3 {
+  background: var(--student-3);
+}
+.me {
+  background: var(--me);
+}
+
+/* ============== Desk bubble ============== */
+
+.deskBubble {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  padding: 6px 10px;
+  border-radius: 10px 10px 10px 4px;
+  font-size: 11px;
+  line-height: 1.3;
+  max-width: 140px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.thinking {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* ============== Whisper line ============== */
+
+.whisperSvg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============== Responsive ============== */
+
+@media (max-width: 640px) {
+  .desks {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============== Animations ============== */
+
+@keyframes speaking-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.4), 0 4px 12px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(139, 92, 246, 0.4);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Reduced-motion fallback (constraint 22) — disables every animation in this
+   module so prefers-reduced-motion users see a static classroom. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

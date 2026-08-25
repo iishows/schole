@@ -115,3 +115,13 @@ export function isClassroomShellEnabled(): boolean {
 export function isClassroomShellInjected(): boolean {
   return isClassroomShellEnabled() && isPiChatEnabled();
 }
+
+/**
+ * Front-view classroom (Phase B · mockup-faithful). Default OFF so the existing
+ * RoundTable playback / classroom-shell injection stays unaffected until the
+ * B.1 MVP ships. Mirrors the `isClassroomShellEnabled()` pattern: build-time
+ * NEXT_PUBLIC_* env var, returns false when unset.
+ */
+export function isClassroomFrontEnabled(): boolean {
+  return readBoolean(process.env.NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED);
+}
