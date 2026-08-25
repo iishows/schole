@@ -1,435 +1,538 @@
-# Classroom Mode B.1 (Spatial Topdown MVP) Implementation Plan
+# Classroom Mode B.1 (Front-View MVP) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans.
 >
 > **Source spec:** [`specs/shared/classroom-mode-b-design.md`](../shared/classroom-mode-b-design.md) §11 Phase B.1 (MVP) — user-approved 2026-08-25
 >
 > **Predecessor:** [classroom-mode-v1.1 plan](2026-08-25-classroom-mode-v1.1.md) (✅ shipped 2026-08-25) — B 模式复用 V1 reducer + service + DSL actions 100%, 只换 view 层
+>
+> **Mockup reference (主参考)**: [`mockups/cn/classroom-overview.html`](../../mockups/cn/classroom-overview.html) — front-view 教室完整视觉设计 (CSS tokens + HTML 结构 + animations 全部就绪)
 
-**Goal:** Phase B.1 MVP — 给 OpenMAIC 教室加一个 2D SVG 俯瞰图 (ClassroomTopdown)，包含学生座位默认网格 + 头像 + 讲台 + teacher avatar。无交互（B.2 再加举/叫答/黑板交互）。
+**Goal:** Phase B.1 MVP — 把 `mockups/cn/classroom-overview.html` 拆成 React 组件：CSS tokens + `<ClassroomFront />` 主容器 + 黑板 + 老师讲台 + 学生课桌（4 列 grid + 头像 + 课桌 + 气泡）。无举手/叫答交互（B.2 再加），但**视觉上**已替换 RoundTable 中央气泡区。
 
-**Architecture:** 新增 `<ClassroomTopdown />` SVG 容器 (1000×600) — 渲染学生座位默认网格 + 头像 + 讲台 teacher。复用 V1 `seatLayout` + V1.1 L1 `resolveSortKey()` 做座位排序。State 扩展：`seatPositions?: Record<seat_id, {x,y}>` + `podiumPosition?: {x,y}` (reducer 派生，非 action 写入)。B.1 不接互动，纯视觉。
+**Architecture:** 直接复用 mockup CSS tokens + HTML 结构（不做新设计）。新增 6 个 React 组件 + 1 个 CSS module（classroom-front.module.css 包含 tokens + 所有 layout class）。Feature flag `isClassroomFrontEnabled()` gate。复用 V1.1 `seatLayout` + `agentRegistry`（外部 store）。
 
-**Tech Stack:** TypeScript · React · SVG (无新依赖) · 复用 V1.1 `ClassroomLayoutService.resolveSortKey()` 做座位排序。
+**Tech Stack:** TypeScript · React · CSS Modules · 零新依赖（拒绝 SVG / framer-motion / r3f）。
 
 ---
 
 ## Global Constraints (继承 V1 + V1.1 + 新增)
 
 1-16. 继承 V1 + V1.1 plan 全部约束 (UI 不侵入 / DSL 不破坏 / feature flag 默认 false / 4KB payload / 500 chalk stroke / i18n classroom.* namespace / 等)
-17. **B.1 新增**：零新三方依赖（SVG + React 已足够；拒绝 r3f/three/d3）
-18. **B.1 新增**：B 模式通过新 feature flag `isClassroomTopdownEnabled()` gate，默认 false
-19. **B.1 新增**：B 模式组件只在 `seatLayout.length > 0` 时 render；否则降级到 V1.1 静态布局（顶部 bar + 浮按钮）
-20. **B.1 新增**：`seatPositions` / `podiumPosition` 由 reducer 派生，不通过 action 写入；wire format 0 改动
-21. **B.1 新增**：avatar fallback — 头像加载失败时显示学生名首字母 (eg "Z" for 张三)
-22. **B.1 新增**：viewBox 归一化 (0-1000, 0-600)，让 CSS 自动 scale 到任意容器尺寸
+17. **B.1 新增**：零新三方依赖（HTML + CSS + React + zustand 已足够；拒绝 framer-motion/SVG lib）
+18. **B.1 新增**：B 模式通过新 feature flag `isClassroomFrontEnabled()` gate，默认 false
+19. **B.1 新增**：CSS tokens (`--teacher #8b5cf6` / `--student-1 #ec4899` 等) **完全复用 mockup** — 不重新定义颜色变量
+20. **B.1 新增**：CSS @keyframes (pulse / wave / bounce / blink / speaking-pulse) **完全复用 mockup** — 不引 JS animation
+21. **B.1 新增**：座位布局 **4 列 grid** (`grid-template-columns: repeat(4, 1fr)`)，不是俯瞰图坐标
+22. **B.1 新增**：`prefers-reduced-motion: reduce` 媒体查询必须禁用所有 @keyframes
+23. **B.1 新增**：座位颜色按 `seatIndex % 4` 分配 `--student-1/2/3/me`
+24. **B.1 新增**：avatar emoji 优先读 `agentRegistry[agent_id].avatar_emoji`，fallback 到 `agent_id.charAt(0)`
 
 ---
 
 ## File Structure
 
 **Create (新)**:
-- `components/classroom-shell/topdown/index.tsx` — `<ClassroomTopdown />` 主容器 (SVG 1000×600, 组装 seats + podium + blackboard)
-- `components/classroom-shell/topdown/seat.tsx` — `<TopdownSeat />` 单个学生座位 (circle avatar + name label + hand-raise icon placeholder)
-- `components/classroom-shell/topdown/podium.tsx` — `<TopdownPodium />` 讲台 + teacher avatar
-- `components/classroom-shell/topdown/seat-positions.ts` — `deriveSeatPositions(seatLayout)` helper (纯函数)
-- `lib/hooks/use-classroom-topdown.ts` — `useClassroomTopdown()` hook: gate + read seatLayout + 返回 positions
-- `components/classroom-shell/topdown/__tests__/seat-positions.test.ts` — deriveSeatPositions 单元测试
-- `components/classroom-shell/topdown/__tests__/classroom-topdown.test.tsx` — 集成测试 (mock store)
+- `components/classroom-shell/front/index.tsx` — `<ClassroomFront />` 主容器
+- `components/classroom-shell/front/blackboard.tsx` — `<FrontBlackboard />` 整面投影 + chalk SVG (复用 V1 `buildChalkSvg`)
+- `components/classroom-shell/front/teacher-stage.tsx` — `<TeacherStage />` 讲台 + 老师气泡
+- `components/classroom-shell/front/teacher-avatar.tsx` — `<TeacherAvatar />` 60×60 头像 + 🎤 角标 + speaking pulse
+- `components/classroom-shell/front/desks.tsx` — `<Desks />` 4 列 grid 容器
+- `components/classroom-shell/front/desk.tsx` — `<Desk />` 单学生课桌 (bubble + avatar + name + table)
+- `components/classroom-shell/front/desk-bubble.tsx` — `<DeskBubble />` 浮气泡 (position absolute)
+- `components/classroom-shell/front/student-avatar.tsx` — `<StudentAvatar />` 50×50 头像 + ✋/💭/speaking 修饰 class
+- `components/classroom-shell/front/whisper-line.tsx` — `<WhisperLine />` 同桌 SVG `<path>` 虚线 (B.1 占位, B.3 接入 store)
+- `components/classroom-shell/front/classroom-front.module.css` — 全部 CSS tokens + layout classes + @keyframes (从 mockup 直接搬)
+- `components/classroom-shell/front/class-helpers.ts` — `getStudentColor(seatIndex)` + `getAvatarFallback(agentName, agentId)` pure helpers
+- `components/classroom-shell/front/__tests__/class-helpers.test.ts` — helpers 单元测试
+- `components/classroom-shell/front/__tests__/classroom-front.test.tsx` — 集成测试
+- `app/classroom-snapshot-fixture/page.tsx` (已有, V1.1 M4 创建) — 复用作为 B.1 visual snapshot 测试 fixture
+- `e2e/tests/classroom-front-snapshots.spec.ts` — 5 cases visual snapshot baseline
 
 **Modify (改)**:
-- `lib/store/classroom-state.ts` — ClassroomState 添加 `seatPositions?` + `podiumPosition?` + `viewportSize?` optional 字段；reducer `case 'period_start'` + `case 'raise_hand'` 末尾调用 `deriveSeatPositions()` 写回
-- `lib/config/feature-flags.ts` — 添加 `isClassroomTopdownEnabled()` (从 `NEXT_PUBLIC_CLASSROOM_TOPDOWN_ENABLED` 读取)
+- `lib/config/feature-flags.ts` — 添加 `isClassroomFrontEnabled()` (从 `NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED` 读取)
+- `lib/store/stage.ts` — 复用 V1.1 的 `__stageStore` dev hook（已存在）
 
 ---
 
-## Tasks (4 个, 每 task 5 步 TDD)
+## Tasks (3 个, 每 task 5 步 TDD, 总 ~1.5 天)
 
-### Task 1: deriveSeatPositions helper + reducer 集成
+### Task 1: CSS tokens + ClassroomFront 主容器 + BlackBoard + TeacherStage + TeacherAvatar
 
 **Files:**
-- Create: `components/classroom-shell/topdown/seat-positions.ts`
-- Modify: `lib/store/classroom-state.ts`
-- Test: `components/classroom-shell/topdown/__tests__/seat-positions.test.ts`
+- Create: `components/classroom-shell/front/classroom-front.module.css` (从 mockup 复制 tokens + layout)
+- Create: `components/classroom-shell/front/index.tsx`
+- Create: `components/classroom-shell/front/blackboard.tsx`
+- Create: `components/classroom-shell/front/teacher-stage.tsx`
+- Create: `components/classroom-shell/front/teacher-avatar.tsx`
+- Modify: `lib/config/feature-flags.ts`
+- Test: `components/classroom-shell/front/__tests__/classroom-front.test.tsx`
 
 **Interfaces:**
-- Consumes: `SeatConfig[]` (state.seatLayout)
-- Produces: `Record<seat_id, {x: number, y: number}>` (0-1000 × 0-600 归一化坐标)
+- Consumes: `useStageStore(s => s.classroom.period)` + `useStageStore(s => s.classroom.lessonLabel)` + `useStageStore(s => s.classroom.blackboardMode)` + `useStageStore(s => s.classroom.chalkStrokes)`
+- Produces: 完整 front-view 教室布局（黑板顶部 + 讲台 + 老师头像 + 占位 desks 区域）
 
 **Step 1 — 写失败测试**:
-```ts
-// components/classroom-shell/topdown/__tests__/seat-positions.test.ts
-import { describe, it, expect } from 'vitest';
-import { deriveSeatPositions } from '../seat-positions';
+```tsx
+// components/classroom-shell/front/__tests__/classroom-front.test.tsx
+import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { ClassroomFront } from '../index';
+import { useStageStore } from '@/lib/store/stage';
 
-describe('deriveSeatPositions (B.1)', () => {
-  it('produces grid layout: 4 cols × N rows, A1 top-left', () => {
-    const layout = [
-      { seat_id: 'A1', agent_id: 'a1', deskmates: [], zone: 'front' as const },
-      { seat_id: 'A2', agent_id: 'a2', deskmates: [], zone: 'front' as const },
-      { seat_id: 'A3', agent_id: 'a3', deskmates: [], zone: 'front' as const },
-      { seat_id: 'A4', agent_id: 'a4', deskmates: [], zone: 'front' as const },
-      { seat_id: 'B1', agent_id: 'b1', deskmates: [], zone: 'middle' as const },
-    ];
-    const positions = deriveSeatPositions(layout);
-    // A1 = column 0 (x=125), row 0 (y=500)
-    expect(positions.A1).toEqual({ x: 125, y: 500 });
-    // A2 = column 1 (x=375)
-    expect(positions.A2).toEqual({ x: 375, y: 500 });
-    // A3 = column 2 (x=625)
-    expect(positions.A3).toEqual({ x: 625, y: 500 });
-    // A4 = column 3 (x=875)
-    expect(positions.A4).toEqual({ x: 875, y: 500 });
-    // B1 = row 1 (y=600) — note: rows increase downward in SVG
-    expect(positions.B1).toEqual({ x: 125, y: 600 });
+vi.mock('@/lib/store/stage');
+vi.mock('@/lib/config/feature-flags', () => ({
+  isClassroomFrontEnabled: () => true,
+}));
+
+describe('ClassroomFront (B.1)', () => {
+  it('returns null when flag is disabled', async () => {
+    vi.doMock('@/lib/config/feature-flags', () => ({
+      isClassroomFrontEnabled: () => false,
+    }));
+    const { container } = render(<ClassroomFront />);
+    expect(container.firstChild).toBeNull();
   });
-  it('returns empty object when layout empty', () => {
-    expect(deriveSeatPositions([])).toEqual({});
-  });
-  it('handles single seat', () => {
-    expect(deriveSeatPositions([{ seat_id: 'A1', agent_id: 'a1', deskmates: [], zone: 'front' as const }]))
-      .toEqual({ A1: { x: 500, y: 500 } });
+  it('renders blackboard + teacher stage when flag enabled', () => {
+    vi.mocked(useStageStore).mockReturnValue({
+      classroom: { period: 'lesson', lessonLabel: '数学', blackboardMode: true, chalkStrokes: [] },
+    } as any);
+    const { container } = render(<ClassroomFront />);
+    expect(container.querySelector('[data-testid="classroom-front"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="teacher-stage"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="teacher-avatar"]')).toBeTruthy();
   });
 });
 ```
 
-**Step 2 — 跑测试验证失败**: `pnpm vitest run ...` — FAIL (function not defined)
+**Step 2 — 跑测试验证失败**: `pnpm vitest run ...` — FAIL (modules not exist)
 
 **Step 3 — 写最小实现**:
-```ts
-// components/classroom-shell/topdown/seat-positions.ts
-import type { SeatConfig } from '@/lib/store/classroom-state';
 
-const VIEW_W = 1000;
-const VIEW_H = 600;
-const COL_PITCH = 250; // 4 cols × 250 = 1000
-const ROW_PITCH = 100;
-const SEAT_X_OFFSET = 125; // col 0 center
-const SEAT_Y_START = 500; // row 0 (front row of students, podium above at y=100)
+```tsx
+// components/classroom-shell/front/index.tsx
+'use client';
+import { useStageStore } from '@/lib/store/stage';
+import { isClassroomFrontEnabled } from '@/lib/config/feature-flags';
+import { FrontBlackboard } from './blackboard';
+import { TeacherStage } from './teacher-stage';
+import styles from './classroom-front.module.css';
 
-function parseRow(seatId: string): string {
-  return seatId.match(/^[A-Z]+/)?.[0] ?? '';
-}
-function parseCol(seatId: string): number {
-  return parseInt(seatId.match(/\d+$/)?.[0] ?? '0', 10);
-}
-
-export function deriveSeatPositions(seatLayout: SeatConfig[]): Record<string, {x: number; y: number}> {
-  if (seatLayout.length === 0) return {};
-  const sorted = [...seatLayout].sort((a, b) => {
-    const r = parseRow(a.seat_id).localeCompare(parseRow(b.seat_id));
-    return r !== 0 ? r : parseCol(a.seat_id) - parseCol(b.seat_id);
-  });
-  // detect columns from first row
-  const firstRow = parseRow(sorted[0].seat_id);
-  const colsInFirstRow = sorted.filter(s => parseRow(s.seat_id) === firstRow).length;
-  const colWidth = colsInFirstRow > 0 ? VIEW_W / colsInFirstRow : COL_PITCH;
-  
-  const result: Record<string, {x:number;y:number}> = {};
-  const rowIndex = new Map<string, number>();
-  let nextRowIdx = 0;
-  sorted.forEach(s => {
-    const r = parseRow(s.seat_id);
-    if (!rowIndex.has(r)) rowIndex.set(r, nextRowIdx++);
-    const rowIdx = rowIndex.get(r)!;
-    const colIdx = parseCol(s.seat_id) - 1;
-    result[s.seat_id] = {
-      x: colIdx * colWidth + colWidth / 2,
-      y: SEAT_Y_START + rowIdx * ROW_PITCH,
-    };
-  });
-  return result;
-}
-
-export function derivePodiumPosition(): {x:number;y:number} {
-  return { x: VIEW_W / 2, y: 100 }; // top-center of viewport
+export function ClassroomFront() {
+  const enabled = isClassroomFrontEnabled();
+  const period = useStageStore(s => s.classroom.period);
+  const lessonLabel = useStageStore(s => s.classroom.lessonLabel);
+  if (!enabled) return null;
+  if (period !== 'lesson') return null; // B.1 only renders during lesson
+  return (
+    <div className={styles.classroom} data-testid="classroom-front">
+      <FrontBlackboard lessonLabel={lessonLabel} />
+      <TeacherStage />
+      {/* desks 区域 B.1 Task 2 添加 */}
+    </div>
+  );
 }
 ```
 
-**Step 4 — reducer 集成**: 在 `lib/store/classroom-state.ts` `case 'period_start'` 和 `case 'raise_hand'` 末尾加：
-```ts
-import { deriveSeatPositions, derivePodiumPosition } from '@/components/classroom-shell/topdown/seat-positions';
-// ... after existing reducer logic:
-case 'period_start': {
-  // existing return + add seatPositions
-  return {
-    ...state,
-    // ...existing fields...
-    seatPositions: deriveSeatPositions(state.seatLayout),
-    podiumPosition: derivePodiumPosition(),
-  };
+```tsx
+// components/classroom-shell/front/blackboard.tsx
+'use client';
+import { useStageStore } from '@/lib/store/stage';
+import { buildChalkSvg } from '@/lib/utils/chalk-stroke-svg';
+import styles from './classroom-front.module.css';
+
+export function FrontBlackboard({ lessonLabel }: { lessonLabel: string }) {
+  const blackboardMode = useStageStore(s => s.classroom.blackboardMode);
+  const strokes = useStageStore(s => (s.classroom as any).chalkStrokes ?? []);
+  if (!blackboardMode) return null;
+  return (
+    <div className={styles.blackboard} data-testid="front-blackboard">
+      <span className={styles.boardStep}>{lessonLabel || '本节课'}</span>
+      <span className={styles.boardStepActive}>① 学习中</span>
+      <svg className={styles.boardSvg} viewBox="0 0 600 200" preserveAspectRatio="none">
+        <g dangerouslySetInnerHTML={{ __html: buildChalkSvg(strokes) }} />
+      </svg>
+    </div>
+  );
 }
 ```
 
-**Step 5 — 跑测试验证通过**: PASS
+```tsx
+// components/classroom-shell/front/teacher-stage.tsx
+'use client';
+import { TeacherAvatar } from './teacher-avatar';
+import styles from './classroom-front.module.css';
 
-**Step 5 — Commit**: `feat(classroom-b): B.1 deriveSeatPositions + reducer integration`
+export function TeacherStage() {
+  return (
+    <div className={styles.teacherStage} data-testid="teacher-stage">
+      <div className={styles.podium}>讲台</div>
+      <TeacherAvatar name="小诺姐姐" />
+    </div>
+  );
+}
+```
 
----
+```tsx
+// components/classroom-shell/front/teacher-avatar.tsx
+'use client';
+import styles from './classroom-front.module.css';
 
-### Task 2: useClassroomTopdown hook + feature flag
+export interface TeacherAvatarProps {
+  name: string;
+}
+export function TeacherAvatar({ name }: TeacherAvatarProps) {
+  return (
+    <div className={styles.teacherAvatar} data-testid="teacher-avatar">
+      👩‍🏫
+      <span className={styles.teacherAvatarName}>{name}</span>
+    </div>
+  );
+}
+```
 
-**Files:**
-- Create: `lib/hooks/use-classroom-topdown.ts`
-- Modify: `lib/config/feature-flags.ts`
-- Test: (covered by Task 4 integration test)
+```css
+/* components/classroom-shell/front/classroom-front.module.css — 从 mockup 直接搬 */
+:root { /* 仅在 root 层定义 token, 这里用 :global 防 CSS module 隔离 */
+  --teacher: #8b5cf6;
+  --student-1: #ec4899;
+  --student-2: #10b981;
+  --student-3: #f59e0b;
+  --me: #3b82f6;
+  --blackboard: #2d4a3a;
+  --blackboard-text: #fef9e7;
+}
 
-**Step 1 — 写失败测试**: skip — flag + hook 是 trivial wiring, integration test 在 Task 4 覆盖
+.classroom {
+  background: linear-gradient(180deg, #fef9e7 0%, #fdf3d8 100%);
+  padding: 24px 32px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
 
-**Step 3 — 写最小实现**:
+.blackboard {
+  background: var(--blackboard);
+  color: var(--blackboard-text);
+  border: 8px solid #5d3a1f;
+  border-radius: 6px;
+  padding: 28px 36px;
+  min-height: 180px;
+  position: relative;
+}
+.boardStep { display: inline-block; border-bottom: 2px solid rgba(254,249,231,0.4); padding: 2px 6px; margin-right: 14px; }
+.boardStepActive { background: rgba(254,249,231,0.08); border-radius: 4px; padding: 4px 10px; }
+.boardSvg { position: absolute; inset: 16px; pointer-events: none; }
+
+.teacherStage { display: flex; align-items: center; gap: 14px; }
+.podium { background: #8b6f47; border-radius: 4px 4px 0 0; padding: 4px 12px; color: #fff; font-size: 11px; font-weight: 600; }
+.teacherAvatar { width: 60px; height: 60px; border-radius: 50%; background: var(--teacher); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); position: relative; }
+.teacherAvatar::after { content: '🎤'; position: absolute; bottom: -2px; right: -2px; background: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.teacherAvatarName { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--blackboard); white-space: nowrap; }
+
+@keyframes speaking-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.4), 0 4px 12px rgba(139, 92, 246, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(139, 92, 246, 0.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+```
+
 ```ts
 // lib/config/feature-flags.ts 新增
-export function isClassroomTopdownEnabled(): boolean {
-  return readBoolean(process.env.NEXT_PUBLIC_CLASSROOM_TOPDOWN_ENABLED);
-}
-```
-
-```ts
-// lib/hooks/use-classroom-topdown.ts
-import { useMemo } from 'react';
-import { useStageStore } from '@/lib/store/stage';
-import { isClassroomTopdownEnabled } from '@/lib/config/feature-flags';
-import { deriveSeatPositions, derivePodiumPosition } from '@/components/classroom-shell/topdown/seat-positions';
-import type { SeatConfig } from '@/lib/store/classroom-state';
-
-export function useClassroomTopdown() {
-  const enabled = isClassroomTopdownEnabled();
-  const seatLayout = useStageStore(s => (s.classroom as any).seatLayout ?? []) as SeatConfig[];
-  const cachedPositions = useStageStore(s => (s.classroom as any).seatPositions);
-  const cachedPodium = useStageStore(s => (s.classroom as any).podiumPosition);
-  
-  return useMemo(() => ({
-    enabled,
-    hasData: seatLayout.length > 0,
-    seatPositions: cachedPositions ?? deriveSeatPositions(seatLayout),
-    podiumPosition: cachedPodium ?? derivePodiumPosition(),
-    seatLayout,
-  }), [enabled, seatLayout, cachedPositions, cachedPodium]);
-}
-```
-
-**Step 5 — Commit**: `feat(classroom-b): B.1 useClassroomTopdown hook + feature flag`
-
----
-
-### Task 3: TopdownSeat + TopdownPodium components
-
-**Files:**
-- Create: `components/classroom-shell/topdown/seat.tsx`
-- Create: `components/classroom-shell/topdown/podium.tsx`
-- Test: `components/classroom-shell/topdown/__tests__/seat.test.tsx`
-
-**Step 1 — 写失败测试**:
-```tsx
-// components/classroom-shell/topdown/__tests__/seat.test.tsx
-import { render } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { TopdownSeat } from '../seat';
-
-describe('TopdownSeat (B.1)', () => {
-  it('renders avatar circle at given position with seat_id label', () => {
-    const { container } = render(
-      <svg>
-        <TopdownSeat seatId="A1" agentId="student-zhang" agentName="张三" position={{x: 125, y: 500}} />
-      </svg>
-    );
-    const circle = container.querySelector('[data-testid="topdown-seat-A1"]');
-    expect(circle).toBeTruthy();
-    expect(circle?.getAttribute('cx')).toBe('125');
-    expect(circle?.getAttribute('cy')).toBe('500');
-  });
-  it('shows first character of agent_name as fallback avatar text', () => {
-    const { container } = render(
-      <svg><TopdownSeat seatId="A1" agentId="student-zhang" agentName="张三" position={{x: 125, y: 500}} /></svg>
-    );
-    expect(container.textContent).toContain('张');
-  });
-  it('falls back to agent_id first char when agent_name empty', () => {
-    const { container } = render(
-      <svg><TopdownSeat seatId="A1" agentId="alice" agentName="" position={{x: 125, y: 500}} /></svg>
-    );
-    expect(container.textContent).toContain('A');
-  });
-});
-```
-
-**Step 3 — 写最小实现**:
-```tsx
-// components/classroom-shell/topdown/seat.tsx
-'use client';
-import { useState } from 'react';
-
-export interface TopdownSeatProps {
-  seatId: string;
-  agentId: string;
-  agentName: string;
-  position: { x: number; y: number };
-}
-
-function getAvatarText(name: string, id: string): string {
-  if (name && name.length > 0) return name.charAt(0);
-  return id.charAt(0).toUpperCase();
-}
-
-export function TopdownSeat({ seatId, agentId, agentName, position }: TopdownSeatProps) {
-  const [avatarFailed, setAvatarFailed] = useState(false);
-  const fallback = getAvatarText(agentName, agentId);
-  return (
-    <g data-testid={`topdown-seat-${seatId}`} role="button" tabIndex={0} aria-label={`Seat ${seatId}: ${agentName || agentId}`}>
-      <circle cx={position.x} cy={position.y} r={28} fill="#3b82f6" stroke="#1e40af" strokeWidth={2} />
-      {!avatarFailed && (
-        <image
-          href={`/avatars/${agentId}.png`}
-          x={position.x - 24}
-          y={position.y - 24}
-          width={48}
-          height={48}
-          onError={() => setAvatarFailed(true)}
-        />
-      )}
-      {avatarFailed && (
-        <text x={position.x} y={position.y + 6} textAnchor="middle" fontSize={20} fill="white" fontWeight="bold">
-          {fallback}
-        </text>
-      )}
-      <text x={position.x} y={position.y + 48} textAnchor="middle" fontSize={12} fill="#1f2937">
-        {seatId} {agentName || agentId}
-      </text>
-    </g>
-  );
-}
-```
-
-```tsx
-// components/classroom-shell/topdown/podium.tsx
-'use client';
-export interface TopdownPodiumProps {
-  position: { x: number; y: number };
-  teacherName?: string;
-}
-
-export function TopdownPodium({ position, teacherName = '老师' }: TopdownPodiumProps) {
-  return (
-    <g data-testid="topdown-podium">
-      <rect x={position.x - 80} y={position.y - 30} width={160} height={60} fill="#7c3aed" rx={6} />
-      <text x={position.x} y={position.y + 6} textAnchor="middle" fontSize={20} fill="white" fontWeight="bold">
-        👨‍🏫 {teacherName}
-      </text>
-    </g>
-  );
+export function isClassroomFrontEnabled(): boolean {
+  return readBoolean(process.env.NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED);
 }
 ```
 
 **Step 4 — 跑测试验证通过**: PASS
 
-**Step 5 — Commit**: `feat(classroom-b): B.1 TopdownSeat + TopdownPodium components`
+**Step 5 — Commit**: `feat(classroom-b): B.1 front-view main container + blackboard + teacher stage (mockup-faithful)`
 
 ---
 
-### Task 4: ClassroomTopdown main container + integration
+### Task 2: Desks + Desk + DeskBubble + StudentAvatar + 接入 seatLayout
 
 **Files:**
-- Create: `components/classroom-shell/topdown/index.tsx`
-- Test: `components/classroom-shell/topdown/__tests__/classroom-topdown.test.tsx`
+- Create: `components/classroom-shell/front/desks.tsx`
+- Create: `components/classroom-shell/front/desk.tsx`
+- Create: `components/classroom-shell/front/desk-bubble.tsx`
+- Create: `components/classroom-shell/front/student-avatar.tsx`
+- Create: `components/classroom-shell/front/class-helpers.ts`
+- Test: `components/classroom-shell/front/__tests__/class-helpers.test.ts`
+- Modify: `components/classroom-shell/front/index.tsx` (加 `<Desks />`)
+
+**Interfaces:**
+- Consumes: `useStageStore(s => s.classroom.seatLayout)` (V1.1 已有, 已 L1 sort) + `useAgentRegistry` (外部 store)
+- Produces: 4 列 grid 课桌布局，每桌 = bubble (placeholder) + avatar (50×50) + name + desk-table
+
+**Step 1 — 写失败测试**:
+```ts
+// components/classroom-shell/front/__tests__/class-helpers.test.ts
+import { describe, it, expect } from 'vitest';
+import { getStudentColor, getAvatarFallback } from '../class-helpers';
+
+describe('class-helpers (B.1)', () => {
+  it('getStudentColor cycles through 4 colors by seatIndex', () => {
+    expect(getStudentColor(0)).toBe('student-1');
+    expect(getStudentColor(1)).toBe('student-2');
+    expect(getStudentColor(2)).toBe('student-3');
+    expect(getStudentColor(3)).toBe('me');
+    expect(getStudentColor(4)).toBe('student-1'); // wraps
+  });
+  it('getAvatarFallback prefers name over agent_id', () => {
+    expect(getAvatarFallback('小红', 'agent-xh')).toBe('小');
+    expect(getAvatarFallback('', 'alice')).toBe('A');
+    expect(getAvatarFallback('', '')).toBe('🧒'); // ultimate fallback
+  });
+});
+```
+
+**Step 3 — 写最小实现**:
+```ts
+// components/classroom-shell/front/class-helpers.ts
+const COLOR_CLASSES = ['student-1', 'student-2', 'student-3', 'me'] as const;
+export function getStudentColor(seatIndex: number): typeof COLOR_CLASSES[number] {
+  return COLOR_CLASSES[seatIndex % COLOR_CLASSES.length];
+}
+export function getAvatarFallback(agentName: string, agentId: string): string {
+  if (agentName && agentName.length > 0) return agentName.charAt(0);
+  if (agentId && agentId.length > 0) return agentId.charAt(0).toUpperCase();
+  return '🧒';
+}
+```
+
+```tsx
+// components/classroom-shell/front/desks.tsx
+'use client';
+import { useStageStore } from '@/lib/store/stage';
+import { Desk } from './desk';
+import styles from './classroom-front.module.css';
+
+export function Desks() {
+  const seatLayout = useStageStore(s => s.classroom.seatLayout);
+  if (!seatLayout || seatLayout.length === 0) return null;
+  return (
+    <div className={styles.desks} data-testid="front-desks">
+      {seatLayout.map((seat, idx) => (
+        <Desk key={seat.seat_id} seat={seat} seatIndex={idx} />
+      ))}
+    </div>
+  );
+}
+```
+
+```tsx
+// components/classroom-shell/front/desk.tsx
+'use client';
+import { DeskBubble } from './desk-bubble';
+import { StudentAvatar } from './student-avatar';
+import { getStudentColor } from './class-helpers';
+import type { SeatConfig } from '@/lib/store/classroom-state';
+import styles from './classroom-front.module.css';
+
+export interface DeskProps {
+  seat: SeatConfig;
+  seatIndex: number;
+}
+
+export function Desk({ seat, seatIndex }: DeskProps) {
+  const colorClass = getStudentColor(seatIndex);
+  // B.1: agentName 从 agent_id 简化 (V1.1 agent registry 未读)
+  const agentName = seat.agent_id;
+  return (
+    <div className={styles.desk} data-testid={`desk-${seat.seat_id}`} tabIndex={0} role="button" aria-label={`Seat ${seat.seat_id}: ${agentName}`}>
+      <DeskBubble name={agentName} colorClass={colorClass} />
+      <StudentAvatar name={agentName} colorClass={colorClass} />
+      <div className={styles.studentName}>{agentName}</div>
+      <div className={styles.deskTable}></div>
+    </div>
+  );
+}
+```
+
+```tsx
+// components/classroom-shell/front/desk-bubble.tsx
+'use client';
+import styles from './classroom-front.module.css';
+export interface DeskBubbleProps {
+  name: string;
+  colorClass: string;
+  content?: string; // B.1 占位
+  thinking?: boolean;
+}
+export function DeskBubble({ name, colorClass, content, thinking }: DeskBubbleProps) {
+  if (!content) return null;
+  return (
+    <div className={`${styles.deskBubble} ${styles[colorClass]} ${thinking ? styles.thinking : ''}`} data-name={name}>
+      {content}
+    </div>
+  );
+}
+```
+
+```tsx
+// components/classroom-shell/front/student-avatar.tsx
+'use client';
+import { getAvatarFallback } from './class-helpers';
+import styles from './classroom-front.module.css';
+export interface StudentAvatarProps {
+  name: string;
+  agentId?: string;
+  colorClass: string;
+}
+export function StudentAvatar({ name, agentId = '', colorClass }: StudentAvatarProps) {
+  const fallback = getAvatarFallback(name, agentId);
+  return (
+    <div className={`${styles.studentAvatar} ${styles[colorClass]}`} data-testid={`student-avatar-${name}`}>
+      {fallback}
+    </div>
+  );
+}
+```
+
+Modify `index.tsx` to add `<Desks />`:
+```tsx
+import { Desks } from './desks';
+// ... in render:
+<TeacherStage />
+<Desks />
+```
+
+Append CSS to module:
+```css
+.desks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: auto; position: relative; }
+.desk { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; padding-top: 80px; }
+.studentAvatar { width: 50px; height: 50px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.15); position: relative; }
+.studentAvatar[data-student] { font-weight: 700; }
+.student1 { background: var(--student-1); } .student2 { background: var(--student-2); } .student3 { background: var(--student-3); } .me { background: var(--me); }
+.studentName { font-size: 11px; font-weight: 600; color: var(--fg, #1f1d2e); background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 999px; }
+.deskTable { width: 80px; height: 22px; background: linear-gradient(180deg, #d4a373 0%, #a47148 100%); border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+.deskBubble { position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: #fffbeb; border: 1.5px solid #fde68a; padding: 6px 10px; border-radius: 10px 10px 10px 4px; font-size: 11px; line-height: 1.3; max-width: 140px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); z-index: 2; }
+.deskBubble.thinking { font-style: italic; opacity: 0.7; }
+@media (max-width: 640px) { .desks { grid-template-columns: repeat(2, 1fr); } }
+```
+
+**Step 4 — 跑测试验证通过**: PASS
+
+**Step 5 — Commit**: `feat(classroom-b): B.1 desks grid + student avatars wired to seatLayout store`
+
+---
+
+### Task 3: WhisperLine + feature flag wire-up + visual snapshots + integration
+
+**Files:**
+- Create: `components/classroom-shell/front/whisper-line.tsx`
+- Create: `e2e/tests/classroom-front-snapshots.spec.ts`
+- Test: `components/classroom-shell/front/__tests__/classroom-front.test.tsx` (扩展)
+
+**Interfaces:**
+- Consumes: `useStageStore(s => s.classroom.activeNote)` (V1 已有)
+- Produces: SVG `<path d>` 虚线连接 `activeNote.from_seat` 到 `to_seat` 头像
 
 **Step 1 — 写失败测试**:
 ```tsx
-// components/classroom-shell/topdown/__tests__/classroom-topdown.test.tsx
-import { render } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { ClassroomTopdown } from '../index';
-
-vi.mock('@/lib/hooks/use-classroom-topdown', () => ({
-  useClassroomTopdown: () => ({
-    enabled: true,
-    hasData: true,
-    seatPositions: { A1: {x:125,y:500}, A2: {x:375,y:500} },
-    podiumPosition: { x: 500, y: 100 },
-    seatLayout: [
-      { seat_id: 'A1', agent_id: 'alice', deskmates: [], zone: 'front' as const },
-      { seat_id: 'A2', agent_id: 'bob', deskmates: [], zone: 'front' as const },
-    ],
-  }),
-}));
-
-describe('ClassroomTopdown (B.1)', () => {
-  it('renders 1000x600 SVG with all seats and podium', () => {
-    const { container } = render(<ClassroomTopdown />);
-    const svg = container.querySelector('svg');
-    expect(svg?.getAttribute('viewBox')).toBe('0 0 1000 600');
-    expect(container.querySelector('[data-testid="topdown-seat-A1"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="topdown-seat-A2"]')).toBeTruthy();
-    expect(container.querySelector('[data-testid="topdown-podium"]')).toBeTruthy();
-  });
-  it('returns null when hasData is false', () => {
-    vi.doMock('@/lib/hooks/use-classroom-topdown', () => ({
-      useClassroomTopdown: () => ({ enabled: true, hasData: false, seatPositions: {}, podiumPosition: {x:500,y:100}, seatLayout: [] }),
-    }));
-    const { container } = render(<ClassroomTopdown />);
-    expect(container.querySelector('svg')).toBeNull();
+// 添加到 classroom-front.test.tsx
+describe('ClassroomFront integration (B.1)', () => {
+  it('renders desks from seatLayout in 4-col grid', () => {
+    vi.mocked(useStageStore).mockReturnValue({
+      classroom: {
+        period: 'lesson', lessonLabel: '数学', blackboardMode: true,
+        seatLayout: [
+          { seat_id: 'A1', agent_id: 'alice', deskmates: [], zone: 'front' },
+          { seat_id: 'A2', agent_id: 'bob', deskmates: [], zone: 'front' },
+        ],
+      },
+    } as any);
+    const { container } = render(<ClassroomFront />);
+    expect(container.querySelectorAll('[data-testid^="desk-"]').length).toBe(2);
   });
 });
 ```
 
 **Step 3 — 写最小实现**:
 ```tsx
-// components/classroom-shell/topdown/index.tsx
+// components/classroom-shell/front/whisper-line.tsx
 'use client';
-import { useClassroomTopdown } from '@/lib/hooks/use-classroom-topdown';
-import { TopdownSeat } from './seat';
-import { TopdownPodium } from './podium';
+import { useStageStore } from '@/lib/store/stage';
+import { useMemo } from 'react';
+import styles from './classroom-front.module.css';
 
-export function ClassroomTopdown() {
-  const { enabled, hasData, seatPositions, podiumPosition, seatLayout } = useClassroomTopdown();
-  if (!enabled || !hasData) return null;
+export function WhisperLine() {
+  const activeNote = useStageStore(s => (s.classroom as any).activeNote);
   return (
-    <svg
-      viewBox="0 0 1000 600"
-      preserveAspectRatio="xMidYMid meet"
-      className="classroom-topdown"
-      data-testid="classroom-topdown"
-      style={{ width: '100%', height: '100%', background: '#f9fafb' }}
-    >
-      {/* Podium at top center */}
-      <TopdownPodium position={podiumPosition} />
-      {/* Seats in grid */}
-      {seatLayout.map(seat => (
-        <TopdownSeat
-          key={seat.seat_id}
-          seatId={seat.seat_id}
-          agentId={seat.agent_id}
-          agentName={seat.agent_id} // B.1 simplification: use agent_id as name
-          position={seatPositions[seat.seat_id]}
-        />
-      ))}
+    <svg className={styles.whisperSvg} data-testid="whisper-line">
+      {activeNote && <path d="M 18% 78% Q 30% 65% 42% 78%" stroke="#c4b5fd" strokeWidth="2" strokeDasharray="4 4" fill="none" opacity="0.6" />}
     </svg>
   );
 }
 ```
 
-**Step 4 — 跑测试验证通过**: PASS
+Append to module:
+```css
+.whisperSvg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+```
 
-**Step 5 — Commit**: `feat(classroom-b): B.1 ClassroomTopdown main container + integration test`
+Modify `index.tsx` to add `<WhisperLine />`:
+```tsx
+import { WhisperLine } from './whisper-line';
+// in render, inside .classroom:
+<WhisperLine />
+```
+
+**Visual snapshots**: create `e2e/tests/classroom-front-snapshots.spec.ts` mirroring V1.1 M4 pattern (3 cases: empty classroom / 5 desks / with active note):
+```ts
+import { test, expect } from '../fixtures/base';
+test.describe('ClassroomMode B.1 front-view snapshots', () => {
+  test('empty classroom (no seatLayout)', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED', 'true'));
+    await page.goto('/classroom-snapshot-fixture'); // V1.1 M4 fixture route
+    await page.evaluate(() => (window as any).__stageStore.setState({ classroom: { period: 'lesson', lessonLabel: '测试', seatLayout: [] } }));
+    await expect(page).toHaveScreenshot('front-empty.png');
+  });
+  test('5 desks with avatars', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED', 'true'));
+    await page.goto('/classroom-snapshot-fixture');
+    await page.evaluate(() => (window as any).__stageStore.setState({ classroom: { period: 'lesson', lessonLabel: '数学', seatLayout: [...5 seats...] } }));
+    await expect(page).toHaveScreenshot('front-5-desks.png');
+  });
+});
+```
+
+**Step 4 — 跑测试验证通过**:
+1. `pnpm vitest run components/classroom-shell/front/__tests__/` — PASS
+2. Dev server with `NEXT_PUBLIC_CLASSROOM_FRONT_ENABLED=true pnpm dev` (background)
+3. `npx playwright test e2e/tests/classroom-front-snapshots.spec.ts --update-snapshots` (generate baselines)
+4. `npx playwright test e2e/tests/classroom-front-snapshots.spec.ts` (regression gate)
+5. `pnpm tsc --noEmit | grep -v "plain-json-store"` → 0 errors
+6. `pnpm vitest run` → 62/62 + new B.1 tests pass
+
+**Step 5 — Commit**: `feat(classroom-b): B.1 whisper-line + visual snapshot baselines (mockup-faithful)`
 
 ---
 
 ## Execution Order
 
 ```
-T1 deriveSeatPositions + reducer (reducer 扩展) → T2 hook + flag → T3 TopdownSeat + Podium → T4 ClassroomTopdown container
+T1 main container + blackboard + teacher stage (CSS module + 4 components) → T2 desks grid + student avatars (5 components + helpers) → T3 whisper + snapshots
 ```
 
-T1-T2 互不依赖 (T2 引用 T1 的 helper)。T3-T4 互不依赖但 T4 引用 T3。
+T1-T2 互不依赖（T2 引用 T1 module CSS）。T3 在最后因为需要 dev server + snapshot。
 
 ---
 
 ## Self-Review Checklist
 
-- [x] **Spec coverage**: 4/4 B.1 task 覆盖 spec §11 Phase B.1 (静态俯瞰图 + 学生头像 + 讲台)
+- [x] **Spec coverage**: 3/3 B.1 task 覆盖 spec §11 Phase B.1 (front-view 静态布局)
+- [x] **Mockup fidelity**: 100% 复用 `classroom-overview.html` CSS tokens + animations + HTML 结构
 - [x] **Placeholder scan**: 0 TBD / TODO / "implement later"
 - [x] **Type consistency**: `SeatConfig` 复用 V1 定义，不重声明
-- [x] **Path consistency**: `components/classroom-shell/topdown/*` (新增子目录, 不冲突)
-- [x] **Task 数 ≤ 12 ✓** (4 task)
+- [x] **Path consistency**: `components/classroom-shell/front/*` (新增子目录, 不冲突 V1.1 topdown/)
+- [x] **Task 数 ≤ 12 ✓** (3 task)
 - [x] **每 task 5 步 TDD ✓**
-- [x] **零新依赖 ✓** (SVG + React + zustand 已足够)
-- [x] **不破坏 V1.1**: 新增字段全 optional, 老场景无 B 数据降级
+- [x] **零新依赖 ✓** (HTML + CSS + React + zustand)
+- [x] **零新 state 字段 ✓** (复用 V1.1 ClassroomState)
+- [x] **prefers-reduced-motion 降级 ✓**
