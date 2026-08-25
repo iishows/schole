@@ -9,7 +9,10 @@ i18n
   .use(resourcesToBackend((language: string) => import(`./locales/${language}.json`)))
   .init({
     lng: defaultLocale,
-    fallbackLng: defaultLocale,
+    // Fallback chain: requested locale → en-US → zh-CN.
+    // Non-CN locales (ja-JP / ko-KR / etc.) without their own `classroom.*`
+    // bundle resolve to en-US values until V1.1 adds per-locale translations.
+    fallbackLng: ['en-US', defaultLocale],
     supportedLngs: supportedLocales.map((l) => l.code),
     interpolation: {
       escapeValue: false,

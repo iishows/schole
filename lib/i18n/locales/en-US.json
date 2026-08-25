@@ -1834,5 +1834,33 @@
     "title": "Enter Access Code",
     "placeholder": "Access code",
     "error": "Invalid access code. Please try again."
+  },
+  "classroom": {
+    "period": {
+      "beforeClass": "Homeroom opens soon",
+      "lesson": "Lesson {{n}} · {{label}}",
+      "break": "🔔 Circle time",
+      "afterClass": "School's out"
+    },
+    "handRaise": {
+      "btnLabel": "Raise hand",
+      "inputPlaceholder": "What do you want to ask?",
+      "submit": "Raise hand",
+      "badgeLabel": "{{n}} hand(s) up"
+    },
+    "callOn": {
+      "title": "Your turn",
+      "countdownPrefix": "Get ready",
+      "fallbackToast": "{{name}} didn't answer — homeroom teacher, please pick another"
+    },
+    "passNote": {
+      "rejectedToast": "Notes can only go to a deskmate",
+      "bubblePrefix": "Note received"
+    },
+    "blackboard": {
+      "tabSlide": "📑 Slides",
+      "tabBlackboard": "📝 Whiteboard",
+      "strokeLimit": "Whiteboard is full — please erase before drawing more"
+    }
   }
 }
