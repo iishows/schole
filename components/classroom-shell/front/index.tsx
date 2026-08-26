@@ -16,10 +16,16 @@
  *
  * B.1 Task 1 ships the blackboard + teacher stage. The desks grid and
  * whisper line land in Tasks 2 / 3 respectively.
+ *
+ * B.1.4 — forwards the new slide-deck props (slides / currentSlide /
+ * onSlideChange / autoCycle / autoCycleMs / onAutoCycleToggle) from
+ * `<DemoShell />` down to `<FrontBlackboard />` so the demo route can
+ * drive slide state independently of the store-driven chalk strokes.
  */
 
 import { useStageStore } from '@/lib/store/stage';
 import { isClassroomFrontEnabled } from '@/lib/config/feature-flags';
+import type { DemoSlide } from '@/lib/classroom/demo-data-generator';
 import { FrontBlackboard } from './blackboard';
 import { TeacherStage } from './teacher-stage';
 import { Desks } from './desks';
@@ -35,6 +41,14 @@ export interface ClassroomFrontDemoProps {
   deskDisplayNames?: Record<string, string>;
   deskHandRaised?: Record<string, boolean>;
   activeCallOnAgentId?: string | null;
+  // B.1.4 — slide switcher + auto-cycle. All optional so existing
+  // consumers (snapshot fixture) keep working without changes.
+  slides?: DemoSlide[];
+  currentSlide?: number;
+  onSlideChange?: (idx: number) => void;
+  autoCycle?: boolean;
+  autoCycleMs?: number;
+  onAutoCycleToggle?: () => void;
 }
 
 export function ClassroomFront(demo: ClassroomFrontDemoProps = {}) {
@@ -48,7 +62,15 @@ export function ClassroomFront(demo: ClassroomFrontDemoProps = {}) {
   return (
     <div className={styles.classroom} data-testid="classroom-front">
       <WhisperLine />
-      <FrontBlackboard lessonLabel={lessonLabel} />
+      <FrontBlackboard
+        lessonLabel={lessonLabel}
+        slides={demo.slides}
+        currentSlide={demo.currentSlide}
+        onSlideChange={demo.onSlideChange}
+        autoCycle={demo.autoCycle}
+        autoCycleMs={demo.autoCycleMs}
+        onAutoCycleToggle={demo.onAutoCycleToggle}
+      />
       <TeacherStage bubbleContent={demo.teacherBubbleContent} />
       <Desks
         deskBubbleContents={demo.deskBubbleContents}

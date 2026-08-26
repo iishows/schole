@@ -12,13 +12,22 @@
  * The component is purely presentational — no internal state, no
  * timers, no handlers. The page generates `DemoChatMessage[]` once per
  * (re)mount and passes it in.
+ *
+ * B.1.4 — accepts an optional `maxHeight` prop so the panel can live
+ * inside a flex/grid cell of fixed height (the bottom-right quadrant of
+ * the new 2-column shell). When the bubble list exceeds that height
+ * the strip scrolls vertically instead of overflowing.
  */
 
+import type { CSSProperties } from 'react';
 import type { DemoChatMessage } from '@/lib/classroom/demo-data-generator';
 import styles from './demo-shell.module.css';
 
 export interface ChatHistoryProps {
   messages: DemoChatMessage[];
+  /** Optional cap for the chat strip height. Defaults to `'100%'` so
+   *  the wrapper fills its parent flex/grid cell. */
+  maxHeight?: string | number;
 }
 
 function formatRelativeTime(epochMs: number, nowMs: number): string {
@@ -42,11 +51,20 @@ function bubbleName(msg: DemoChatMessage): string | null {
   return null;
 }
 
-export function ChatHistory({ messages }: ChatHistoryProps) {
+export function ChatHistory({ messages, maxHeight = '100%' }: ChatHistoryProps) {
   if (!Array.isArray(messages) || messages.length === 0) return null;
   const nowMs = messages[messages.length - 1]?.timestamp ?? Date.now();
+  const style: CSSProperties = typeof maxHeight === 'number'
+    ? { maxHeight, height: maxHeight }
+    : { maxHeight, height: maxHeight };
   return (
-    <div className={styles.chatHistory} data-testid="demo-chat-history" data-count={messages.length}>
+    <div
+      className={styles.chatHistory}
+      data-testid="demo-chat-history"
+      data-count={messages.length}
+      data-max-height={typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight}
+      style={style}
+    >
       <div className={styles.chatHeading}>💬 实时讨论 · {messages.length} 条</div>
       {messages.map((msg) => {
         const role = msg.role;

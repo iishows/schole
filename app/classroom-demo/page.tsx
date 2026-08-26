@@ -115,6 +115,7 @@ export default function ClassroomDemoPage() {
       data-testid="classroom-demo"
       data-demo-seed={seed}
       data-current-slide={courseware.currentSlide}
+      data-slide-count={courseware.slides.length}
       style={{
         position: 'relative',
         width: 1280,
@@ -146,6 +147,8 @@ export default function ClassroomDemoPage() {
         pomodoroSeconds={header.pomodoroSeconds}
         teacherName={header.teacherName}
         chatBadgeCount={header.chatBadgeCount}
+        slides={courseware.slides}
+        initialSlide={courseware.currentSlide}
         onRefresh={handleRefresh}
       />
     </div>

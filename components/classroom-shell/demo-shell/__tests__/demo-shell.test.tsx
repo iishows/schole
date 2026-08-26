@@ -261,6 +261,24 @@ describe('DemoShell (B.1.3)', () => {
       expect(container.querySelector('[data-testid="demo-assignment-panel"]')).toBeTruthy();
       expect(container.querySelector('[data-testid="demo-problem-card"]')).toBeTruthy();
       expect(container.querySelector('[data-testid="demo-input-bar"]')).toBeTruthy();
+
+      // B.1.4 — chat must live in the right column (below the assignment
+      // panel), NOT in the classroom area (left column). Verified by
+      // walking the DOM tree: the chat root's ancestor chain must
+      // include [data-testid="demo-right-column"] and must NOT include
+      // [data-testid="demo-classroom-front-wrap"].
+      const chatEl = container.querySelector('[data-testid="demo-chat-history"]')!;
+      const rightCol = container.querySelector('[data-testid="demo-right-column"]')!;
+      const classroomFrontWrap = container.querySelector('[data-testid="demo-classroom-front-wrap"]')!;
+      expect(rightCol.contains(chatEl)).toBe(true);
+      expect(classroomFrontWrap.contains(chatEl)).toBe(false);
+
+      // Assignment area sits above the chat area inside the right column.
+      const assignmentArea = container.querySelector('[data-testid="demo-assignment-area"]')!;
+      const chatArea = container.querySelector('[data-testid="demo-chat-area"]')!;
+      expect(rightCol.contains(assignmentArea)).toBe(true);
+      expect(rightCol.contains(chatArea)).toBe(true);
+
       // TopHeader above main split above input bar — verified via
       // document order (children of the shell root).
       const shell = container.querySelector('[data-testid="demo-shell"]')!;
@@ -286,6 +304,33 @@ describe('DemoShell (B.1.3)', () => {
       expect(panel).toBeTruthy();
       expect(panel?.getAttribute('data-empty')).toBe('true');
       expect(container.querySelector('[data-testid="demo-problem-card"]')).toBeNull();
+    });
+
+    it('B.1.4 — <ChatHistory /> renders with the right column area testid and max-height exposed', async () => {
+      const messages: DemoChatMessage[] = [
+        makeChat({ id: 'c', role: 'teacher', content: '举手回答', timestamp: Date.now() }),
+      ];
+      await act(async () => {
+        root.render(
+          <DemoShell
+            chatHistory={messages}
+            problem={makeProblem()}
+            mistakes={[makeMistake()]}
+          />,
+        );
+      });
+      const chat = container.querySelector('[data-testid="demo-chat-history"]');
+      expect(chat).toBeTruthy();
+      // The right column wraps both the assignment + chat panes.
+      const rightCol = container.querySelector('[data-testid="demo-right-column"]');
+      expect(rightCol).toBeTruthy();
+      expect(rightCol?.contains(chat)).toBe(true);
+      // Chat area wrapper exposes data-has-chat for layout assertions.
+      const chatArea = container.querySelector('[data-testid="demo-chat-area"]');
+      expect(chatArea?.getAttribute('data-has-chat')).toBe('true');
+      // Chat root exposes the configured max-height via data attribute
+      // (B.1.4 — chat-history.tsx `maxHeight` default 100%).
+      expect(chat?.getAttribute('data-max-height')).toBe('100%');
     });
   });
 });

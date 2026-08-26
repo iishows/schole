@@ -335,11 +335,12 @@ export interface DemoGeneration {
    *  entries mixing teacher / student / user roles with monotonic
    *  timestamps. */
   chatHistory: DemoChatMessage[];
-  /** B.1.3 — courseware outline (3–8 slides) with the current one
-   *  marked active. Drives the blackboard "step" rail in future
-   *  iterations; for now the demo shell only renders the outline as
-   *  informational metadata. */
-  courseware: { outline: string[]; currentSlide: number };
+  /** B.1.4 — courseware slides (3–8 entries). Each slide carries its
+   *  own `step` text + chalk strokes + optional teacher hint. The
+   *  `outline` field is derived from `slides.map(s => s.title)` so
+   *  consumers that only need the titles do not have to drill into
+   *  the slide payload. */
+  courseware: { slides: DemoSlide[]; outline: string[]; currentSlide: number };
   /** B.1.3 — the right-hand assignment panel payload: a single
    *  `DemoProblem` (the current problem) plus a 3–8-item mistake
    *  list. */
@@ -374,6 +375,21 @@ export interface DemoChatMessage {
   content: string;
   /** Epoch ms. Monotonic non-decreasing across the array. */
   timestamp: number;
+}
+
+/** B.1.4 — one slide inside the courseware deck. Drives the blackboard
+ *  header tabs + the active step + the chalk-stroke buffer. Each slide
+ *  is deterministic per seed so the unit tests can pin per-slide
+ *  properties down. */
+export interface DemoSlide {
+  /** Short title used for the slide tab label (e.g. "第 1 节 · 数学·通分"). */
+  title: string;
+  /** Active-step badge text rendered on the blackboard (e.g. "① 学习中"). */
+  step: string;
+  /** Per-slide chalk strokes (0–3, distinct per slide). */
+  chalkStrokes: ChalkStroke[];
+  /** Optional one-line hint shown beneath the step (e.g. "提示：先找公分母"). */
+  teacherHint?: string;
 }
 
 // ============================================================
@@ -623,13 +639,51 @@ export function generateDemoClassroomState(seed?: number): DemoGeneration {
     }
   }
 
-  // ---- Courseware outline (3–8 slides) ----
+  // ---- Courseware slides (3–8 entries) ----
   const coursewareCount = randInt(rng, 3, 8);
-  const coursewareOutline: string[] = [];
+  const teacherHintTemplates = [
+    '提示：先想清楚第一步。',
+    '提示：先把已知条件列出来。',
+    '谁能告诉我为什么这里要先找公分母？',
+    '别着急，慢慢想。',
+    '注意符号，别漏掉负号。',
+  ];
+  const slides: DemoSlide[] = [];
+  // Unicode circle numbers for step labels (1 → ①, 2 → ②, ..., up to
+  // 9 → ⑨, then fall back to the literal number). We pre-compute the
+  // table once so all slides share the same mapping.
+  const CIRCLE_DIGITS = ['⓪', '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫'];
   for (let i = 0; i < coursewareCount; i += 1) {
-    coursewareOutline.push(`第 ${i + 1} 节 · ${pick(rng, DEMO_LESSONS)}`);
+    const slideLesson = pick(rng, DEMO_LESSONS);
+    const title = `第 ${i + 1} 节 · ${slideLesson}`;
+    const stepNumber = i + 1;
+    const stepGlyph = CIRCLE_DIGITS[stepNumber] ?? `${stepNumber}`;
+    // Each slide gets 0–3 chalk strokes, drawn independently of the
+    // shared chalkStrokes[] so consecutive slides render visibly different
+    // chalk content when the switcher advances.
+    const slideStrokeCount = randInt(rng, 0, 3);
+    const slideStrokes: ChalkStroke[] = [];
+    for (let s = 0; s < slideStrokeCount; s += 1) {
+      const pointCount = randInt(rng, 3, 8);
+      const path: Array<{ x: number; y: number }> = [];
+      for (let p = 0; p < pointCount; p += 1) {
+        path.push({ x: randInt(rng, 0, 1000), y: randInt(rng, 0, 200) });
+      }
+      slideStrokes.push({
+        path,
+        color: rng() < 0.3 ? '#f9a8d4' : '#fff',
+        width: randInt(rng, 1, 3),
+      });
+    }
+    slides.push({
+      title,
+      step: `${stepGlyph} ${stepNumber} / ${coursewareCount} 学习中`,
+      chalkStrokes: slideStrokes,
+      teacherHint: rng() < 0.7 ? pick(rng, teacherHintTemplates) : undefined,
+    });
   }
   const currentSlide = randInt(rng, 0, coursewareCount - 1);
+  const coursewareOutline = slides.map((s) => s.title);
 
   // ---- Homework (current problem + 3–8 mistakes) ----
   const problem = pick(rng, DEMO_PROBLEM_TEMPLATES);
@@ -648,7 +702,7 @@ export function generateDemoClassroomState(seed?: number): DemoGeneration {
     displayNameByAgentId: idByAgent,
     seed: effectiveSeed,
     chatHistory,
-    courseware: { outline: coursewareOutline, currentSlide },
+    courseware: { slides, outline: coursewareOutline, currentSlide },
     homework: { problem, mistakes },
     header: {
       pomodoroSeconds,

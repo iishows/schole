@@ -47,6 +47,79 @@
   position: relative;
 }
 
+/* B.1.4 — slide-tab strip + auto-cycle toggle pinned to the top of the
+   blackboard. Lives inside the board so the warm wood frame contains
+   everything; z-index bumps it above the SVG chalk overlay. */
+.blackboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 2;
+}
+
+.slideTabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.slideTab {
+  border: 1px solid rgba(254, 249, 231, 0.25);
+  background: rgba(254, 249, 231, 0.06);
+  color: var(--blackboard-text);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 28px;
+  transition: background 0.15s ease;
+}
+
+.slideTab:hover {
+  background: rgba(254, 249, 231, 0.14);
+}
+
+.slideTabActive {
+  background: rgba(254, 249, 231, 0.92);
+  color: var(--blackboard);
+  border-color: rgba(254, 249, 231, 0.95);
+}
+
+.autoCycleToggle {
+  border: 1px solid rgba(254, 249, 231, 0.4);
+  background: rgba(254, 249, 231, 0.08);
+  color: var(--blackboard-text);
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.autoCycleToggle:hover {
+  background: rgba(254, 249, 231, 0.18);
+}
+
+.autoCycleToggleOn {
+  background: rgba(254, 249, 231, 0.92);
+  color: var(--blackboard);
+}
+
+.boardHint {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  color: rgba(254, 249, 231, 0.7);
+  font-style: italic;
+  vertical-align: middle;
+}
+
 .boardStep {
   display: inline-block;
   border-bottom: 2px solid rgba(254, 249, 231, 0.4);
