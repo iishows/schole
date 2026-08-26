@@ -7,6 +7,10 @@ import {
   DEMO_EMOJIS,
   DEMO_TEACHER_TEMPLATES,
   DEMO_DESK_BUBBLE_TEMPLATES,
+  DEMO_CHAT_TEMPLATES,
+  DEMO_PROBLEM_TEMPLATES,
+  DEMO_MISTAKE_TEMPLATES,
+  DEMO_MODE_TABS,
   createPrng,
   generateDemoClassroomState,
 } from '../demo-data-generator';
@@ -41,6 +45,53 @@ describe('demo-data-generator (B.1.2)', () => {
       expect(DEMO_DESK_BUBBLE_TEMPLATES.answering.length).toBeGreaterThanOrEqual(2);
       expect(DEMO_DESK_BUBBLE_TEMPLATES.asking.length).toBeGreaterThanOrEqual(2);
       expect(DEMO_DESK_BUBBLE_TEMPLATES.disagreeing.length).toBeGreaterThanOrEqual(2);
+    });
+
+    // B.1.3 — pools powering the full-shell layout.
+    it('exposes ≥ 8 chat templates for both teacher and student roles', () => {
+      expect(DEMO_CHAT_TEMPLATES.teacher.length).toBeGreaterThanOrEqual(8);
+      expect(DEMO_CHAT_TEMPLATES.student.length).toBeGreaterThanOrEqual(8);
+    });
+
+    it('exposes ≥ 8 problem templates spanning math / Chinese / English', () => {
+      expect(DEMO_PROBLEM_TEMPLATES.length).toBeGreaterThanOrEqual(8);
+      // Pool should cover multiple subjects so the demo rotates
+      // visibly different problems on each refresh.
+      const codes = DEMO_PROBLEM_TEMPLATES.map((p) => p.code);
+      const hasMath = codes.some((c) => /NF|EE/.test(c));
+      const hasChinese = codes.some((c) => /语文|古诗/.test(c));
+      const hasEnglish = codes.some((c) => /英语|PEP/.test(c));
+      expect(hasMath).toBe(true);
+      expect(hasChinese).toBe(true);
+      expect(hasEnglish).toBe(true);
+      // Every problem carries the DemoProblem shape contract.
+      for (const p of DEMO_PROBLEM_TEMPLATES) {
+        expect(typeof p.badge).toBe('string');
+        expect(p.badge.length).toBeGreaterThan(0);
+        expect(typeof p.difficulty).toBe('string');
+        expect(p.difficulty.length).toBeGreaterThan(0);
+        expect(typeof p.code).toBe('string');
+        expect(p.code.length).toBeGreaterThan(0);
+        expect(typeof p.text).toBe('string');
+        expect(p.text.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('exposes ≥ 8 mistake templates with status ✗ / ⏱ and short reasons', () => {
+      expect(DEMO_MISTAKE_TEMPLATES.length).toBeGreaterThanOrEqual(8);
+      const statuses = new Set(DEMO_MISTAKE_TEMPLATES.map((m) => m.status));
+      expect(statuses.has('✗')).toBe(true);
+      expect(statuses.has('⏱')).toBe(true);
+      for (const m of DEMO_MISTAKE_TEMPLATES) {
+        expect(m.q.length).toBeGreaterThan(0);
+        expect(m.reason.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('exposes 3 mode tabs (homework / review / free chat)', () => {
+      expect(DEMO_MODE_TABS.length).toBe(3);
+      const unique = new Set(DEMO_MODE_TABS);
+      expect(unique.size).toBe(DEMO_MODE_TABS.length);
     });
   });
 
@@ -209,6 +260,134 @@ describe('demo-data-generator (B.1.2)', () => {
         const gen2 = generateDemoClassroomState(i);
         expect(gen2.displayNameByAgentId).toEqual(gen.displayNameByAgentId);
       }
+    });
+
+    // ============================================================
+    // B.1.3 — full-shell payload (chat / courseware / homework /
+    // header). These verify the new auxiliary fields the demo shell
+    // binds into <TopHeader /> / <ChatHistory /> / <AssignmentPanel />.
+    // ============================================================
+
+    it('emits a chatHistory with 5–15 entries mixing all three roles', () => {
+      for (let i = 0; i < 30; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        expect(Array.isArray(gen.chatHistory)).toBe(true);
+        expect(gen.chatHistory.length).toBeGreaterThanOrEqual(5);
+        expect(gen.chatHistory.length).toBeLessThanOrEqual(15);
+        // Every entry conforms to the DemoChatMessage shape.
+        for (const msg of gen.chatHistory) {
+          expect(['teacher', 'student', 'user']).toContain(msg.role);
+          expect(typeof msg.id).toBe('string');
+          expect(msg.id.length).toBeGreaterThan(0);
+          expect(typeof msg.content).toBe('string');
+          expect(msg.content.length).toBeGreaterThan(0);
+          expect(typeof msg.timestamp).toBe('number');
+          // Teacher / user rows never carry agentId + displayName;
+          // student rows always do.
+          if (msg.role === 'student') {
+            expect(msg.agentId).toBeTruthy();
+            expect(msg.displayName).toBeTruthy();
+          } else {
+            expect(msg.agentId).toBeUndefined();
+            expect(msg.displayName).toBeUndefined();
+          }
+        }
+        // Across 30 seeds at least one of them mixes all 3 roles.
+        const roles = new Set(gen.chatHistory.map((m) => m.role));
+        expect(roles.size).toBeGreaterThanOrEqual(2);
+      }
+      // Explicit "all three roles present" check — one specific seed
+      // exercises the full distribution.
+      let sawAllThree = false;
+      for (let i = 0; i < 30 && !sawAllThree; i += 1) {
+        const roles = new Set(generateDemoClassroomState(i).chatHistory.map((m) => m.role));
+        if (roles.has('teacher') && roles.has('student') && roles.has('user')) {
+          sawAllThree = true;
+        }
+      }
+      expect(sawAllThree).toBe(true);
+    });
+
+    it('emits chatHistory with monotonic non-decreasing timestamps', () => {
+      for (let i = 0; i < 30; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        const stamps = gen.chatHistory.map((m) => m.timestamp);
+        for (let j = 1; j < stamps.length; j += 1) {
+          expect(stamps[j]).toBeGreaterThanOrEqual(stamps[j - 1]);
+        }
+        // Sanity: timestamps fall within ±1 hour of the seed.
+        const min = Math.min(...stamps);
+        const max = Math.max(...stamps);
+        expect(max - min).toBeLessThan(60 * 60 * 1000);
+      }
+    });
+
+    it('emits a courseware outline with 3–8 slides and a valid currentSlide', () => {
+      for (let i = 0; i < 25; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        expect(gen.courseware.outline.length).toBeGreaterThanOrEqual(3);
+        expect(gen.courseware.outline.length).toBeLessThanOrEqual(8);
+        expect(gen.courseware.currentSlide).toBeGreaterThanOrEqual(0);
+        expect(gen.courseware.currentSlide).toBeLessThanOrEqual(
+          gen.courseware.outline.length - 1,
+        );
+        for (const slide of gen.courseware.outline) {
+          expect(typeof slide).toBe('string');
+          expect(slide.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('emits a homework problem that matches the DEMO_PROBLEM_TEMPLATES shape', () => {
+      for (let i = 0; i < 25; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        const p = gen.homework.problem;
+        // Pool identity — must come from DEMO_PROBLEM_TEMPLATES so the
+        // pool-staleness test in `homework` would catch a regression.
+        const poolMatch = DEMO_PROBLEM_TEMPLATES.find(
+          (tpl) =>
+            tpl.badge === p.badge &&
+            tpl.difficulty === p.difficulty &&
+            tpl.code === p.code &&
+            tpl.text === p.text,
+        );
+        expect(poolMatch).toBeTruthy();
+      }
+    });
+
+    it('emits a mistakes list with 3–8 entries', () => {
+      for (let i = 0; i < 30; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        expect(gen.homework.mistakes.length).toBeGreaterThanOrEqual(3);
+        expect(gen.homework.mistakes.length).toBeLessThanOrEqual(8);
+        for (const m of gen.homework.mistakes) {
+          expect(['✗', '⏱']).toContain(m.status);
+          expect(m.q.length).toBeGreaterThan(0);
+          expect(m.reason.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('emits a header.pomodoroSeconds inside [0, 25*60]', () => {
+      for (let i = 0; i < 30; i += 1) {
+        const gen = generateDemoClassroomState(i);
+        expect(gen.header.pomodoroSeconds).toBeGreaterThanOrEqual(0);
+        expect(gen.header.pomodoroSeconds).toBeLessThanOrEqual(25 * 60);
+        expect(gen.header.modeTabs.length).toBe(3);
+        expect(gen.header.activeMode).toBeGreaterThanOrEqual(0);
+        expect(gen.header.activeMode).toBeLessThanOrEqual(2);
+        expect(gen.header.teacherName).toBe('小诺姐姐');
+        expect(gen.header.chatBadgeCount).toBe(gen.chatHistory.length);
+      }
+    });
+
+    it('B.1.3 payload is deterministic per seed', () => {
+      const a = generateDemoClassroomState(31415);
+      const b = generateDemoClassroomState(31415);
+      expect(a.chatHistory).toEqual(b.chatHistory);
+      expect(a.courseware).toEqual(b.courseware);
+      expect(a.homework).toEqual(b.homework);
+      expect(a.header).toEqual(b.header);
     });
   });
 });
