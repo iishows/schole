@@ -90,6 +90,14 @@ export interface DemoShellProps {
   defaultView?: DemoViewId;
   onViewChange?(next: DemoViewId): void;
 
+  // B.1.7 — controlled mode state forwarded to <TopHeader />'s
+  // mode-tabs. The demo page owns this state; the shell is a
+  // straight-through forwarder so the visual highlight in
+  // <TopHeader /> follows the page's `activeMode`. Optional —
+  // the demo page passes a default of 0.
+  activeMode?: number;
+  onModeChange?(idx: number): void;
+
   // Refresh affordance — when supplied, a `换一换 🎲` button appears
   // inside <TopHeader /> at the chat-toggle slot.
   onRefresh?(): void;
@@ -115,6 +123,8 @@ export function DemoShell(props: DemoShellProps) {
     view: controlledView,
     defaultView = 'dashboard',
     onViewChange,
+    activeMode = 0,
+    onModeChange,
     onRefresh,
   } = props;
 
@@ -269,6 +279,8 @@ export function DemoShell(props: DemoShellProps) {
     <div className={styles.shell} data-testid="demo-shell" data-view={activeView}>
       <TopHeader
         modeTabs={modeTabs}
+        activeMode={activeMode}
+        onModeChange={onModeChange}
         pomodoroSeconds={pomodoroSeconds}
         teacherName={teacherName}
         chatBadgeCount={chatBadgeCount}

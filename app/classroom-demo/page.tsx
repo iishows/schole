@@ -92,6 +92,17 @@ export default function ClassroomDemoPage() {
     setRenderKey((k) => k + 1);
   };
 
+  // B.1.7 — the demo page owns the active-mode state. The header's
+  // mode tabs (✏️ 作业 / 📖 复习 / 💬 自由) feed back into this so the
+  // visual highlight follows the click. Even though there is no
+  // business logic for these modes, the visual feedback alone
+  // satisfies the user (the tabs are now clickable — the previous
+  // `disabled` + no-op behaviour felt broken).
+  const [activeMode, setActiveMode] = useState(0);
+  const handleModeChange = (idx: number) => {
+    setActiveMode(idx);
+  };
+
   if (!enabled) {
     return (
       <div
@@ -145,7 +156,8 @@ export default function ClassroomDemoPage() {
         chatHistory={chatHistory}
         problem={homework.problem}
         mistakes={homework.mistakes}
-        modeTabs={header.modeTabs}
+        activeMode={activeMode}
+        onModeChange={handleModeChange}
         pomodoroSeconds={header.pomodoroSeconds}
         teacherName={header.teacherName}
         chatBadgeCount={header.chatBadgeCount}

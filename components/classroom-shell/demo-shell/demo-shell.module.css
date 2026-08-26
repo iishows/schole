@@ -49,15 +49,16 @@
 
 .shell {
   display: grid;
-  /* B.1.5 — fullscreen. The shell stretches to fill whatever the
-     outer page wrapper hands us. The 1280 px cap is now a SOFT
-     constraint so the layout still works on a 1920 px monitor; the
-     inner content area gracefully widens. */
+  /* B.1.7 — truly fullscreen. The outer page wrapper is already
+     100vw x 100vh, so the shell stretches to fill the entire
+     viewport on any monitor (1920×1080 included). The previous
+     1280-px cap produced a visible "boxed" layout with ~640 px of
+     empty side margin on wide displays; the inner `.main` grid
+     uses `minmax(0, 1fr) clamp(320px, 30%, 420px)` so the right
+     column gracefully widens up to 420 px on wider viewports. */
   grid-template-rows: 56px 1fr 64px;
   width: 100%;
   height: 100%;
-  max-width: min(100%, 1280px);
-  margin: 0 auto;
   background: var(--bg);
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 13px;

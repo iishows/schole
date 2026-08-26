@@ -121,6 +121,82 @@ describe('DemoShell (B.1.3)', () => {
       expect(badge?.textContent).toBe('3');
     });
 
+    it('B.1.7 — mode tab buttons are clickable (not disabled)', async () => {
+      await act(async () => {
+        root.render(
+          <TopHeader modeTabs={['✏️ 作业', '📖 复习', '💬 自由']} />,
+        );
+      });
+      const modeTabs = container.querySelectorAll('[data-testid^="demo-mode-tab-"]');
+      expect(modeTabs.length).toBe(3);
+      // B.1.7 — every mode tab must NOT have the `disabled` attribute.
+      modeTabs.forEach((btn) => {
+        expect((btn as HTMLButtonElement).disabled).toBe(false);
+      });
+    });
+
+    it('B.1.7 — clicking a mode tab fires onModeChange(idx) and the visual highlight follows activeMode', async () => {
+      const handler = vi.fn();
+      await act(async () => {
+        root.render(
+          <TopHeader
+            modeTabs={['✏️ 作业', '📖 复习', '💬 自由']}
+            activeMode={0}
+            onModeChange={handler}
+          />,
+        );
+      });
+      // Default: first tab active.
+      const tab0 = container.querySelector('[data-testid="demo-mode-tab-0"]')!;
+      const tab1 = container.querySelector('[data-testid="demo-mode-tab-1"]')!;
+      const tab2 = container.querySelector('[data-testid="demo-mode-tab-2"]')!;
+      expect(tab0.getAttribute('data-active')).toBe('true');
+      expect(tab1.getAttribute('data-active')).toBe('false');
+      expect(tab2.getAttribute('data-active')).toBe('false');
+
+      // Click tab-1 → handler fires with 1.
+      await act(async () => {
+        tab1.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith(1);
+
+      // Click tab-2 → handler fires with 2.
+      await act(async () => {
+        tab2.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenLastCalledWith(2);
+    });
+
+    it('B.1.7 — activeMode prop drives the visual highlight', async () => {
+      await act(async () => {
+        root.render(
+          <TopHeader modeTabs={['✏️ 作业', '📖 复习', '💬 自由']} activeMode={2} />,
+        );
+      });
+      // activeMode=2 → only tab-2 has data-active=true.
+      expect(container.querySelector('[data-testid="demo-mode-tab-0"]')?.getAttribute('data-active')).toBe('false');
+      expect(container.querySelector('[data-testid="demo-mode-tab-1"]')?.getAttribute('data-active')).toBe('false');
+      expect(container.querySelector('[data-testid="demo-mode-tab-2"]')?.getAttribute('data-active')).toBe('true');
+      // aria-selected mirrors data-active.
+      expect(container.querySelector('[data-testid="demo-mode-tab-2"]')?.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('B.1.7 — mode tabs container is NOT rendered when modeTabs is undefined', async () => {
+      await act(async () => {
+        root.render(<TopHeader />);
+      });
+      // The mode-tabs role="tablist" element is absent.
+      const allTablists = container.querySelectorAll('[role="tablist"]');
+      const modeTabsList = Array.from(allTablists).find(
+        (el) => el.getAttribute('aria-label') === 'mode tabs',
+      );
+      expect(modeTabsList).toBeUndefined();
+      // No element with the mode-tab testid pattern exists.
+      expect(container.querySelector('[data-testid^="demo-mode-tab-"]')).toBeNull();
+    });
+
     it('omits the chat badge when chatBadgeCount is 0', async () => {
       await act(async () => {
         root.render(
@@ -629,6 +705,45 @@ describe('DemoShell (B.1.3)', () => {
       expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
         'whiteboard',
       );
+    });
+
+    it('B.1.7 — shell forwards activeMode/onModeChange to <TopHeader /> (mode tabs hidden + clickable when modeTabs is passed)', async () => {
+      const handler = vi.fn();
+      await act(async () => {
+        root.render(
+          <DemoShell
+            modeTabs={['✏️ 作业', '📖 复习', '💬 自由']}
+            activeMode={1}
+            onModeChange={handler}
+          />,
+        );
+      });
+      // Mode tabs render with activeMode=1 → tab-1 highlighted.
+      const tab1 = container.querySelector('[data-testid="demo-mode-tab-1"]')!;
+      expect(tab1.getAttribute('data-active')).toBe('true');
+      // Click tab-0 → handler fires.
+      const tab0 = container.querySelector('[data-testid="demo-mode-tab-0"]')!;
+      await act(async () => {
+        tab0.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith(0);
+    });
+
+    it('B.1.7 — shell with no modeTabs hides the mode-tabs container (demo route behaviour)', async () => {
+      await act(async () => {
+        root.render(<DemoShell />);
+      });
+      // No element with the mode-tab testid pattern exists in the DOM.
+      expect(container.querySelector('[data-testid^="demo-mode-tab-"]')).toBeNull();
+      // No element with aria-label="mode tabs" exists either.
+      const allTablists = container.querySelectorAll('[role="tablist"]');
+      const modeTabsList = Array.from(allTablists).find(
+        (el) => el.getAttribute('aria-label') === 'mode tabs',
+      );
+      expect(modeTabsList).toBeUndefined();
+      // The view-tabs (📝 白板 / 🏫 教室 / 📊 作业) are still rendered.
+      expect(container.querySelectorAll('[data-testid^="demo-view-tab-"]').length).toBe(3);
     });
   });
 });
