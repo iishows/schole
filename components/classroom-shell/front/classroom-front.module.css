@@ -209,6 +209,90 @@
   white-space: nowrap;
 }
 
+/* ============== B.1.6 — Compact teacher thumbnail ============== */
+
+/* Compact podium — same wooden look as the full podium, scaled down to
+   sit next to the thumbnail avatar in a single horizontal row. */
+.podiumCompact {
+  background: #8b6f47;
+  border-radius: 4px 4px 0 0;
+  padding: 2px 8px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The compact avatar is a 36×36 circle with a thinner border so the
+   thumbnail doesn't dominate the corner. Mic badge stays as the
+   ::after pseudo so we keep the same hint that the teacher is on
+   air. */
+.teacherAvatarCompact {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--teacher);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.teacherAvatarCompact::after {
+  content: '🎤';
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  background: #fff;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Horizontal row that hosts the compact stage — podium · avatar ·
+   name. Sized to ~80 px tall so the whole thumbnail fits in a corner
+   without crowding the desks. */
+.teacherStageCompact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e0d6f5;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+  min-height: 48px;
+  position: relative;
+}
+
+/* The compact teacher stage is absolutely positioned in the top-right
+   corner of the classroom area (rendered there by demo-shell.module.css
+   so the desks grid owns the bulk of the canvas). */
+.teacherThumbnailName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--teacher);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* When in thumbnailMode the .classroom container gets more breathing
+   room at the top so the compact stage has somewhere to live without
+   overlapping the desks. */
+.classroom[data-thumbnail-mode='true'] {
+  padding-top: 60px;
+}
+
 /* ============== Desks grid (4 columns) ============== */
 
 .desks {

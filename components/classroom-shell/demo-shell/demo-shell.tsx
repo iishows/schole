@@ -170,7 +170,14 @@ export function DemoShell(props: DemoShellProps) {
   // with the right-hand assignment + chat column; the `classroom`
   // view drops the right column so the desks + teacher + blackboard
   // stretch to fill the whole main area.
-  const renderClassroomFront = () => (
+  //
+  // B.1.6 — `thumbnailMode` only applies to the `classroom` view.
+  // When `thumbnailMode === true`, `<ClassroomFront />` omits the
+  // big blackboard (and therefore the slide tabs) and renders the
+  // teacher stage as a compact thumbnail in the top-right corner.
+  // The `dashboard` view keeps the full classroom (blackboard +
+  // teacher + desks) so the lesson content remains visible.
+  const renderClassroomFront = (thumbnailMode = false) => (
     <ClassroomFront
       teacherBubbleContent={teacherBubbleContent}
       deskBubbleContents={deskBubbleContents}
@@ -183,6 +190,7 @@ export function DemoShell(props: DemoShellProps) {
       autoCycle={autoCycle}
       autoCycleMs={autoCycleMs}
       onAutoCycleToggle={handleAutoCycleToggle}
+      thumbnailMode={thumbnailMode}
     />
   );
 
@@ -202,15 +210,20 @@ export function DemoShell(props: DemoShellProps) {
       );
     }
     if (activeView === 'classroom') {
+      // B.1.6 — `classroom` view: desks + bubbles fill the area; the
+      // teacher stage shrinks to a compact thumbnail in the top-right
+      // corner and the big blackboard (with its slide switcher) is
+      // removed. Slide state still lives here so it persists across
+      // view changes — it just isn't shown to the user in this view.
       return (
         <div className={styles.main} data-view="classroom">
           <div className={styles.classroomArea}>
             <div
-              className={styles.classroomFrontWrap}
-              data-testid="demo-classroom-front-wrap"
+              className={styles.classroomThumbnailStage}
+              data-testid="demo-classroom-thumbnail-stage"
               data-current-slide={slideCount > 0 ? currentSlide : -1}
             >
-              {renderClassroomFront()}
+              {renderClassroomFront(true)}
             </div>
           </div>
         </div>
@@ -225,7 +238,7 @@ export function DemoShell(props: DemoShellProps) {
             data-testid="demo-classroom-front-wrap"
             data-current-slide={slideCount > 0 ? currentSlide : -1}
           >
-            {renderClassroomFront()}
+            {renderClassroomFront(false)}
           </div>
         </div>
         <div className={styles.rightColumn} data-testid="demo-right-column">

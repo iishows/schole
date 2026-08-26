@@ -428,7 +428,7 @@ describe('DemoShell (B.1.3)', () => {
       expect(container.querySelector('[data-testid="demo-assignment-panel"]')).toBeNull();
     });
 
-    it('B.1.5 — `view="classroom"` renders the full <ClassroomFront /> but no right column', async () => {
+    it('B.1.6 — `view="classroom"` renders the desks + compact teacher thumbnail (no big blackboard, no slide tabs, no right column)', async () => {
       await act(async () => {
         root.render(
           <DemoShell
@@ -436,17 +436,94 @@ describe('DemoShell (B.1.3)', () => {
             chatHistory={[makeChat({ id: 'c1', content: 'hi' })]}
             problem={makeProblem()}
             mistakes={[makeMistake()]}
+            slides={[
+              { title: 's0', step: '① 1 / 2', chalkStrokes: [] },
+              { title: 's1', step: '② 2 / 2', chalkStrokes: [] },
+            ]}
           />,
         );
       });
-      // The full classroom (blackboard + teacher + desks) is present.
-      expect(container.querySelector('[data-testid="classroom-front"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+      // The ClassroomFront wrapper is present (it's the canvas), but
+      // it is in thumbnailMode so the big blackboard is gone.
+      const front = container.querySelector('[data-testid="classroom-front"]')!;
+      expect(front).toBeTruthy();
+      expect(front.getAttribute('data-thumbnail-mode')).toBe('true');
+      // The classroom view uses its own wrapper testid so the desks +
+      // thumbnail stage own the whole canvas.
+      expect(container.querySelector('[data-testid="demo-classroom-thumbnail-stage"]')).toBeTruthy();
+      // B.1.6 — no big blackboard and therefore no slide tabs.
+      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeNull();
+      expect(
+        container.querySelector('[data-testid^="front-blackboard-slide-tab-"]'),
+      ).toBeNull();
+      expect(container.querySelector('[data-testid="front-blackboard-slide-tabs"]')).toBeNull();
+      // The teacher stage is rendered in compact mode (small thumbnail
+      // in the top-right area) instead of the full podium+bubble layout.
+      const teacherStage = container.querySelector('[data-testid="teacher-stage"]')!;
+      expect(teacherStage).toBeTruthy();
+      expect(teacherStage.getAttribute('data-compact')).toBe('true');
+      // The compact variant omits the teacher's speech bubble but keeps
+      // the avatar + podium + name label.
+      expect(container.querySelector('[data-testid="teacher-bubble"]')).toBeNull();
+      const teacherAvatar = container.querySelector('[data-testid="teacher-avatar"]')!;
+      expect(teacherAvatar).toBeTruthy();
+      expect(teacherAvatar.getAttribute('data-compact')).toBe('true');
+      expect(container.querySelector('[data-testid="teacher-thumbnail-name"]')).toBeTruthy();
+      // Desks still render normally — the student area is the focus of
+      // this view.
+      expect(container.querySelector('[data-testid="front-desks"]')).toBeTruthy();
       // Right column + assignment + chat are NOT rendered in the
       // "classroom" view (they live in the dashboard tab).
       expect(container.querySelector('[data-testid="demo-right-column"]')).toBeNull();
       expect(container.querySelector('[data-testid="demo-chat-history"]')).toBeNull();
       expect(container.querySelector('[data-testid="demo-assignment-panel"]')).toBeNull();
+    });
+
+    it('B.1.6 — `view="dashboard"` renders the full blackboard (with slide tabs) + desks + teacher stage', async () => {
+      await act(async () => {
+        root.render(
+          <DemoShell
+            view="dashboard"
+            slides={[
+              { title: 's0', step: '① 1 / 2', chalkStrokes: [] },
+              { title: 's1', step: '② 2 / 2', chalkStrokes: [] },
+              { title: 's2', step: '③ 3 / 2', chalkStrokes: [] },
+            ]}
+          />,
+        );
+      });
+      const front = container.querySelector('[data-testid="classroom-front"]')!;
+      expect(front).toBeTruthy();
+      expect(front.getAttribute('data-thumbnail-mode')).toBe('false');
+      // Dashboard keeps the full blackboard + slide tabs.
+      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+      const tabs = container.querySelectorAll('[data-testid^="front-blackboard-slide-tab-"]');
+      expect(tabs.length).toBe(3);
+      // Teacher stage is the full-size layout (with speech bubble).
+      const teacherStage = container.querySelector('[data-testid="teacher-stage"]')!;
+      expect(teacherStage).toBeTruthy();
+      expect(teacherStage.getAttribute('data-compact')).toBe('false');
+      expect(container.querySelector('[data-testid="teacher-bubble"]')).toBeTruthy();
+    });
+
+    it('B.1.6 — `view="whiteboard"` keeps the slide tabs (full blackboard, no desks, no teacher stage)', async () => {
+      await act(async () => {
+        root.render(
+          <DemoShell
+            view="whiteboard"
+            slides={[
+              { title: 's0', step: '① 1 / 2', chalkStrokes: [] },
+              { title: 's1', step: '② 2 / 2', chalkStrokes: [] },
+            ]}
+          />,
+        );
+      });
+      expect(container.querySelector('[data-testid="whiteboard-fullscreen-view"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="front-blackboard-slide-tabs"]')).toBeTruthy();
+      // Teacher stage + desks are NOT rendered in the whiteboard view.
+      expect(container.querySelector('[data-testid="teacher-stage"]')).toBeNull();
+      expect(container.querySelector('[data-testid="front-desks"]')).toBeNull();
     });
 
     it('B.1.5 — clicking a view-tab in <TopHeader /> switches the rendered content', async () => {
@@ -527,7 +604,11 @@ describe('DemoShell (B.1.3)', () => {
           .querySelector('[data-testid="demo-view-tab-classroom"]')!
           .dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
-      const classroomWrap = container.querySelector('[data-testid="demo-classroom-front-wrap"]')!;
+      // B.1.6 — the classroom view uses the thumbnail-stage wrapper
+      // (the big blackboard is gone in this view), but it still
+      // exposes `data-current-slide` so the lifted slide state is
+      // observable in tests / e2e selectors.
+      const classroomWrap = container.querySelector('[data-testid="demo-classroom-thumbnail-stage"]')!;
       expect(classroomWrap.getAttribute('data-current-slide')).toBe('2');
     });
 

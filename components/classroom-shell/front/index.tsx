@@ -21,6 +21,18 @@
  * onSlideChange / autoCycle / autoCycleMs / onAutoCycleToggle) from
  * `<DemoShell />` down to `<FrontBlackboard />` so the demo route can
  * drive slide state independently of the store-driven chalk strokes.
+ *
+ * B.1.6 — `thumbnailMode` prop. When `true`:
+ *   - `<FrontBlackboard />` is NOT rendered (no big blackboard, no slide
+ *     tabs — slide state stays lifted in `<DemoShell />` so it persists
+ *     across view changes but isn't shown to the user in the classroom
+ *     view).
+ *   - `<TeacherStage />` is rendered in `compact` mode (small thumbnail
+ *     in the top-right corner: podium + 36×36 avatar + name + 🎤 mic).
+ *   - `<Desks />` still renders normally so the desks + bubbles fill
+ *     the available area.
+ * This is what powers the "🏫 教室" view tab — the user looks at the
+ * students, with the teacher visible at-a-glance but not dominating.
  */
 
 import { useStageStore } from '@/lib/store/stage';
@@ -49,29 +61,43 @@ export interface ClassroomFrontDemoProps {
   autoCycle?: boolean;
   autoCycleMs?: number;
   onAutoCycleToggle?: () => void;
+  /** B.1.6 — when `true`, hide the blackboard + slide tabs and render
+   *  the teacher stage as a compact thumbnail (top-right). Defaults to
+   *  `false` (full classroom view with blackboard). */
+  thumbnailMode?: boolean;
 }
 
 export function ClassroomFront(demo: ClassroomFrontDemoProps = {}) {
   const enabled = isClassroomFrontEnabled();
   const period = useStageStore((s) => s.classroom.period);
   const lessonLabel = useStageStore((s) => s.classroom.lessonLabel);
+  const thumbnailMode = demo.thumbnailMode === true;
 
   if (!enabled) return null;
   if (period !== 'lesson') return null;
 
   return (
-    <div className={styles.classroom} data-testid="classroom-front">
+    <div
+      className={styles.classroom}
+      data-testid="classroom-front"
+      data-thumbnail-mode={thumbnailMode ? 'true' : 'false'}
+    >
       <WhisperLine />
-      <FrontBlackboard
-        lessonLabel={lessonLabel}
-        slides={demo.slides}
-        currentSlide={demo.currentSlide}
-        onSlideChange={demo.onSlideChange}
-        autoCycle={demo.autoCycle}
-        autoCycleMs={demo.autoCycleMs}
-        onAutoCycleToggle={demo.onAutoCycleToggle}
+      {thumbnailMode ? null : (
+        <FrontBlackboard
+          lessonLabel={lessonLabel}
+          slides={demo.slides}
+          currentSlide={demo.currentSlide}
+          onSlideChange={demo.onSlideChange}
+          autoCycle={demo.autoCycle}
+          autoCycleMs={demo.autoCycleMs}
+          onAutoCycleToggle={demo.onAutoCycleToggle}
+        />
+      )}
+      <TeacherStage
+        bubbleContent={demo.teacherBubbleContent}
+        compact={thumbnailMode}
       />
-      <TeacherStage bubbleContent={demo.teacherBubbleContent} />
       <Desks
         deskBubbleContents={demo.deskBubbleContents}
         deskDisplayNames={demo.deskDisplayNames}

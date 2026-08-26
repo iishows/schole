@@ -328,6 +328,62 @@
   padding-top: 56px !important;
 }
 
+/* B.1.6 — classroom-view wrapper. The big blackboard is gone, so
+   the wrapper no longer needs the flex stretching the inner
+   ClassroomFront; instead, the desks + bubbles grow to fill the
+   canvas while the compact teacher stage floats in the top-right
+   corner. */
+
+/* Collapse the right grid column in classroom view — the whole
+   main row should be the classroom area. */
+.main[data-view='classroom'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.classroomThumbnailStage {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+/* Inner ClassroomFront stretches to fill the wrap. */
+.classroomThumbnailStage > :global([data-testid="classroom-front"]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 32px 12px !important;
+  gap: 12px !important;
+}
+
+/* In thumbnailMode the blackboard is not rendered, so the teacher
+   stage is the next sibling — we keep it visible and let the desks
+   grid grow to take the remaining space. */
+.classroomThumbnailStage > :global([data-testid="classroom-front"]) > :global([data-testid="teacher-stage"]) {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  align-self: flex-end;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.classroomThumbnailStage > :global([data-testid="classroom-front"]) > :global([data-testid="front-desks"]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0 !important;
+  align-self: stretch;
+}
+
+.classroomThumbnailStage > :global([data-testid="classroom-front"]) > :global([data-testid="front-desks"]) > * {
+  padding-top: 24px !important;
+}
+
 /* ============== Right column (assignment + chat) — B.1.4 ============== */
 
 .rightColumn {
