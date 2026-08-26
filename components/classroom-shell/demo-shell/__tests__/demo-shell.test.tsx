@@ -148,6 +148,57 @@ describe('DemoShell (B.1.3)', () => {
       });
       expect(handler).toHaveBeenCalledTimes(1);
     });
+
+    it('B.1.5 — renders 3 view-tabs (whiteboard / classroom / dashboard) with the right default', async () => {
+      await act(async () => {
+        root.render(<TopHeader />);
+      });
+      const tabsRoot = container.querySelector('[data-testid="demo-view-tabs"]');
+      expect(tabsRoot).toBeTruthy();
+      // Exactly 3 view tabs (📝 / 🏫 / 📊).
+      const tabs = container.querySelectorAll('[data-testid^="demo-view-tab-"]');
+      expect(tabs.length).toBe(3);
+      const ids = Array.from(tabs).map((t) =>
+        t.getAttribute('data-testid')?.replace('demo-view-tab-', ''),
+      );
+      expect(ids).toEqual(['whiteboard', 'classroom', 'dashboard']);
+      // Default active tab = `dashboard` (preserves B.1.4 visual).
+      const dashboardTab = container.querySelector('[data-testid="demo-view-tab-dashboard"]');
+      expect(dashboardTab?.getAttribute('data-active')).toBe('true');
+      expect(dashboardTab?.getAttribute('aria-selected')).toBe('true');
+      const whiteboardTab = container.querySelector('[data-testid="demo-view-tab-whiteboard"]');
+      expect(whiteboardTab?.getAttribute('data-active')).toBe('false');
+    });
+
+    it('B.1.5 — clicking a view-tab fires onViewChange with the right id', async () => {
+      const handler = vi.fn();
+      await act(async () => {
+        root.render(<TopHeader view="dashboard" onViewChange={handler} />);
+      });
+      const whiteboardTab = container.querySelector('[data-testid="demo-view-tab-whiteboard"]')!;
+      await act(async () => {
+        whiteboardTab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(handler).toHaveBeenCalledTimes(1);
+      expect(handler).toHaveBeenCalledWith('whiteboard');
+
+      const classroomTab = container.querySelector('[data-testid="demo-view-tab-classroom"]')!;
+      await act(async () => {
+        classroomTab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(handler).toHaveBeenCalledTimes(2);
+      expect(handler).toHaveBeenLastCalledWith('classroom');
+    });
+
+    it('B.1.5 — view prop switches the active tab styling', async () => {
+      await act(async () => {
+        root.render(<TopHeader view="whiteboard" />);
+      });
+      const whiteboardTab = container.querySelector('[data-testid="demo-view-tab-whiteboard"]');
+      expect(whiteboardTab?.getAttribute('data-active')).toBe('true');
+      const dashboardTab = container.querySelector('[data-testid="demo-view-tab-dashboard"]');
+      expect(dashboardTab?.getAttribute('data-active')).toBe('false');
+    });
   });
 
   describe('<ChatHistory />', () => {
@@ -331,6 +382,172 @@ describe('DemoShell (B.1.3)', () => {
       // Chat root exposes the configured max-height via data attribute
       // (B.1.4 — chat-history.tsx `maxHeight` default 100%).
       expect(chat?.getAttribute('data-max-height')).toBe('100%');
+    });
+
+    it('B.1.5 — defaults to the `dashboard` view (preserves B.1.4 visual)', async () => {
+      await act(async () => {
+        root.render(
+          <DemoShell
+            slides={[
+              { title: 's0', step: '① 1 / 2', chalkStrokes: [] },
+              { title: 's1', step: '② 2 / 2', chalkStrokes: [] },
+            ]}
+          />,
+        );
+      });
+      const shell = container.querySelector('[data-testid="demo-shell"]');
+      expect(shell?.getAttribute('data-view')).toBe('dashboard');
+      // Dashboard view renders the assignment panel + classroom front.
+      expect(container.querySelector('[data-testid="demo-right-column"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="classroom-front"]')).toBeTruthy();
+      // The whiteboard-only view is NOT rendered.
+      expect(container.querySelector('[data-testid="whiteboard-fullscreen-view"]')).toBeNull();
+    });
+
+    it('B.1.5 — `view="whiteboard"` renders the whiteboard-fullscreen view only', async () => {
+      await act(async () => {
+        root.render(
+          <DemoShell
+            view="whiteboard"
+            slides={[
+              { title: 's0', step: '① 1 / 2', chalkStrokes: [] },
+              { title: 's1', step: '② 2 / 2', chalkStrokes: [] },
+            ]}
+          />,
+        );
+      });
+      expect(container.querySelector('[data-testid="whiteboard-fullscreen-view"]')).toBeTruthy();
+      // The blackboard still renders inside the whiteboard-only view.
+      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="front-blackboard-slide-tabs"]')).toBeTruthy();
+      // Desks / teacher / chat / assignment are NOT rendered.
+      expect(container.querySelector('[data-testid="front-desks"]')).toBeNull();
+      expect(container.querySelector('[data-testid="teacher-stage"]')).toBeNull();
+      expect(container.querySelector('[data-testid="demo-right-column"]')).toBeNull();
+      expect(container.querySelector('[data-testid="demo-chat-history"]')).toBeNull();
+      expect(container.querySelector('[data-testid="demo-assignment-panel"]')).toBeNull();
+    });
+
+    it('B.1.5 — `view="classroom"` renders the full <ClassroomFront /> but no right column', async () => {
+      await act(async () => {
+        root.render(
+          <DemoShell
+            view="classroom"
+            chatHistory={[makeChat({ id: 'c1', content: 'hi' })]}
+            problem={makeProblem()}
+            mistakes={[makeMistake()]}
+          />,
+        );
+      });
+      // The full classroom (blackboard + teacher + desks) is present.
+      expect(container.querySelector('[data-testid="classroom-front"]')).toBeTruthy();
+      expect(container.querySelector('[data-testid="front-blackboard"]')).toBeTruthy();
+      // Right column + assignment + chat are NOT rendered in the
+      // "classroom" view (they live in the dashboard tab).
+      expect(container.querySelector('[data-testid="demo-right-column"]')).toBeNull();
+      expect(container.querySelector('[data-testid="demo-chat-history"]')).toBeNull();
+      expect(container.querySelector('[data-testid="demo-assignment-panel"]')).toBeNull();
+    });
+
+    it('B.1.5 — clicking a view-tab in <TopHeader /> switches the rendered content', async () => {
+      await act(async () => {
+        root.render(<DemoShell />);
+      });
+      // Start in dashboard.
+      expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
+        'dashboard',
+      );
+      // Click the whiteboard tab.
+      const whiteboardTab = container.querySelector('[data-testid="demo-view-tab-whiteboard"]')!;
+      await act(async () => {
+        whiteboardTab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
+        'whiteboard',
+      );
+      expect(container.querySelector('[data-testid="whiteboard-fullscreen-view"]')).toBeTruthy();
+      // Click the classroom tab.
+      const classroomTab = container.querySelector('[data-testid="demo-view-tab-classroom"]')!;
+      await act(async () => {
+        classroomTab.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
+        'classroom',
+      );
+      expect(container.querySelector('[data-testid="whiteboard-fullscreen-view"]')).toBeNull();
+      expect(container.querySelector('[data-testid="classroom-front"]')).toBeTruthy();
+    });
+
+    it('B.1.5 — slide state persists across view changes (when switching from whiteboard → classroom → dashboard)', async () => {
+      const slides = [
+        { title: 's0', step: '① 1 / 3', chalkStrokes: [] },
+        { title: 's1', step: '② 2 / 3', chalkStrokes: [] },
+        { title: 's2', step: '③ 3 / 3', chalkStrokes: [] },
+      ];
+      await act(async () => {
+        root.render(<DemoShell slides={slides} initialSlide={0} />);
+      });
+      // Initially on dashboard, slide 0.
+      const wrap = container.querySelector('[data-testid="demo-classroom-front-wrap"]')!;
+      expect(wrap.getAttribute('data-current-slide')).toBe('0');
+
+      // Switch to whiteboard (active tab click).
+      await act(async () => {
+        container
+          .querySelector('[data-testid="demo-view-tab-whiteboard"]')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      const whiteboard = container.querySelector('[data-testid="whiteboard-fullscreen-view"]')!;
+      expect(whiteboard.getAttribute('data-current-slide')).toBe('0');
+
+      // Click slide-tab-2 (the third slide) inside the whiteboard.
+      await act(async () => {
+        container
+          .querySelector('[data-testid="front-blackboard-slide-tab-2"]')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(
+        container.querySelector('[data-testid="whiteboard-fullscreen-view"]')!.getAttribute(
+          'data-current-slide',
+        ),
+      ).toBe('2');
+
+      // Switch to dashboard — the active slide must still be 2.
+      await act(async () => {
+        container
+          .querySelector('[data-testid="demo-view-tab-dashboard"]')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      const wrapAfter = container.querySelector('[data-testid="demo-classroom-front-wrap"]')!;
+      expect(wrapAfter.getAttribute('data-current-slide')).toBe('2');
+
+      // Switch to classroom — still slide 2.
+      await act(async () => {
+        container
+          .querySelector('[data-testid="demo-view-tab-classroom"]')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      const classroomWrap = container.querySelector('[data-testid="demo-classroom-front-wrap"]')!;
+      expect(classroomWrap.getAttribute('data-current-slide')).toBe('2');
+    });
+
+    it('B.1.5 — `view` prop is fully controlled (parent state wins over internal state)', async () => {
+      await act(async () => {
+        root.render(<DemoShell view="whiteboard" />);
+      });
+      expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
+        'whiteboard',
+      );
+      // Click a different tab — the parent doesn't update `view`, so
+      // the shell stays on whiteboard.
+      await act(async () => {
+        container
+          .querySelector('[data-testid="demo-view-tab-classroom"]')!
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      expect(container.querySelector('[data-testid="demo-shell"]')?.getAttribute('data-view')).toBe(
+        'whiteboard',
+      );
     });
   });
 });

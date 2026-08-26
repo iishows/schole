@@ -49,8 +49,15 @@
 
 .shell {
   display: grid;
+  /* B.1.5 — fullscreen. The shell stretches to fill whatever the
+     outer page wrapper hands us. The 1280 px cap is now a SOFT
+     constraint so the layout still works on a 1920 px monitor; the
+     inner content area gracefully widens. */
   grid-template-rows: 56px 1fr 64px;
+  width: 100%;
   height: 100%;
+  max-width: min(100%, 1280px);
+  margin: 0 auto;
   background: var(--bg);
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 13px;
@@ -68,6 +75,8 @@
   background: var(--surface);
   border-bottom: 1px solid var(--line);
   gap: 16px;
+  min-height: 56px;
+  flex: 0 0 auto;
 }
 
 .hamburger {
@@ -123,6 +132,54 @@
 .modeTabActive {
   background: var(--primary-soft);
   color: var(--primary);
+}
+
+/* B.1.5 — view-level tabs (📝 白板 / 🏫 教室 / 📊 作业). Sits
+   between the existing mode-tabs and the pomodoro. Visually
+   distinct so the user can tell the two tab systems apart at a
+   glance: view-tabs are icon-heavy + bordered, mode-tabs are
+   text-heavy + flat. */
+.viewTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  background: #f3f0fb;
+  border: 1px solid #e0d6f5;
+  border-radius: 10px;
+}
+
+.viewTab {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 12px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.viewTab:hover {
+  background: rgba(114, 46, 209, 0.06);
+}
+
+.viewTabActive {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 1px 3px rgba(114, 46, 209, 0.18);
+}
+
+.viewTabIcon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .pomodoro {
@@ -186,11 +243,16 @@
 
 .main {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  /* B.1.5 — the right column is capped at 380 px on narrow viewports
+     but is allowed to grow up to 30% of the viewport on wide
+     monitors. This keeps the chat/assignment panel readable while
+     giving the classroom more breathing room on 1920 px screens. */
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 30%, 420px);
   gap: 1px;
   background: var(--line);
   overflow: hidden;
   min-height: 0;
+  flex: 1 1 auto;
 }
 
 /* ============== Classroom left ============== */
@@ -571,6 +633,8 @@
   padding: 0 16px;
   position: relative;
   z-index: 3;
+  min-height: 64px;
+  flex: 0 0 auto;
 }
 
 .inputBarInput {
@@ -665,6 +729,55 @@
 
 .refreshBtn:hover {
   background: #fef3c7;
+}
+
+/* ============== B.1.5 — WhiteboardFullscreenView ============== */
+
+/* Container that holds the blackboard at 100% of the available
+   space when the user switches to the "whiteboard" view. No desks,
+   no teacher, no chat — just the board + slide tabs + auto-cycle
+   toggle, scaled up to fill the main viewport area. */
+.whiteboardView {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #fef9e7 0%, #fdf3d8 100%);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The blackboard component is scoped via `classroom-front.module.css`,
+   so we reach into it through `:global(...)` to make it stretch to
+   100% of the wrapper. */
+.whiteboardView > :global([data-testid="front-blackboard"]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 36px !important;
+}
+
+/* Inside the blackboard the SVG chalk layer must scale too — the
+   default 200-px-tall viewBox would otherwise leave a huge gap. */
+.whiteboardView :global([data-testid="front-blackboard-svg"]) {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 1 auto;
+  margin-top: 16px;
+}
+
+/* B.1.5 — view-mode wrapper that swaps between the full layout
+   (dashboard) and the trimmed views (classroom / whiteboard).
+   Identical flex behaviour so the grid layout never notices the
+   switch. */
+.viewMode {
+  display: contents;
 }
 
 /* ============== Animations ============== */

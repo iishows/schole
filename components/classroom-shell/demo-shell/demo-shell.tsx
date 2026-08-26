@@ -1,39 +1,47 @@
 'use client';
 
 /**
- * B.1.4 — Full 3-pane demo shell (restructured).
+ * B.1.5 — Full 3-pane demo shell (restructured + view-level tabs).
  *
- * Container layout:
+ * Container layout (fullscreen — B.1.5):
  *
  *   ┌─────────────────────────────────────────────────────┐
- *   │  <TopHeader />          56px                        │
+ *   │  <TopHeader />          56px   (with view-tabs)     │
  *   ├─────────────────────────────────────────────────────┤
- *   │  <ClassroomFront />     |  <AssignmentPanel />      │
- *   │  (full height,          |  <ChatHistory />          │
- *   │   no chat strip)        |  (380 px, vertical split) │
- *   │                         |                           │
+ *   │                                                     │
+ *   │  <viewMode>  (switch-rendered by `view` state)      │
+ *   │                                                     │
+ *   │  · dashboard  → ClassroomFront | AssignmentPanel    │
+ *   │                       + ChatHistory                │
+ *   │  · classroom  → ClassroomFront only (full area)     │
+ *   │  · whiteboard → WhiteboardFullscreenView only       │
+ *   │                                                     │
  *   ├─────────────────────────────────────────────────────┤
  *   │  <InputBar />           64px                        │
  *   └─────────────────────────────────────────────────────┘
  *
- * B.1.4 changes vs B.1.3:
- *   - Chat history was a 140 px strip above the blackboard; it now
- *     lives in the right-hand column under `<AssignmentPanel />` and
- *     fills the bottom half of that 380 px column with internal scroll.
- *   - The blackboard hosts a slide switcher (tabs + auto-cycle toggle)
- *     wired through `<DemoShell />`'s internal slide state.
- *   - Slide state resets to the generator's `currentSlide` whenever
- *     the page refreshes the generation (`onRefresh` re-key).
- *
- * Data flow:
- *   - `courseware.slides[]` + `courseware.currentSlide` come from the
- *     generator (seed-stable). On mount `DemoShell` seeds
- *     `useState(currentSlide)` from this and runs an auto-cycle
- *     `useEffect` (8 s default) that advances the active tab.
- *   - `useEffect` clears the interval on unmount and when the user
- *     pauses via the toggle button.
- *   - `onRefresh()` from the parent resets both `currentSlide` and
- *     `autoCycle` so the next generation starts paused on its own slide.
+ * B.1.5 changes vs B.1.4:
+ *   - Added 3 view-level tabs in <TopHeader />: 📝 白板 / 🏫 教室 /
+ *     📊 作业. Default = 'dashboard' so the existing visual is
+ *     preserved when the page is freshly loaded.
+ *   - The shell now switches render output based on `view`:
+ *       · `whiteboard` → only the blackboard + slide switcher
+ *         (new `<WhiteboardFullscreenView />`)
+ *       · `classroom`  → the full `<ClassroomFront />` (blackboard +
+ *         teacher + desks) without the right-hand assignment/chat
+ *         column
+ *       · `dashboard`  → the B.1.4 full layout (classroom left +
+ *         assignment + chat right + input bar bottom)
+ *   - Slide state (`currentSlide` + `autoCycle`) is now LIFTED to
+ *     `<DemoShell />` and shared by both `<ClassroomFront />` (when
+ *     `classroom` or `dashboard` is active) and
+ *     `<WhiteboardFullscreenView />` (when `whiteboard` is active).
+ *     The state persists across view changes — switching from
+ *     whiteboard to classroom keeps the same active slide.
+ *   - The outer wrapper (in `app/classroom-demo/page.tsx`) is now
+ *     `100vw x 100vh`; the shell stretches to fill the viewport
+ *     with a soft 1280-px cap so wider monitors get more room
+ *     without overflow.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -44,10 +52,11 @@ import type {
   DemoProblem,
   DemoSlide,
 } from '@/lib/classroom/demo-data-generator';
-import { TopHeader } from './top-header';
+import { TopHeader, type DemoViewId } from './top-header';
 import { ChatHistory } from './chat-history';
 import { AssignmentPanel } from './assignment-panel';
 import { InputBar } from './input-bar';
+import { WhiteboardFullscreenView } from './whiteboard-fullscreen-view';
 import styles from './demo-shell.module.css';
 
 export interface DemoShellProps {
@@ -73,6 +82,14 @@ export interface DemoShellProps {
   /** Auto-cycle interval override (ms). Defaults to 8000. */
   autoCycleMs?: number;
 
+  // B.1.5 — controlled / uncontrolled view state. When `defaultView`
+  // is supplied the shell manages its own `view` state; when `view`
+  // + `onViewChange` are supplied the parent owns it. Tests use the
+  // controlled form so they can assert what view gets rendered.
+  view?: DemoViewId;
+  defaultView?: DemoViewId;
+  onViewChange?(next: DemoViewId): void;
+
   // Refresh affordance — when supplied, a `换一换 🎲` button appears
   // inside <TopHeader /> at the chat-toggle slot.
   onRefresh?(): void;
@@ -95,8 +112,26 @@ export function DemoShell(props: DemoShellProps) {
     slides,
     initialSlide = 0,
     autoCycleMs = 8000,
+    view: controlledView,
+    defaultView = 'dashboard',
+    onViewChange,
     onRefresh,
   } = props;
+
+  // B.1.5 — internal view state. The shell is "controlled" when the
+  // parent supplies `view` + `onViewChange`; otherwise it owns its
+  // own state. Both modes coexist so the page can stay uncontrolled
+  // (default `dashboard`) while the tests drive the view directly.
+  const [internalView, setInternalView] = useState<DemoViewId>(defaultView);
+  const isControlled = controlledView !== undefined;
+  const activeView: DemoViewId = isControlled ? (controlledView as DemoViewId) : internalView;
+  const handleViewChange = useCallback(
+    (next: DemoViewId) => {
+      if (!isControlled) setInternalView(next);
+      if (onViewChange) onViewChange(next);
+    },
+    [isControlled, onViewChange],
+  );
 
   // B.1.4 — slide state lives in the shell. Reset to the generator's
   // currentSlide when the page regenerates (onRefresh bumps renderKey,
@@ -130,35 +165,67 @@ export function DemoShell(props: DemoShellProps) {
     return <ChatHistory messages={chatHistory} />;
   }, [chatHistory]);
 
-  return (
-    <div className={styles.shell} data-testid="demo-shell">
-      <TopHeader
-        modeTabs={modeTabs}
-        pomodoroSeconds={pomodoroSeconds}
-        teacherName={teacherName}
-        chatBadgeCount={chatBadgeCount}
-        onRefresh={onRefresh}
-      />
-      <div className={styles.main}>
+  // B.1.5 — shared render output for the `classroom` and `dashboard`
+  // views. The `dashboard` view wraps the same `<ClassroomFront />`
+  // with the right-hand assignment + chat column; the `classroom`
+  // view drops the right column so the desks + teacher + blackboard
+  // stretch to fill the whole main area.
+  const renderClassroomFront = () => (
+    <ClassroomFront
+      teacherBubbleContent={teacherBubbleContent}
+      deskBubbleContents={deskBubbleContents}
+      deskDisplayNames={deskDisplayNames}
+      deskHandRaised={deskHandRaised}
+      activeCallOnAgentId={activeCallOnAgentId}
+      slides={slides}
+      currentSlide={currentSlide}
+      onSlideChange={handleSlideChange}
+      autoCycle={autoCycle}
+      autoCycleMs={autoCycleMs}
+      onAutoCycleToggle={handleAutoCycleToggle}
+    />
+  );
+
+  const renderMain = () => {
+    if (activeView === 'whiteboard') {
+      return (
+        <div className={styles.main} data-view="whiteboard">
+          <WhiteboardFullscreenView
+            slides={slides}
+            currentSlide={currentSlide}
+            onSlideChange={handleSlideChange}
+            autoCycle={autoCycle}
+            autoCycleMs={autoCycleMs}
+            onAutoCycleToggle={handleAutoCycleToggle}
+          />
+        </div>
+      );
+    }
+    if (activeView === 'classroom') {
+      return (
+        <div className={styles.main} data-view="classroom">
+          <div className={styles.classroomArea}>
+            <div
+              className={styles.classroomFrontWrap}
+              data-testid="demo-classroom-front-wrap"
+              data-current-slide={slideCount > 0 ? currentSlide : -1}
+            >
+              {renderClassroomFront()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // `dashboard` — the B.1.4 full layout.
+    return (
+      <div className={styles.main} data-view="dashboard">
         <div className={styles.classroomArea}>
           <div
             className={styles.classroomFrontWrap}
             data-testid="demo-classroom-front-wrap"
             data-current-slide={slideCount > 0 ? currentSlide : -1}
           >
-            <ClassroomFront
-              teacherBubbleContent={teacherBubbleContent}
-              deskBubbleContents={deskBubbleContents}
-              deskDisplayNames={deskDisplayNames}
-              deskHandRaised={deskHandRaised}
-              activeCallOnAgentId={activeCallOnAgentId}
-              slides={slides}
-              currentSlide={currentSlide}
-              onSlideChange={handleSlideChange}
-              autoCycle={autoCycle}
-              autoCycleMs={autoCycleMs}
-              onAutoCycleToggle={handleAutoCycleToggle}
-            />
+            {renderClassroomFront()}
           </div>
         </div>
         <div className={styles.rightColumn} data-testid="demo-right-column">
@@ -182,6 +249,21 @@ export function DemoShell(props: DemoShellProps) {
           </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={styles.shell} data-testid="demo-shell" data-view={activeView}>
+      <TopHeader
+        modeTabs={modeTabs}
+        pomodoroSeconds={pomodoroSeconds}
+        teacherName={teacherName}
+        chatBadgeCount={chatBadgeCount}
+        onRefresh={onRefresh}
+        view={activeView}
+        onViewChange={handleViewChange}
+      />
+      {renderMain()}
       <InputBar />
     </div>
   );

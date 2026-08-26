@@ -98,8 +98,9 @@ export default function ClassroomDemoPage() {
         data-testid="classroom-demo"
         data-front-disabled="true"
         style={{
-          width: 1280,
-          minHeight: 800,
+          position: 'relative',
+          width: '100vw',
+          height: '100vh',
           padding: 24,
           color: '#999',
           fontFamily: 'system-ui, sans-serif',
@@ -118,10 +119,11 @@ export default function ClassroomDemoPage() {
       data-slide-count={courseware.slides.length}
       style={{
         position: 'relative',
-        width: 1280,
-        height: 800,
+        width: '100vw',
+        height: '100vh',
         background: '#f6f5fb',
         fontFamily: "'Inter', system-ui, sans-serif",
+        overflow: 'hidden',
       }}
     >
       <DemoShell

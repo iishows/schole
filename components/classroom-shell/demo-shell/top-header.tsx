@@ -4,14 +4,40 @@
  * B.1.3 — Top header bar (mockup-faithful, 56px tall).
  *
  * Renders the mockup's `.header` row from `mockups/classroom-layout-c3.html`:
- *   hamburger · teacher pill · mode tabs · pomodoro · chat-toggle (with badge)
+ *   hamburger · teacher pill · mode tabs · view tabs (B.1.5) · pomodoro · chat-toggle (with badge)
  *
  * All data is optional — the demo page passes the header payload from
  * `generateDemoClassroomState().header`. Handlers default to no-ops so the
  * component stays purely presentational when no callbacks are supplied.
+ *
+ * B.1.5 — added view-level tabs (📝 白板 / 🏫 教室 / 📊 作业). The
+ * three tabs share the parent's `view` state and switch the
+ * `<DemoShell />` render output between the whiteboard-only,
+ * classroom-only, and full dashboard layouts. The view-tabs are
+ * visually distinct from the existing mode-tabs (icon-heavy +
+ * bordered) so the user can tell the two tab systems apart at a
+ * glance.
  */
 
 import styles from './demo-shell.module.css';
+
+/** B.1.5 — the three view-level tabs. Public so the page / tests
+ *  can map them onto the same string IDs without copy-pasting. */
+export type DemoViewId = 'whiteboard' | 'classroom' | 'dashboard';
+
+export interface DemoViewTab {
+  id: DemoViewId;
+  icon: string;
+  label: string;
+}
+
+/** Default ordering + labels. Exported so unit tests can pin the
+ *  active-tab mapping without re-declaring the literal strings. */
+export const DEMO_VIEW_TABS: readonly DemoViewTab[] = [
+  { id: 'whiteboard', icon: '📝', label: '白板' },
+  { id: 'classroom', icon: '🏫', label: '教室' },
+  { id: 'dashboard', icon: '📊', label: '作业' },
+] as const;
 
 export interface TopHeaderProps {
   modeTabs?: string[];
@@ -21,6 +47,15 @@ export interface TopHeaderProps {
   /** Refresh-button handler — the demo page hooks this to the
    *  `换一换 🎲` button. Optional. */
   onRefresh?(): void;
+  /** B.1.5 — currently active view tab. Defaults to 'dashboard'. */
+  view?: DemoViewId;
+  /** B.1.5 — fired when the user clicks a view tab. The parent
+   *  (`<DemoShell />`) updates its `view` state in response. */
+  onViewChange?(next: DemoViewId): void;
+  /** B.1.5 — overrides the default tab list. Tests use this to
+   *  inject shorter labels; the default is the mockup-faithful
+   *  full Chinese label set. */
+  viewTabs?: readonly DemoViewTab[];
 }
 
 function formatPomodoro(seconds: number): string {
@@ -36,6 +71,9 @@ export function TopHeader({
   teacherName = '小诺姐姐',
   chatBadgeCount = 0,
   onRefresh,
+  view = 'dashboard',
+  onViewChange,
+  viewTabs = DEMO_VIEW_TABS,
 }: TopHeaderProps) {
   const safeBadge = Math.max(0, Math.floor(chatBadgeCount));
   const totalSeconds = 25 * 60;
@@ -68,6 +106,36 @@ export function TopHeader({
             {tab}
           </button>
         ))}
+      </div>
+      <div
+        className={styles.viewTabs}
+        role="tablist"
+        aria-label="view tabs"
+        data-testid="demo-view-tabs"
+      >
+        {viewTabs.map((tab) => {
+          const isActive = tab.id === view;
+          return (
+            <button
+              type="button"
+              key={tab.id}
+              className={`${styles.viewTab} ${isActive ? styles.viewTabActive : ''}`}
+              data-testid={`demo-view-tab-${tab.id}`}
+              data-active={isActive ? 'true' : 'false'}
+              aria-selected={isActive ? 'true' : 'false'}
+              role="tab"
+              onClick={() => {
+                if (onViewChange) onViewChange(tab.id);
+              }}
+              title={tab.label}
+            >
+              <span className={styles.viewTabIcon} aria-hidden="true">
+                {tab.icon}
+              </span>
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
       <div className={styles.pomodoro} data-testid="demo-pomodoro" data-seconds={pomodoroSeconds}>
         <span className={styles.pomodoroDot} aria-hidden="true" />
